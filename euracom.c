@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.19 $
- * Last modified:       $Date: 1998/01/17 13:31:03 $
+ * Version:             $Revision: 1.20 $
+ * Last modified:       $Date: 1998/01/18 09:42:54 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.19 1998/01/17 13:31:03 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.20 1998/01/18 09:42:54 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -397,7 +397,7 @@ int fatal(int sig)
 /*------------------------------------------------------*/
 int terminate(int sig)
 {
-  log_msg(ERR_NOTICE, "Signal %d received. Program terminating", sig);
+  log_msg(ERR_NOTICE, "Euracom exiting on signal %d", sig);
   shutdown_program(0);
   return(0);
 }
