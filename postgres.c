@@ -3,12 +3,12 @@
  *
  * postgres.c -- PostgreSQL database subsystem
  *
- * Copyright (C) 1996-1997 by Michael Bussmann
+ * Copyright (C) 1996-1998 by Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.7 $
- * Last modified:       $Date: 1998/01/08 12:32:18 $
+ * Version:             $Revision: 1.8 $
+ * Last modified:       $Date: 1998/01/17 13:33:02 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,9 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.7 1998/01/08 12:32:18 bus Exp $";
-
-#include "config.h"
+static char rcsid[] = "$Id: postgres.c,v 1.8 1998/01/17 13:33:02 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -79,34 +77,34 @@ static BOOLEAN database_write_recovery(const char *stc);
 /* Some initialization routines */
 void database_set_host(const char *str)
 {
-  log_msg(ERR_JUNK, "database: Setting host to %s", str);
+  log_debug(2, "database: Setting host to %s", str);
   if (pg_host) { free(pg_host); }
   pg_host=strdup(str);
 }
 
 void database_set_port(const char *str)
 {
-  log_msg(ERR_JUNK, "database: Setting port to %s", str);
+  log_debug(2, "database: Setting port to %s", str);
   if (pg_port) { free(pg_port); }
   pg_port=strdup(str);
 }
 
 void database_set_db(const char *str)
 {
-  log_msg(ERR_JUNK, "database: Setting database to %s", str);
+  log_debug(2, "database: Setting database to %s", str);
   if (pg_db) { free(pg_db); }
   pg_db=strdup(str);
 }
 
 void database_set_shutdown_timeout(int i)
 {
-  log_msg(ERR_JUNK, "database: Setting shutdown timeout to %s s", i);
+  log_debug(2, "database: Setting shutdown timeout to %s s", i);
   shutdown_timeout=i;
 }
 
 void database_set_recovery_timeout(int i)
 {
-  log_msg(ERR_JUNK, "database: Setting recovery timeout to %s s", i);
+  log_debug(2, "database: Setting recovery timeout to %s s", i);
   shutdown_timeout=i;
 }
 
@@ -117,7 +115,7 @@ void database_set_recovery_timeout(int i)
 */
 BOOLEAN database_initialize()
 {
-  log_msg(ERR_INFO, "Initializing database subsystem...");
+  log_debug(1, "Initializing database subsystem...");
 
   if (!pg_db) { pg_db=strdup(DEF_DB); }
 
@@ -127,8 +125,8 @@ BOOLEAN database_initialize()
   /* Initial state of statemachine */
   db_state=DB_CLOSED;
 
-  log_msg(ERR_JUNK, "Will disconnect from DB after %ds idle time", shutdown_timeout);
-  log_msg(ERR_JUNK, "Will retry to establish connection after %ds", recovery_timeout);
+  log_debug(1, "Will disconnect from DB after %ds idle time", shutdown_timeout);
+  log_debug(1, "Will retry to establish connection after %ds", recovery_timeout);
   return(TRUE);
 }
 
@@ -137,7 +135,7 @@ BOOLEAN database_initialize()
 */
 BOOLEAN database_shutdown()
 {
-  log_msg(ERR_INFO, "Shutting down database subsystem");
+  log_debug(1, "Shutting down database subsystem");
   
   /* Release backend */
   database_change_state(DB_CLOSED);
@@ -342,6 +340,7 @@ BOOLEAN database_log(const char *cp)
 */
 BOOLEAN database_pg_connect()
 {
+  log_debug(3, "Opening connection to database");
   db_handle=PQsetdb(pg_host, pg_port, NULL, NULL, pg_db);
 
   if (PQstatus(db_handle) == CONNECTION_BAD) {
@@ -364,6 +363,7 @@ BOOLEAN database_pg_execute(const char *stc, BOOLEAN do_recovery)
 
   switch (db_state) {
     case DB_OPEN:
+      log_debug(4, "Executing SQL: %s", stc);
       pgres=PQexec(db_handle, stc);
       if (PQresultStatus(pgres)!=PGRES_COMMAND_OK) {
         log_msg(ERR_ERROR, "PostgreSQL error: %s", PQcmdStatus(pgres));
