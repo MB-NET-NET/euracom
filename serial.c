@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.9 $
- * Last modified:       $Date: 1998/01/22 15:16:07 $
+ * Version:             $Revision: 1.10 $
+ * Last modified:       $Date: 1998/02/04 09:55:25 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.9 1998/01/22 15:16:07 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.10 1998/02/04 09:55:25 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -238,23 +238,13 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
     return(FALSE);
   }
 
-#ifdef 0
   /* Put line in transparent state */
-  cfmakeraw(&term);
-  /* Sets: iflag: !IGNBRK, !BRKINT, !PARMRK, !ISTRIP, !INLCR, !IGNCR, !ICRNL, !IXON
-           oflag: !OPOST
-           lflag: !ECHO, !ECHONL, !ICANON, !ISIG, !IEXTEN
-           cflag: !CSIZE, !PARENB, CS8
-  */
-  term.c_iflag&=~(IGNCR);
-#else
   term.c_iflag=IGNBRK | IGNPAR | IGNCR;
   term.c_oflag=0;
   term.c_cflag=CSIZE | CS8 | CREAD | HUPCL | CLOCAL | CRTSCTS;
   term.c_lflag=0;
   term.c_cc[VMIN]=1;
   term.c_cc[VTIME]=0;
-#endif
 
   /* Set in/out speed to 9600 baud */
   cfsetispeed(&term, B9600);

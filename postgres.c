@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.10 $
- * Last modified:       $Date: 1998/02/01 11:15:34 $
+ * Version:             $Revision: 1.11 $
+ * Last modified:       $Date: 1998/02/04 09:55:24 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.10 1998/02/01 11:15:34 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.11 1998/02/04 09:55:24 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -147,7 +147,6 @@ BOOLEAN database_shutdown()
   
   return(TRUE);
 }
-
 
 /*
    Gets usually called in idle times to check whether

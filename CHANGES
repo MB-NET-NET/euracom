@@ -1,26 +1,26 @@
-$Date: 1998/01/23 12:39:53 $, $Revision: 1.4 $
+$Date: 1998/02/04 09:55:23 $, $Revision: 1.5 $
 
 |------------+--------+------------------------------------------------------
-| Datum/STag | Version| Wichtigste Änderungen
+| Datum/STag |Version | Wichtigste Änderungen
 |============|========|======================================================
 | 1997-10-04 | 1.0    | Erstes oeffentliches Release
 | rel-1_0    |        | 
 |------------+--------+------------------------------------------------------
-| 1998-01-14 | 1.0.1  | Privatrelease an Volker
-| (-)        |        | - perl: Callback routine, Transaction in 50er Blocks
-|            |        | - Kosmetische Aenderungen am C-Code
+| 1998-01-14 | 1.0.1 *| - perl: Callback routine, Transaction in 50er Blocks
+| (-)        |[Volker]| - Kosmetische Aenderungen am C-Code
 |------------+--------+-------------------------------------------------------
-| 1998-01-17 | 1.1.0  | Privaterelease an Volker
-| rel-1_1_0  |        | - Ueberarbeitetes Handling des V24 Interfaces
-|            |        | - Verbessertes debugging (logfile, syslog)
+| 1998-01-17 | 1.1.0 *| - Ueberarbeitetes Handling des V24 Interfaces
+| rel-1_1_0  |[Volker]| - Verbessertes debugging (logfile, syslog)
 |            |        | - Daemon mode (fork/setsid/detach), PID file
-|            |        | - root-mode: Lockfile/PIDfile/Device/Logfile Zugriff mit
-|            |        |   Root-Rechten, danach normaler user
+|            |        | - root-mode: Lockfile/PIDfile/Device/Logfile Zugriff
+|            |        |   mit Root-Rechten, danach normaler user
 |------------+--------+-------------------------------------------------------
-| 1998-01-19 | 1.1.0  | Oeffentliche (intermediate) Version [README noch veraltet]
-| rel-1_1_0  |        | - man page hinzugefügt (Volker)
+| 1998-01-19 | 1.1.0  | - man page hinzugefügt (Volker)
+| rel-1_1_0  |        |
 |------------+--------+-------------------------------------------------------
-| 1998-01-23 | 1.1.1  | Oeffentliche Version
-| rel-1_1_1  |        | - README aktualisiert (verbessert? :-))
-|            |        | - Kleinere Aenderungen in libutils und im V24 Interface
+| 1998-01-23 | 1.1.1  | - README aktualisiert (verbessert? :-))
+| rel-1_1_1  |        | - Kleinere Aenderungen in libutils und im V24 Interface
+|------------+--------+-------------------------------------------------------
+| 1998-02-05 | 1.1.2  | - Zeit/Datumsangaben an DB in ISO 8601 und UTC
+| rel-1_1_2  |        |
 |------------+--------+-------------------------------------------------------
