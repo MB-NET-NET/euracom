@@ -6,12 +6,13 @@
  * Copyright (C) 1996-1998 by Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
+ *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.2 $
- * Last modified:       $Date: 1998/03/14 12:36:46 $
- * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
+ * Version:             $Revision: 1.3 $
+ * Last modified:       $Date: 1998/03/21 13:55:26 $
+ * Keywords:            ISDN, Euracom, Ackermann, mSQL
  *
- * adopted for changes needed for msql: Michael Tepperis
+ * based on 'postgres.c' applied with changes needed by msql
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public Licence as published by the
@@ -24,7 +25,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: msql.c,v 1.2 1998/03/14 12:36:46 bus Exp $";
+static char rcsid[] = "$Id: msql.c,v 1.3 1998/03/21 13:55:26 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ static unsigned int recovery_timeout = RECOVERY_TIMEOUT;
 static time_t last_db_write = 0;
 static time_t last_recovery = 0;
 
-int socket;
+static int st;	/* mSQL database handle */
 static enum DB_State { DB_OPEN, DB_CLOSED, RECOVERY } db_state = DB_CLOSED;
 
 /*
@@ -212,12 +213,12 @@ BOOLEAN database_change_state( enum DB_State new_state )
       switch ( new_state )
        {
         case DB_CLOSED:
-          msqlClose( socket );
+          msqlClose( st );
           ok = TRUE;
           break;
         case RECOVERY:
           log_msg( ERR_INFO, "Entering recovery mode" );
-          msqlClose( socket );
+          msqlClose( st );
           ok = TRUE;
           last_recovery = time( NULL );
           break;
@@ -377,15 +378,15 @@ static BOOLEAN database_msql_connect( )
  {
   log_debug( 3, "Opening connection to database" );
   /* Datenbank-Server-Verbindung herstellen */
-  socket = msqlConnect( NULL );
-  if( socket < 0 )
+  st = msqlConnect( NULL );
+  if( st < 0 )
    {
     log_msg( ERR_ERROR, "mSQL connect: ERROR" );
-    msqlClose( socket );
+    msqlClose( st );
     return( FALSE );
    }
   /* Datenbank-Verbindung herstellen */
-  if( msqlSelectDB( socket, msql_db ) < 0 )
+  if( msqlSelectDB( st, msql_db ) < 0 )
    {
     log_msg( ERR_ERROR, "Die Datenbank \"%s\" konnte nicht geöffnet werden.\n\n", msql_db );
    }
@@ -405,7 +406,7 @@ static BOOLEAN database_msql_execute( const char *stc, BOOLEAN do_recovery )
    {
     case DB_OPEN:
       log_debug( 4, "Executing SQL: %s", stc );
-      res=msqlQuery(socket, stc);
+      res=msqlQuery(st, stc);
       unless (res) {
         log_msg(ERR_ERROR, "mSQL connection failure:");
         if (do_recovery) { database_write_recovery(stc); }
