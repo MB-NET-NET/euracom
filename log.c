@@ -5,11 +5,11 @@
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: log.c,v 1.3 1999/11/02 09:55:13 bus Exp $
+ * Version:	$Id: log.c,v 1.4 2000/12/17 17:14:48 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/log.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: log.c,v 1.3 1999/11/02 09:55:13 bus Exp $";
+static char rcsid[] = "$Id: log.c,v 1.4 2000/12/17 17:14:48 bus Exp $";
 
 #include "config.h"
 
@@ -69,7 +69,7 @@ void log_msg(enum ErrorLevel level, const char *fmt, ...)
   };
 
   va_start(ap, fmt);
-  vsprintf(buf, fmt, ap);
+  vsnprintf(buf, 1023, fmt, ap); buf[1023]='\0';
   va_end(ap);
 
   /* When in SYSLOG mode, map program log level into less offensive syslog levels */
@@ -113,7 +113,7 @@ void log_debug(int level, const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
-    vsprintf(buf, fmt, ap);
+    vsnprintf(buf, 1023, fmt, ap); buf[1023]='\0';
     va_end(ap);
 
     logger_write_line("", buf);
