@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.13 $
-# Last modified:       $Date: 1999/03/13 16:56:58 $
+# Version:             $Revision: 1.14 $
+# Last modified:       $Date: 1999/06/03 12:20:33 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: charger.pl,v 1.13 1999/03/13 16:56:58 bus Exp $
+# $Id: charger.pl,v 1.14 1999/06/03 12:20:33 bus Exp $
 #
 
 use Pg;
@@ -135,13 +135,13 @@ print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n";
 print "<html><head><title>Telefonrechnung</title></head><body>\n";
 print "<h1>Telefonrechnung f&uuml;r Anschlu&szlig; $MSN</h1>\n";
 print "<center><table border=\"5\" cellspacing=\"2\" cellpadding=\"2\">\n";
-print "<tr><th>Anschlu&szlig;</th><th>Datum</th> <th>Rufnummer</th><th>Einheiten</th><th>Betrag</th></tr>\n";
+print "<tr><th>Anschlu&szlig;</th><th>Datum</th> <th>Rufnummer</th><th>Betrag</th></tr>\n";
 
 #
 # Perform evaluation
 #
 $counter=0;
-SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),einheiten,direction,pay,currency,$usedate FROM euracom $filter_cmd ORDER BY $usedate", "eval_result");
+SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),direction,pay,currency,$usedate FROM euracom $filter_cmd ORDER BY $usedate", "eval_result");
 
 #
 # That's it
@@ -151,12 +151,11 @@ SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),einheiten,direct
 #
 # Print footer
 #
-$res=$db->exec("SELECT sum(einheiten), sum(pay) from euracom $filter_cmd") || die "SELECT sum";
+$res=$db->exec("SELECT sum(pay) from euracom $filter_cmd") || die "SELECT sum";
 $val1=$res->getvalue(0,0);
-$val2=$res->getvalue(0,1);
-print "<tr><td></td><td></td><td>$counter Gespr&auml;che</td><td>$val1</td><td>$val2 DEM</td></tr>\n";
-printf "<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td></td><td>%.2f DEM</td></tr>\n", $charge;
-printf "<tr><td></td><td></td><td>GESAMT:</td><td></td><td><B>%.2f DEM</B></td></tr>\n", $val2+$charge;
+printf "<tr><td></td><td></td><td>%d Gespr&auml;che</td><td>%.3f DEM</td></tr>\n", $counter, $val1;
+printf "<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td>%.3f DEM</td></tr>\n", $charge;
+printf "<tr><td></td><td></td><td>GESAMT:</td><td><B>%.2f DEM</B></td></tr>\n", $val1+$charge;
 print "</table></center><br><hr><address>";
 print "Michael Bussmann, Im Brook 8, 45721 Haltern</address></body></html>\n";
 
@@ -168,8 +167,8 @@ undef $db;
 #
 sub eval_result()
 {
-  # int_no, remote_no, *_date, EH, dir, pay, cur, *_date (human readable)
-  # 0       1          2       3   4    5    6    7
+  # int_no, remote_no, *_date, dir, pay, cur, *_date (human readable)
+  # 0       1          2       3    4    5    6
   my (@arr) = @_;
   my ($num, $i);
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($arr[2]);
@@ -180,7 +179,7 @@ sub eval_result()
   printf "</TD><TD>%02d.%02d.19%2d %02d:%02d</TD>", $mday, $mon+1, $year, $hour, $min, $sec;
 
   # Je nach Art
-  if ($arr[4] eq "I") {		# Incoming call
+  if ($arr[3] eq "I") {		# Incoming call
     print "<TD>";
 
     if ($arr[0]) {		# connection
@@ -196,17 +195,17 @@ sub eval_result()
     }
     print "</TD><TD></TD><TD></TD>";
 
-  } elsif ($arr[4] eq "O") {	# Outgoing call
+  } elsif ($arr[3] eq "O") {	# Outgoing call
     print "<TD>";
     if ($arr[1] eq "") {
       print "???";
     } else {
       print &print_fqtn($arr[1]);
     }
-    printf "</TD><TD>%d</TD><TD>%.2f %s</TD>", $arr[3], $arr[5], $arr[6];
+    printf "</TD><TD>%.3f %s</TD>", $arr[4], $arr[5];
     $counter++;
   } else {
-    print "Falscher Typ $arr[4] für $arr[1]";
+    print "Falscher Typ $arr[3] für $arr[1]";
   }
   print "</TR>\n";
 }
