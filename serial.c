@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.11 $
- * Last modified:       $Date: 1998/02/14 08:56:28 $
+ * Version:             $Revision: 1.12 $
+ * Last modified:       $Date: 1998/02/15 09:58:45 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.11 1998/02/14 08:56:28 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.12 1998/02/15 09:58:45 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -69,16 +69,15 @@ static char rcsid[] = "$Id: serial.c,v 1.11 1998/02/14 08:56:28 bus Exp $";
  * Allocates serial file structure
  *
  * Inputs: -
- * RetCode: Ptr to freshly created structure; NULL: Error
+ * RetCode: Ptr to freshly created structure
  *------------------------------------------------------------------------*/
 struct SerialFile *serial_allocate_file()
 {
   struct SerialFile *sf;
 
-  if ((sf=malloc(sizeof(struct SerialFile)))) {
-    sf->fd=0;
-    sf->protocol_filename=sf->fd_device=NULL;
-  }
+  sf=safe_malloc(sizeof(struct SerialFile));
+  sf->fd=0;
+  sf->protocol_filename=sf->fd_device=NULL;
 
   log_debug(3, "serial: Allocation request");
   return(sf);
@@ -95,9 +94,9 @@ struct SerialFile *serial_allocate_file()
 void serial_deallocate_file(struct SerialFile *sf)
 {
   if (sf) { 
-    if (sf->protocol_filename) { free(sf->protocol_filename); }
-    if (sf->fd_device) { free(sf->fd_device); }
-    free(sf);
+    safe_free(sf->protocol_filename);
+    safe_free(sf->fd_device);
+    safe_free(sf);
   }
 }
 
@@ -112,8 +111,7 @@ void serial_deallocate_file(struct SerialFile *sf)
 void serial_set_protocol_name(struct SerialFile *sf, const char *str)
 {
   log_debug(2, "serial: Setting protocol name to %s", str);
-  if (sf->protocol_filename) { free(sf->protocol_filename); }
-  sf->protocol_filename=strdup(str);
+  str_redup(sf->protocol_filename, str);
 }
 
 /*--------------------------------------------------------------------------
@@ -126,9 +124,8 @@ void serial_set_protocol_name(struct SerialFile *sf, const char *str)
  *------------------------------------------------------------------------*/
 void serial_set_device(struct SerialFile *sf, const char *str)
 {
-  if (sf->fd_device) { free(sf->fd_device); }
-  sf->fd_device=strdup(str);
   log_debug(2, "serial: Euracom device is %s", sf->fd_device);
+  str_redup(sf->fd_device, str);
 }
 
 /*--------------------------------------------------------------------------

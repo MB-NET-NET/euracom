@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.25 $
- * Last modified:       $Date: 1998/02/14 10:59:36 $
+ * Version:             $Revision: 1.26 $
+ * Last modified:       $Date: 1998/02/15 09:58:44 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.25 1998/02/14 10:59:36 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.26 1998/02/15 09:58:44 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -61,7 +61,7 @@ struct GebuehrInfo {
   char   waehrung[4];   /* Währungsbezeichnung */
 };
 
-static char pid_file[] = PIDFILE;
+static const char pid_file[] = PIDFILE;
 static struct SerialFile *euracom_port;
 
 /*------------------------------------------------------*/
@@ -73,14 +73,13 @@ static struct SerialFile *euracom_port;
 /*------------------------------------------------------*/
 BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
 {
-  char res[1024] = "";
-
   switch (geb->art) {
     case GEHEND: {
-      sprintf(res, "%d called %s. %d units = %.2f %s",
+      syslog(LOG_NOTICE, "%d called %s. %d unit%s = %.2f %s",
               geb->teilnehmer, 
               geb->nummer,
               geb->einheiten,
+              (geb->einheiten?"s":""),
               geb->betrag,
               geb->waehrung);
     }
@@ -90,27 +89,25 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
       if (geb->teilnehmer) {
         /* Mit Verbindung */
         if (geb->nummer[0]) {
-          sprintf(res, "Incoming call from %s for %d",
+          syslog(LOG_NOTICE, "Incoming call from %s for %d",
                   geb->nummer,
                   geb->teilnehmer);
         } else {
-          sprintf(res, "Incoming call for %d", 
+          syslog(LOG_NOTICE, "Incoming call for %d", 
             geb->teilnehmer);
         }       /* IF (unkown_no) */
       } else {
         /* Ohne Verbindung */
         if (geb->nummer[0]) { 
-          sprintf(res, "Unresponded incoming call from %s",
+          syslog(LOG_NOTICE, "Unresponded incoming call from %s",
             geb->nummer);
           } else {
-          sprintf(res, "Unresponded incoming call");
+          syslog(LOG_NOTICE, "Unresponded incoming call");
         }       /* IF unkown_no (ELSE) */
       } /* IF (geb->teilnehmer) (ELSE) */
       break;
   }     /* SWITCH */
 
-  syslog(LOG_NOTICE, "%s", res);
-  
   return(TRUE);
 }
 
@@ -124,7 +121,7 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
 /*------------------------------------------------------*/
 BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
 {
-  char statement[4096]; /* SQL Statement */
+  char statement[2048]; /* SQL Statement */
   char date_fmt[21];	/* yyyy-mm-dd hh:mm:ss */
 
   sprintf(statement, "INSERT INTO euracom (int_no, remote_no, einheiten, direction, factor, pay, currency, vst_date, sys_date) values ('%d','%s',",
@@ -156,7 +153,7 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
 }
 
 
-void conv_phone(char *dst, char *src)
+void conv_phone(char *dst, const char *src)
 {
   /* ^00: International call. Just strip 00 to get int'l phone number */
   if (strncmp(src, "00", 2)==0) {
@@ -182,25 +179,23 @@ void conv_phone(char *dst, char *src)
 struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 {
   char *buf=strdup(str);	/* Make a copy */
-  char *cp;
   char *argv[6];		/* Arguments */
   struct tm tm;
   int num=0;
 
   /* Split string into argv array, set num */
   if ((argv[0]=strtok(buf, "|"))) {
-    while ((argv[++num]=strtok(NULL, "|")));
+    while ((argv[++num]=strtok(NULL, "|")) && (stripblank(argv[num])) && (num<6));
   }
     
   if ((num<3) || (num>5)) {
     log_msg(ERR_ERROR, "Got %d fields in input line", num);
-    free(buf);
+    safe_free(buf);
     return(NULL);
   }
 
   /* 0: Art und Teilnehmer*/
-  cp=argv[0]; stripblank(cp);
-  switch (*cp++) {
+  switch (*argv[0]++) {
     case 'G':
       geb->art=GEHEND;
       if (num==4) { log_debug(1, "Call seems to be free of charge."); }
@@ -212,58 +207,49 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
       break;
     default:
       log_msg(ERR_ERROR, "Field 1 does not contain any class descriptor");
-      free(buf);
+      safe_free(buf);
       return(NULL);
       break;
   }
-  geb->teilnehmer=atoi(cp);
+  geb->teilnehmer=atoi(argv[0]);
 
   /* 1: Datum/Zeit Verbindungsaufbau */
-  cp=argv[1]; stripblank(cp);
   memset(&tm, 0, sizeof(tm));
-  strptime(cp, "%d.%m.%y, %H:%M", &tm);
+  strptime(argv[1], "%d.%m.%y, %H:%M", &tm);
   tm.tm_isdst=-1;
-  geb->datum_vst=mktime(&tm);	/* into UTC */
-  if (geb->datum_vst==(time_t)-1) {
-    log_msg(ERR_WARNING, "Invalid time spec \"%s\". Using system time instead", cp);
+  if ((geb->datum_vst=mktime(&tm))==(time_t)-1) {
+    log_msg(ERR_WARNING, "Invalid time spec \"%s\". Using system time instead", argv[1]);
     geb->datum_vst=time(NULL);
   }
 
   /* 2: Telephone-# */
-  cp=argv[2]; stripblank(cp);
-  if (str_isdigit(cp)) {
-    conv_phone(geb->nummer, cp);
+  if (str_isdigit(argv[2])) {
+    conv_phone(geb->nummer, argv[2]);
   } else {
     strcpy(geb->nummer, "");    /* Null string */
   }
 
   /* 3: Einheiten */
-  if (num>3) {
-    cp=argv[3]; stripblank(cp);
-    geb->einheiten=atoi(cp);
-  } else {
-    geb->einheiten=0;
-  }
+  geb->einheiten=(num>3)?atoi(argv[3]):0;
 
   /* 4: Gebuehr */
   if (num>4) {
-    char *cp2;
+    char *cp;
 
-    cp=argv[4]; stripblank(cp);
-    if ((cp2=strchr(cp, ','))) {*cp2='.';}
-    if ((cp2=strchr(cp, ' '))) {*cp2='\0';}
-    geb->betrag=(float)atof(cp);
+    if ((cp=strchr(argv[4], ','))) {*cp='.';}
+    if ((cp=strchr(argv[4], ' '))) {*cp='\0';}
+    geb->betrag=(float)atof(argv[4]);
   } else {
     geb->betrag=0;
   }
-
-  free(buf);
 
   /* Default-Infos */
   strcpy(geb->waehrung, LOCAL_CURRENCY);
   geb->betrag_base=PRICE_PER_UNIT;
 
   /* geb->datum_sys wird *nicht* gesetzt! */
+
+  safe_free(buf);
   return(geb);
 }
 
@@ -304,7 +290,7 @@ BOOLEAN daemon_create_pid_file()
     if (kill(pid, 0)) {
       log_msg(ERR_WARNING, "Stale PID file found in %s (pid %d)", pid_file, pid);
     } else {
-      log_msg(ERR_CRIT, "Another Euracom process seems to be active (pid %d)", pid);
+      log_msg(ERR_CRIT, "Another euracom process seems to be active (pid %d)", pid);
       may_create=FALSE;
     }	/* IF kill */
     fclose(fp);
@@ -534,7 +520,6 @@ int main(int argc, char **argv)
     {"help", 0, NULL, 'h'},
     {"run-as-user", 1, NULL, 'u'},
 
-
     {NULL, 0, NULL, 0}
   };
 
@@ -545,11 +530,7 @@ int main(int argc, char **argv)
   logger_set_logfile(NULL);
   logger_initialize();
 
-  /* Sanity check */
-  unless ((euracom_port=serial_allocate_file())) {
-    log_msg(ERR_FATAL, "Could not allocate serial file.  Almost impossible!");
-    exit(3);
-  }
+  euracom_port=serial_allocate_file();
 
   /* Parse command line options */
   while ((opt=getopt_long_only(argc, argv, "fhH:P:D:R:S:l:p:u:d::", long_options, NULL))!=EOF) {

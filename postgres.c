@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.12 $
- * Last modified:       $Date: 1998/02/14 08:56:29 $
+ * Version:             $Revision: 1.13 $
+ * Last modified:       $Date: 1998/02/15 09:58:44 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.12 1998/02/14 08:56:29 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.13 1998/02/15 09:58:44 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -78,22 +78,19 @@ static BOOLEAN database_write_recovery(const char *stc);
 void database_set_host(const char *str)
 {
   log_debug(2, "database: Setting host to %s", str);
-  if (pg_host) { free(pg_host); }
-  pg_host=strdup(str);
+  str_redup(pg_host, str);
 }
 
 void database_set_port(const char *str)
 {
   log_debug(2, "database: Setting port to %s", str);
-  if (pg_port) { free(pg_port); }
-  pg_port=strdup(str);
+  str_redup(pg_port, str);
 }
 
 void database_set_db(const char *str)
 {
   log_debug(2, "database: Setting database to %s", str);
-  if (pg_db) { free(pg_db); }
-  pg_db=strdup(str);
+  str_redup(pg_db, str);
 }
 
 void database_set_shutdown_timeout(int i)
@@ -141,9 +138,9 @@ BOOLEAN database_shutdown()
   database_change_state(DB_CLOSED);
 
   /* Free internal variables */
-  if (pg_host) { free(pg_host); }
-  if (pg_port) { free(pg_port); }
-  if (pg_db) { free(pg_db); }
+  safe_free(pg_host);
+  safe_free(pg_port);
+  safe_free(pg_db);
   
   return(TRUE);
 }
@@ -281,20 +278,20 @@ BOOLEAN database_perform_recovery()
 
     unless (copy_file(RECOVERY_FILE, cp)) {
       log_msg(ERR_CRIT, "Copying recovery file failed");
-      free(cp);
+      safe_free(cp);
       return(FALSE);
     }
 
     unless (delete_file(RECOVERY_FILE)) {
       log_msg(ERR_CRIT, "Deletion of old recovery file failed");
       delete_file(cp);
-      free(cp);
+      safe_free(cp);
       return(FALSE);
     }
 
     unless (fp=fopen(cp, "r")) {
       log_msg(ERR_FATAL, "My own copy of the recovery file is gone.  I'm confused!");
-      free(cp);
+      safe_free(cp);
       return(FALSE);
     }
 
@@ -308,7 +305,7 @@ BOOLEAN database_perform_recovery()
 
     fclose(fp);
     unlink(cp);
-    free(cp);
+    safe_free(cp);
   }
   return(!reco_failed);
 }
