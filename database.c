@@ -1,5 +1,5 @@
 /* Database.c - Routines for phone-number lookups
-   $Id: database.c,v 1.3 1996/11/05 17:51:24 bus Exp $
+   $Id: database.c,v 1.4 1996/11/05 18:25:01 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/Attic/database.c,v $
 */
 
@@ -48,7 +48,6 @@ BOOLEAN closeDB()
   if (db_open) {
     gdbm_close(db_avon);
     gdbm_close(db_wkn);
-    log_msg(ERR_DEBUG, "Database files closed");
     db_open=FALSE;
     return(TRUE);
   } else {
@@ -70,6 +69,10 @@ static BOOLEAN split_text(GDBM_FILE dbf,
 {
   datum db_key;
 
+  if (!db_open) {
+    log_msg(ERR_WARNING, "Database files not open");
+    return(FALSE);
+  }
   strcpy(key, ""); strcpy(value, ""); strcpy(rest, "");
 
   db_key.dptr=all_txt;
