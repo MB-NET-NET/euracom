@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.15 $
-# Last modified:       $Date: 1999/12/28 10:35:22 $
+# Version:             $Revision: 1.16 $
+# Last modified:       $Date: 2000/01/03 07:52:07 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: charger.pl,v 1.15 1999/12/28 10:35:22 bus Exp $
+# $Id: charger.pl,v 1.16 2000/01/03 07:52:07 bus Exp $
 #
 
 use DBI;
@@ -172,10 +172,12 @@ sub eval_result()
   my ($num, $i);
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($arr[2]);
 
+  # Damn Y2K
+  $year+=1900;
   # Interne Nummer und Datum
   print "<TR><TD>";
   print "$arr[0]" if ($arr[0]);
-  printf "</TD><TD>%02d.%02d.19%2d %02d:%02d</TD>", $mday, $mon+1, $year, $hour, $min, $sec;
+  printf "</TD><TD>%02d.%02d.%4d %02d:%02d</TD>", $mday, $mon+1, $year, $hour, $min, $sec;
 
   # Je nach Art
   if ($arr[3] eq "I") {		# Incoming call
