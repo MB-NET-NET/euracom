@@ -1,0 +1,11 @@
+
+|------------+----------------------------------------------------------------
+| Datum/STag | Wichtigste Aenderungen
+|============|================================================================
+| 1997-10-04 | Erstes oeffentliches Release
+| rel-1_0    | (http://www.fgan.de/~bus/personal/euracom.tar.gz)
+|------------+----------------------------------------------------------------
+| 1998-01-14 | Privatrelease an Volker
+| (-)        | charger.pl: Callback routine, Transaction in 50er Blocks
+|            | Kosmetische Aenderungen am C-Code
+|------------+----------------------------------------------------------------
