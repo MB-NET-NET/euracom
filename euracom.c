@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.41 $
- * Last modified:       $Date: 2001/06/16 17:06:23 $
+ * Version:             $Revision: 1.42 $
+ * Last modified:       $Date: 2001/06/16 17:10:38 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.41 2001/06/16 17:06:23 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.42 2001/06/16 17:10:38 bus Exp $";
 
 #include "config.h"
 
@@ -150,11 +150,15 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   }
 
   /* Remote */
-  my_strncpy(geb->nummer, &buf[36], 22); stripblank(geb->nummer);
-  if (str_isdigit(argv[cnt])) {
-    conv_phone(geb->nummer, argv[cnt]);
-  } else {
-    strcpy(geb->nummer, "");    /* Null string */
+  {
+    char work[23];
+
+    my_strncpy(work, &buf[36], 22); stripblank(work);
+    if (str_isdigit(work)) {
+      conv_phone(geb->nummer, work);
+    } else {
+      strcpy(geb->nummer, "");    /* Null string */
+    }
   }
 
   /* Length */
