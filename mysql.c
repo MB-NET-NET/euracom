@@ -381,7 +381,11 @@ static BOOLEAN database_mysql_connect( )
 
   debug( 3, "Opening connection to database (mysql)" );
   /* Datenbank-Server-Verbindung herstellen */
-  st = mysql_connect( &global_st, NULL, NULL, NULL );
+  /* mysql_real_connect
+   * 	MYSQL, host, user, passwd, db, port, socket, flag
+   */
+  /* st = mysql_connect( &global_st, NULL, NULL, NULL ); */
+  st = mysql_real_connect( &global_st, mysql_host, NULL, NULL, mysql_db, 0, NULL, 0 );
   if( st == 0 )
    {
     log_msg( ERR_ERROR, "mysql connect: ERROR %s", mysql_error(&global_st ));
