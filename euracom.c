@@ -8,25 +8,15 @@
 #include <signal.h>
 #include <string.h>
 #include <syslog.h>
+#include "euracom.h"
 #include "log.h"
 #include "utils.h"
 #include "fileio.h"
 
-enum TVerbindung { FEHLER=0, GEHEND, KOMMEND, VERBINDUNG};
-typedef char TelNo[32];
-struct GebuehrInfo {
-  enum TVerbindung art;
-  int teilnehmer;
-  time_t datum;	/* Datum/Zeit Verbindungsaufbau */
-  time_t doe;	/* Datum/Zeit Eintrag (approx. Verbindungsende) */
-  TelNo nummer;
-  int einheiten;
-  float betrag;
-};
 
 #define DEFAULT_DEVICE		"/dev/cua0"
-#define GEBUEHR_FILE		"/var/log/euracom.gebuehr"
-#define PROTOCOL_FILE		"/var/log/euracom.protocol"
+#define GEBUEHR_FILE		"/var/lib/euracom/gebuehr.dat"
+#define PROTOCOL_FILE		"/var/lib/euracom/protocol.dat"
 #define DEF_LOGFAC		LOG_LOCAL0
 
 #define UNKNOWN_TEXT_EURA	"Rufnr.unbekannt"
