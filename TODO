@@ -1,6 +1,6 @@
 TODO-Liste:
 ===========
-$Date: 1998/02/14 09:02:16 $ $Revision: 1.7 $
+$Date: 1998/03/14 12:33:51 $ $Revision: 1.8 $
 
 +----
 | *	To be done
@@ -14,25 +14,25 @@ $Date: 1998/02/14 09:02:16 $ $Revision: 1.7 $
 
 Euracom:
 --------
-*	1998-01-18 RTS/CTS Problem (nur manche V24 treiber, z.B. cyclades)
 *	1998-01-15 KIT1000 support
-*	1998-01-15 Test Kompatibilitaet mit F/W 2.x (ASCIIZ -> ASCII?)
+P	1998-01-15 Test Kompatibilitaet mit F/W 2.x (ASCIIZ -> ASCII?)
 D	1998-01-15 Erfassung der Gespraechsdauer (ohne KIT: max. dt=59s +/- OVSt.)
-P	1998-02-01 Recovery mode ueberpruefen
+*	1998-01-18 RTS/CTS Problem (nur manche V24 treiber, z.B. cyclades)
+D	1998-02-01 Recovery mode ueberpruefen
 
 
-Perl-Utilities:
+Auswertung:
 ---------------
-
-
-PostgreSQL:
------------
-D	1998-01-15 prefix_match noch noetig? (substr geht nun)
+D	1998-01-15 [PostgreSQL] prefix_match noch noetig? (substr geht nun)
+?	1998-03-14 [Perl Utilities] Umstieg auf DBI?? (andere DBMS)
+?	1998-03-14 CGI, PHP scripts als contrib/ (Meldet sich jemand freiwillig?)
+?	1998-03-14 [PostgreSQL] Benutzung von Indices von prefix_match (performance)
 
 
 Dokumentation:
 --------------
 *	1998-02-01 Möglichkeit mehrere Einträge gleichen Prefixes in WKN aufzunehmen
+P	1998-03-14 miniSQL support
 
 -- 
-$Id: TODO,v 1.7 1998/02/14 09:02:16 bus Exp $
+$Id: TODO,v 1.8 1998/03/14 12:33:51 bus Exp $
