@@ -1,6 +1,6 @@
 TODO-Liste:
 ===========
-$Date: 1999/03/13 18:23:32 $ $Revision: 1.13 $
+$Date: 1999/05/28 08:29:50 $ $Revision: 1.14 $
 
 +----
 | *	To be done
@@ -14,7 +14,7 @@ $Date: 1999/03/13 18:23:32 $ $Revision: 1.13 $
 
 Euracom:
 --------
-P	1998-08-29  Portabilität des Codes wiederherstellen (autoconf)
+P	1998-08-29 Portabilität des Codes wiederherstellen (autoconf)
 D	1998-04-12 Aufsplittung der Rufnummer von euracom (-> neue Tabellenstruktur)
 D	1998-04-12 Gabi-Support
 D	1998-03-21 Adabas D support [Michael Tepperis <101355.1561@compuserve.com>]
@@ -40,4 +40,4 @@ D	1998-03-21 Announce: Adabas D support
 *	1998-02-01 Möglichkeit mehrere Einträge gleichen Prefixes in WKN aufzunehmen
 
 -- 
-$Id: TODO,v 1.13 1999/03/13 18:23:32 bus Exp $
+$Id: TODO,v 1.14 1999/05/28 08:29:50 bus Exp $
