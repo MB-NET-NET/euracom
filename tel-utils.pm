@@ -7,8 +7,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.9 $
-# Last modified:       $Date: 1999/03/13 16:56:59 $
+# Version:             $Revision: 1.10 $
+# Last modified:       $Date: 1999/03/20 08:46:28 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.9 1999/03/13 16:56:59 bus Exp $
+# $Id: tel-utils.pm,v 1.10 1999/03/20 08:46:28 bus Exp $
 #
 
 use Pg;
@@ -88,7 +88,15 @@ sub split_text()
   my ($num) = 0;
   my ($key, $value, $residual);
 
+#
+# Use external prefix_match function
+#
   $cmd="SELECT nummer,name FROM $table WHERE prefix_match('$input'::text, nummer)";
+
+#
+# Use Oracle compat functions
+#
+#  $cmd="SELECT nummer,name FROM $table WHERE nummer=substr('$input', 1, length(nummer))";
 
   $res=$db->exec($cmd);
   if (!$res) {
