@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-08-29 09:44:19 GMT
-# Version:             $Revision: 1.11 $
-# Last modified:       $Date: 1999/10/29 09:46:07 $
+# Version:             $Revision: 1.12 $
+# Last modified:       $Date: 1999/12/27 18:23:48 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,10 +24,10 @@
 #**************************************************************************
 
 #
-# $Id: avon.pl,v 1.11 1999/10/29 09:46:07 bus Exp $
+# $Id: avon.pl,v 1.12 1999/12/27 18:23:48 bus Exp $
 #
 
-use Pg;
+use DBI;
 
 # Add directory this script resides in to include path
 if ($i=rindex($0, "/")) {
@@ -68,20 +68,22 @@ EOF
 # Fire up connection
 #
 debug("Opening connection...");
-$db = Pg::connectdb("host=$main::db_host dbname=$main::db_db");
-if ($db->status!=PGRES_CONNECTION_OK) { 
-  $msg=$db->errorMessage;
-  die "Open DB failed: $msg";
-}
-$my_db=$db->db; $my_user=$db->user; $my_host=$db->host; $my_port=$db->port;
-debug("connected to table $my_db on $my_user\@$my_host:$my_port\n");
+$dbh=DBI->connect("dbi:Pg:dbname=$main::db_db;host=$main::db_host", "", "",
+	{RaiseError=>1, AutoCommit=>0}) || die "Connect failed: $DBI::errstr";
+debug("ok\n");
 
 while (<>) {
   chop;
 
   printf "\t%s\n", print_fqtn($_);
 }
-debug("Connection closed\n");
+
+#
+# Disconnect gracefully
+#
+debug("Closing connection...");
+$dbh->disconnect() || warn $DBI::errstr;
+debug("ok\n");
 
 #
 # sub print_fqtn()

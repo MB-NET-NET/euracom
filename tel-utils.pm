@@ -7,8 +7,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.11 $
-# Last modified:       $Date: 1999/10/29 09:46:06 $
+# Version:             $Revision: 1.12 $
+# Last modified:       $Date: 1999/12/27 18:23:48 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -22,18 +22,10 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.11 1999/10/29 09:46:06 bus Exp $
+# $Id: tel-utils.pm,v 1.12 1999/12/27 18:23:48 bus Exp $
 #
 
-use Pg;
-
-# I'll use "Pg" in "new-style mode"
-# Actually I'm _not_ a friend of C++
-
-#
-# Uses $main::db as DB handle
-#      $main::debugp as debug-mode var
-#
+use DBI;
 
 #
 # (int) SQLselect(cmd, callback)
@@ -45,32 +37,30 @@ sub SQLselect()
 {
   my ($cmd, $callback) = @_;
   my ($res);
+  my ($sth);
   my ($num, $i, $j, $tuples);
-  my (@datas);
+  my (@data);
 
   debug("SQLselect: Executing $cmd using callback $callback\n");
-  $db->exec("BEGIN") || die "BEGIN failed";
-  $db->exec("DECLARE cx CURSOR FOR $cmd") || die "DECLARE CURSOR failed";
+  prepexec("BEGIN");
+  $sth=prepexec("DECLARE cx CURSOR FOR $cmd");
 
   $num=0;
   do {
     debug("Fetching next 50...");
-    $res=$db->exec("FETCH FORWARD 50 IN cx") || die "FETCH failed";
-    $tuples=$res->ntuples;
+    $sth=prepexec("FETCH FORWARD 50 IN cx");
+    $tuples=$sth->{NUM_OF_FIELDS};
     $i=0;
     debug("Got $tuples records\n");
-    while ($i<$tuples) {
-      for ($j=0; $j<$res->nfields; $j++) {
-        $datas[$j]=$res->getvalue($i, $j);
-      }
-      &$callback(@datas);
+    while (@data=$sth->fetchrow_array) {
+      &$callback(@data);
       $i++;
     }
     $num+=$i;
   } until ($tuples!=50);
 
-  $db->exec("CLOSE cx") || die "CLOSE failed";
-  $db->exec("END") || die "END failed";
+  prepexec("CLOSE cx");
+  prepexec("END");
   debug("Total $num records retrieved\n");
   return($num);
 }
@@ -84,9 +74,9 @@ sub SQLselect()
 sub split_text()
 {
   my ($table, $input) = @_;
-  my (@data, $res);
-  my ($num) = 0;
-  my ($key, $value, $residual);
+  my (@data, @row);
+  my ($num);
+  my ($key, $value, $residual, $resi_best);
 
 #
 # Use external prefix_match function
@@ -98,58 +88,31 @@ sub split_text()
 #
 #  $cmd="SELECT nummer,name FROM $table WHERE nummer=substr('$input', 1, length(nummer))";
 
-  $res=$db->exec($cmd);
-  if (!$res) {
-    $msg=$db->errorMessage;
-    warn "\n! $cmd: $msg !\n";
+  $sth=prepexec($cmd) || warn "$cmd failed: $DBI::errstr";
+  $num=0;
+  while (@row = $sth->fetchrow_array) {
+    $num++;
+    push @data, [ (@row) ];
   }
+  die $sth->errstr if $sth->err;
 
-  if (($num=$res->ntuples)>4) {
-    warn "\n! More than 4 tuples for $input!\n";
-    $num=4;
-  }
+  $sth->finish;
+  return($input, 0,0 ) if (@data==0);
+  return($data[0][0], $data[0][1], substr($input, length($data[0][0]))) if (@data==1);
 
-  if ($num==0) {
-    debug("no match!");
-    return($input, 0, 0);
+  # Sort array by length of field 0 (nummer)
+  @data = sort { length(${$a}[0]) <=> length(${$b}[0]) } @data;
 
-  } elsif ($num==1) {
-    # 1 Match, easy to manage
+  # Key is number with smallest length
+  $key=$data[0][0];
 
-    # Get field numbers
-    $num_nummer=$res->fnumber("nummer");
-    $num_name  =$res->fnumber("name");
+  # Use best-match as value
+  $value=$data[$num-1][1];
 
-    $key=$res->getvalue(0,$num_nummer); $value=$res->getvalue(0,$num_name);
-    $residual=substr($input, length($key));
-    debug("$key -> \"$value\" + \"$residual\"");
-
-  } else {
-    debug("($num tuples) ");
-
-    # Get field numbers
-    $num_nummer=$res->fnumber("nummer");
-    $num_name  =$res->fnumber("name");
-
-    # Get all tuples and store them in a temporary array
-    for ($i=0; $i<$num; $i++) {
-      push @data, [ ($res->getvalue($i, $num_nummer), $res->getvalue($i, $num_name)) ];
-    }
-
-    # Sort array by length of field 0 (nummer)
-    @data = sort { length(${$a}[0]) <=> length(${$b}[0]) } @data;
-
-    # Key is number with smallest length
-    $key=$data[0][0];
-
-    # Use best-match as value
-    $value=$data[$num-1][1];
-
-    # Print nice residual
-    $residual=substr($input, length($key));
-    if ($resi_best=substr($input, length($data[$num-1][0]))) {
-      $residual=substr($residual,0, length($residual)-length($resi_best))."/".$resi_best;
-    }
+  # Print nice residual
+  $residual=substr($input, length($key));
+  if ($resi_best=substr($input, length($data[$num-1][0]))) {
+    $residual=substr($residual,0, length($residual)-length($resi_best))."/".$resi_best;
   }
 
   return($key, $value, $residual);
@@ -196,6 +159,21 @@ sub convert_fqtn()
 
   debug("\n\t\tAVON : $avon ($avon_name)\n\t\tTelNo: $telno ($wkn)\n\t\tPost : $rest\n");
   return($avon, $telno, $rest, $avon_name, $wkn);
+}
+
+#
+# (sth) prepexec(statement)
+#
+# Prepares and executes SQL statement
+#
+sub prepexec()
+{
+  my ($statement) = @_;
+  my ($rc);
+
+  $sth=$main::dbh->prepare($statement) || warn "Prepare $statement failed: $DBI::errstr";
+  $rc=$sth->execute || warn "Execute $statement failed: $DBI::errstr";
+  return $sth;
 }
 
 #
