@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.14 $
- * Last modified:       $Date: 1998/03/14 12:35:05 $
+ * Version:             $Revision: 1.15 $
+ * Last modified:       $Date: 1998/05/22 07:13:36 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.14 1998/03/14 12:35:05 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.15 1998/05/22 07:13:36 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -344,38 +344,43 @@ BOOLEAN serial_close_device(struct SerialFile *sf)
 char *readln_rs232(struct SerialFile *sf)
 {
   static char buf[1024];
-  int inbuf[2];
-  int retval;
   char *cp=buf;
-  struct timeval tv;
-  fd_set rfds;
 
-  /* Set tv struct ONCE at the beginning, since we want an
-     absolute timeout of 15s for reading a complete line
-  */
-  tv.tv_sec=15; tv.tv_usec=0;
-  
   do {
+    struct timeval tv;
+    int retval;
+    fd_set rfds;
+
     FD_ZERO(&rfds);
     FD_SET(sf->fd, &rfds);
+    tv.tv_sec=15; tv.tv_usec=0;
     retval=select(FD_SETSIZE, &rfds, NULL, NULL, &tv);
 
     if (retval==0) {	/* Timeout */
       log_msg(ERR_ERROR, "Timeout while reading RS232 input");
       return(NULL);
     } elsif (retval>0) {
+      int inbuf[2];
+
       read(sf->fd, &inbuf[0], 1);
       *cp=inbuf[0];
 #if (FIRMWARE_MAJOR<2)
-      if (*cp=='\0') {
-        *(cp-1)='\0';
-#else	/* Hinweis von Markus Trinler <trinler@star.allgaeu.org> */
-      if (*cp==0x0a) {
-        *(cp-1)=0x0a;
+      if (*cp=='\0')	/* 1.x: blah 0D 0A 00 */
+#else
+      if (*cp==0x0a)	/* 2.x: blah 0D 0A */
 #endif
+      {
+        *(cp-1)='\0';
         break;
       } else {
-        cp++;
+	cp++;
+        /* I think this is unlikely to happen, but:
+           "Be prepared... that's the Boy Scout's solemn creed"
+        */
+        if ((cp-buf)>1023) {
+	  log_msg(ERR_CRIT, "Buffer overflow while reading RS232 input");
+          return(NULL);
+        }
       }
     } else {
       log_msg(ERR_CRIT, "select() failed in readln_rs232: %s", strerror(errno));
