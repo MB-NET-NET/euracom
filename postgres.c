@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.11 $
- * Last modified:       $Date: 1998/02/04 09:55:24 $
+ * Version:             $Revision: 1.12 $
+ * Last modified:       $Date: 1998/02/14 08:56:29 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.11 1998/02/04 09:55:24 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.12 1998/02/14 08:56:29 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -117,7 +117,7 @@ BOOLEAN database_initialize()
 {
   log_debug(1, "Initializing database subsystem...");
 
-  if (!pg_db) { pg_db=strdup(DEF_DB); }
+  unless (pg_db) { pg_db=strdup(DEF_DB); }
 
   /* No reason to check internal variables */
   /* ...*/

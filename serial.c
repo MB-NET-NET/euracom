@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.10 $
- * Last modified:       $Date: 1998/02/04 09:55:25 $
+ * Version:             $Revision: 1.11 $
+ * Last modified:       $Date: 1998/02/14 08:56:28 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.10 1998/02/04 09:55:25 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.11 1998/02/14 08:56:28 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -143,7 +143,7 @@ void serial_set_device(struct SerialFile *sf, const char *str)
 static char *device2lockfile(const struct SerialFile *sf)
 {
   char *s;
-  static char lock_file[512];
+  static char lock_file[128];
 
   /* Construct lockfile-name */
   unless ((s=strrchr(sf->fd_device,'/'))) {
@@ -213,7 +213,7 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
     log_msg(ERR_FATAL, "Writing lockfile %s failed: %s", lock_file, strerror(errno));
     return(FALSE);
   }
-
+  
   /* Part 2 - Open device */
   if ((sf->fd=open(sf->fd_device, O_RDWR | O_NOCTTY | O_NDELAY))<0) {
     log_msg(ERR_CRIT, "Error opening %s: %s", sf->fd_device, strerror(errno));
@@ -292,7 +292,7 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
  *------------------------------------------------------------------------*/
 BOOLEAN serial_close_device(struct SerialFile *sf)
 {
-  char *lock_file = device2lockfile(sf);
+  char *lock_file;
 
   log_debug(1, "Shutting down RS232 port %s...", sf->fd_device);
 
@@ -302,13 +302,13 @@ BOOLEAN serial_close_device(struct SerialFile *sf)
     
     log_debug(2, "Resetting V24 line");
 
-    /* Clear all control lines */
-    ioctl(sf->fd, TIOCMSET, &flags);
-
     /* Reset line to original state */
     if (TTY_SETATTR(sf->fd, &(sf->term))==-1) {
       log_msg(ERR_CRIT, "tcsetattr failed: %s: Serial line may remain in a weird state", strerror(errno));
     }
+
+    /* Clear all control lines */
+    ioctl(sf->fd, TIOCMSET, &flags);
 
     /* Give her a bit time to answer on RTS loss */
     sleep(1);
@@ -329,7 +329,7 @@ BOOLEAN serial_close_device(struct SerialFile *sf)
   }
 
   /* Remove lockfile */
-  if (lock_file) {
+  if ((lock_file=device2lockfile(sf))) {
     delete_file(lock_file);
   }
 
