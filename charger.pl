@@ -8,7 +8,7 @@ require 'tel-utils.pm';
 #
 # Telefon Gebuehrenauswertung
 #
-# $Id: charger.pl,v 1.3 1997/09/25 11:25:04 bus Exp $
+# $Id: charger.pl,v 1.4 1997/09/26 10:06:06 bus Exp $
 #
 
 #
@@ -18,7 +18,7 @@ require 'tel-utils.pm';
 #	-D database
 #	-v von
 #	-b bis
-#	-t Interne Nummer
+#	-t Interne Nummer [,Interne Nummer ...]
 #	-X Titel MSN
 #	-d
 #
@@ -108,8 +108,7 @@ print "<tr><th>Anschlu&szlig;</th><th>Datum</th> <th>Rufnummer</th><th>Einheiten
 $counter=0;
 open(TMPFILE, "$TMPNAME") || die "Cannot open temporary file";
 while (<TMPFILE>) {
-  @data=split(";", $_);
-  &htmlize_data(@data) if (@data);
+  if (@data=split(";", $_)) { &htmlize_data(@data); }
 }
 close(TMPFILE);
 

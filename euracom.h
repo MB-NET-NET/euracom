@@ -1,7 +1,26 @@
-/* Euracom.h
-   $Id: euracom.h,v 1.5 1997/08/28 09:30:44 bus Exp $
-   $Source: /home/bus/Y/CVS/euracom/euracom.h,v $
-*/
+/***************************************************************************
+ * euracom -- Euracom 18x Gebührenerfassung
+ *
+ * euracom.h -- Main programme include file
+ *
+ * Copyright (C) 1996-1997 by Michael Bussmann
+ *
+ * Authors:             Michael Bussmann <bus@fgan.de>
+ * Created:             1996-10-27 09:30:04 GMT
+ * Version:             $Revision: 1.6 $
+ * Last modified:       $Date: 1997/09/26 10:06:07 $
+ * Keywords:            ISDN, Euracom, Ackermann
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public Licence as published by the
+ * Free Software Foundation; either version 2 of the licence, or (at your
+ * opinion) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
+ * or fitness for a particular purpose.  See the GNU Public Licence for
+ * more details.
+ **************************************************************************/
 
 #if !defined(_EURACOM_H)
 #define _EURACOM_H

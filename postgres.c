@@ -1,15 +1,28 @@
-/* Euracom 18x, Gebührenerfassung
-   Copyright (C) 1996-1997 MB Computrex
+/***************************************************************************
+ * euracom -- Euracom 18x Gebührenerfassung
+ *
+ * postgres.c -- PostgreSQL interface
+ *
+ * Copyright (C) 1996-1997 by Michael Bussmann
+ *
+ * Authors:             Michael Bussmann <bus@fgan.de>
+ * Created:             1997-08-28 09:30:44 GMT
+ * Version:             $Revision: 1.4 $
+ * Last modified:       $Date: 1997/09/26 10:06:07 $
+ * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public Licence as published by the
+ * Free Software Foundation; either version 2 of the licence, or (at your
+ * opinion) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
+ * or fitness for a particular purpose.  See the GNU Public Licence for
+ * more details.
+ **************************************************************************/
 
-   Released under GPL
-
-   Postgres database module
-
-   Michael Bussmann <bus@fgan.de>
-
-   $Id: postgres.c,v 1.3 1997/09/25 11:27:50 bus Exp $
-   $Source: /home/bus/Y/CVS/euracom/postgres.c,v $
- */
+static char rcsid[] = "$Id: postgres.c,v 1.4 1997/09/26 10:06:07 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -248,6 +261,7 @@ BOOLEAN database_perform_recovery()
     }
 
     fclose(fp);
+    unlink(cp);
     free(cp);
   }
   return(!reco_failed);
@@ -270,9 +284,6 @@ BOOLEAN database_log(const char *cp)
 }
 
 
-
-
-
 /* -----------------------------------------------------------------------
    Mid-level: Postgres routines
 */
@@ -285,7 +296,7 @@ BOOLEAN database_pg_connect()
   db_handle=PQsetdb(pg_host, pg_port, NULL, NULL, pg_db);
 
   if (PQstatus(db_handle) == CONNECTION_BAD) {
-    log_msg(ERR_ERROR, "%s", PQerrorMessage(db_handle));
+    log_msg(ERR_ERROR, "PostgreSQL connect: %s", PQerrorMessage(db_handle));
     PQfinish(db_handle);
     return(FALSE);
   }
@@ -306,7 +317,7 @@ BOOLEAN database_pg_execute(const char *stc, BOOLEAN do_recovery)
     case DB_OPEN:
       pgres=PQexec(db_handle, stc);
       if (PQresultStatus(pgres)!=PGRES_COMMAND_OK) {
-        log_msg(ERR_ERROR, "Unexpected error while writing into database");
+        log_msg(ERR_ERROR, "PostgreSQL error: %s", PQcmdStatus(pgres));
         PQclear(pgres);
         if (do_recovery) { database_write_recovery(stc); }
 	return(FALSE);

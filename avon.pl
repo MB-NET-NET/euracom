@@ -8,7 +8,7 @@ require 'tel-utils.pm';
 #
 # Telno -> FQTN converter
 #
-# $Id: avon.pl,v 1.3 1997/09/25 11:25:04 bus Exp $
+# $Id: avon.pl,v 1.4 1997/09/26 10:06:05 bus Exp $
 #
 
 #
@@ -23,12 +23,10 @@ $| = 1;
 #
 # Parse CMD line params
 #
-$opt_H=$opt_D=$opt_d="";
-
 &Getopts('H:D:d');
-$db_host= $opt_H || "tardis";
-$db_db  = $opt_D || "isdn";
-$debugp = $opt_d || undef;
+$db_host= $getopts::opt_H || "tardis";
+$db_db  = $getopts::opt_D || "isdn";
+$debugp = $getopts::opt_d || undef;
 
 #
 # Fire up connection

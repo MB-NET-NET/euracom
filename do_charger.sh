@@ -3,7 +3,7 @@
 #
 # Telefongebührenauswertung
 # 108537, 13155, 4275, 4095
-# $Id: do_charger.sh,v 1.7 1997/09/02 13:08:24 bus Exp $
+# $Id: do_charger.sh,v 1.8 1997/09/26 10:06:06 bus Exp $
 #
 
 PATH=/bin:/usr/bin:/usr/local/bin:/usr/sbin:/sbin
@@ -38,7 +38,7 @@ if [ -f $LASTFILE ] ; then
 fi
 
 # Update timestamp file
-"date "+%d %b %Y" >$LASTFILE"
+date "+%d %b %Y" >$LASTFILE
 
 #
 # Now for the main stuff...

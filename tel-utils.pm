@@ -3,7 +3,7 @@ use Postgres;
 #
 # tel-utils.pm - Some useful routines for searching in PG database
 #
-# $Id: tel-utils.pm,v 1.1 1997/09/25 11:25:24 bus Exp $
+# $Id: tel-utils.pm,v 1.2 1997/09/26 10:06:08 bus Exp $
 #
 
 #
@@ -16,14 +16,52 @@ sub split_text()
 {
   my ($table, $input) = @_;
   my (@data, $res);
+  my ($num) = 0;
+  my ($key, $value, $residual);
 
   $cmd="SELECT nummer,name FROM $table WHERE prefix_match('$input'::text, nummer)";
+
   $res=$db->execute($cmd) || warn "$cmd: $Postgres::error";
-  if (@data=$res->fetchrow()) {
-    debug($data[0]." -> ".$data[1]);
-    return($data[0], $data[1], substr($input, length($data[0])));
+  if (($num=$res->ntuples())>4) {
+    warn "More than 4 tuples for $input";
+    $num=4;
   }
-  return($input, 0, 0);
+
+  if ($num==0) {
+    debug("no match!");
+    return($input, 0, 0);
+
+  } elsif ($num==1) {
+    # 1 Match, easy to manage
+    ($key, $value) = $res->fetchrow();
+    $residual=substr($input, length($key));
+    debug("$key -> $value + $residual ");
+
+  } else {
+    debug("($num tuples) ");
+
+    # Get all tuples and store them in a temporary array
+    for ($i=0; $i<$num; $i++) {
+      push @data, [ $res->fetchrow() ];
+    }
+
+    # Sort array by length of field 0 (nummer)
+    @data = sort { length(${$a}[0]) <=> length(${$b}[0]) } @data;
+
+    # Key is number with smallest length
+    $key=$data[0][0];
+
+    # Use best-match as value
+    $value=$data[$num-1][1];
+
+    # Print nice residual
+    $residual=substr($input, length($key));
+    if ($resi_best=substr($input, length($data[$num-1][0]))) {
+      $residual=substr($residual,0, length($residual)-length($resi_best))."/".$resi_best;
+    }
+  }
+
+  return($key, $value, $residual);
 }
 
 #

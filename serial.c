@@ -1,6 +1,28 @@
-/* $Id: serial.c,v 1.3 1997/08/28 09:30:44 bus Exp $
-   $File$
-*/
+/***************************************************************************
+ * euracom -- Euracom 18x Gebührenerfassung
+ *
+ * serial.c -- Lowlevel RS232 routines
+ *
+ * Copyright (C) 1996-1997 by Michael Bussmann
+ *
+ * Authors:             Michael Bussmann <bus@fgan.de>
+ * Created:             1996-10-19 10:58:42 GMT
+ * Version:             $Revision: 1.4 $
+ * Last modified:       $Date: 1997/09/26 10:06:07 $
+ * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public Licence as published by the
+ * Free Software Foundation; either version 2 of the licence, or (at your
+ * opinion) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
+ * or fitness for a particular purpose.  See the GNU Public Licence for
+ * more details.
+ **************************************************************************/
+
+static char rcsid[] = "$Id: serial.c,v 1.4 1997/09/26 10:06:07 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -109,7 +131,7 @@ int init_euracom_port(const char *device)
 
   fcntl(fd, F_SETFL, O_RDONLY);
 
-  /* Setup TTY (9600, 8N1) */
+  /* Setup TTY (9600,N,8,1) */
   if (TTY_GETATTR(fd, &term) == -1 ) {
     log_msg(ERR_CRIT, "tcgetattr: %s", strerror(errno));
     return(-1);
@@ -125,6 +147,7 @@ int init_euracom_port(const char *device)
     return(-1);
   }
 
+  /* Give her a bit time to react upon RTS */
   sleep(1);
 
   ioctl(fd, TIOCMGET, &flags);
@@ -156,10 +179,26 @@ int close_euracom_port(fd)
 
   log_msg(ERR_DEBUG, "Shutting down Euracom RS232 port");
 
+  /* Remove lockfile */
+  log_msg(ERR_DEBUG, "Removing lockfile %s", lock);
+  if (unlink(lock)) {
+    log_msg(ERR_CRIT, "Could not remove lockfile %s: %s",
+	    lock, strerror(errno));
+  }
+
+  /* Clear all TTY flags */
   ioctl(fd, TIOCMSET, &flags);
 
+  /* Wait a sec */
   sleep(1);
+
+  /* Check for successful termination */
   ioctl(fd, TIOCMGET, &flags);
+
+  /* Anyway, I won't care */
+  close(fd);
+
+  /* Feedback to user */
   if ((flags & TIOCM_RTS)) {
     log_msg(ERR_CRIT, "RTS still set");
     return(-1);
@@ -169,14 +208,6 @@ int close_euracom_port(fd)
     return(-1);
   }
 
-  close(fd);
-
-  /* Remove lockfile */
-  log_msg(ERR_DEBUG, "Removing lockfile %s", lock);
-  if (unlink(lock)) {
-    log_msg(ERR_CRIT, "Could not remove lockfile %s: %s",
-	    lock, strerror(errno));
-  }
   return(0);
 }
 
