@@ -1,7 +1,7 @@
 #
 # tel-utils.pm - Euracom Gebührenauswertung, Perl utitilites
 #
-# $Id: tel-utils.pm,v 1.3 1997/09/30 10:40:33 bus Exp $
+# $Id: tel-utils.pm,v 1.4 1998/01/08 12:31:02 bus Exp $
 #
 
 use Pg;
@@ -12,6 +12,46 @@ use Pg;
 # Uses $main::db as DB handle
 #      $main::debugp as debug-mode var
 #
+
+#
+# (int) SQLselect(cmd, callback)
+#
+# Executes cmd (SELECT) statement, calls 'callback' for
+# each row passing $res as a parameter
+#
+sub SQLselect()
+{
+  my ($cmd, $callback) = @_;
+  my ($res);
+  my ($num, $i, $j, $tuples);
+  my (@datas);
+
+  debug("SQLselect: Executing $cmd using callback $callback\n");
+  $db->exec("BEGIN") || die "BEGIN failed";
+  $db->exec("DECLARE cx CURSOR FOR $cmd") || die "DECLARE CURSOR failed";
+
+  $num=0;
+  do {
+    debug("Fetching next 50...");
+    $res=$db->exec("FETCH FORWARD 50 IN cx") || die "FETCH failed";
+    $tuples=$res->ntuples;
+    $i=0;
+    debug("Got $tuples records\n");
+    while ($i<$tuples) {
+      for ($j=0; $j<$res->nfields; $j++) {
+        @datas[$j]=$res->getvalue($i, $j);
+      }
+      &$callback(@datas);
+      $i++;
+    }
+    $num+=$i;
+  } until ($tuples!=50);
+
+  $db->exec("CLOSE cx") || die "CLOSE failed";
+  $db->exec("END") || die "END failed";
+  debug("Total $num records retrieved\n");
+  return($num);
+}
 
 #
 # (key, value, residual) split_text(table, input)
