@@ -34,8 +34,7 @@ Das Programm liest die Geb&uuml;hreninformationen, die am Druckerausgang einer
 <A HREF="http://www.ackermann.de/">Ackermann</A> Euracom 18{0,1,2} Tk-Anlange
 ausgegeben werden.  Nachbauten der Anlage (z.B. QUANTE IS-{0,1,2}) werden
 ebenfalls unterst&uuml;tzt.  Es k&ouml;nnen alle Firmware-Releases bis einschlie&szlig;lich
-1.11B eingesetzt werden (vermutlich auch die 2.x-Release, dies wurde
-allerdings noch nicht getestet).
+3.02d eingesetzt werden.
 </P>
 <P>
 Der Druckerport der Anlage (bei F/W &lt;= 1.11B ist das defaultm&auml;&szlig;ig der Port
@@ -80,20 +79,17 @@ Zus&auml;tzlich zu diesem Programm ben&ouml;tigen Sie noch folgende Software:
 <H2>Konfiguration und Installation</H2>
 <H3>Kompilieren der Sourcen</H3>
 <P>
-Nach dem Entpacken der Sourcen werden Sie bitte einen Blick in die Datei
-<CODE>config.h</CODE>!  Am wichtigsten ist die korrekte Definition des
-Symbols <CODE>AREACODE</CODE>.  Es kann mit Sicherheit nichts schaden, wenn
-Sie sich alle Direktiven der Reihe nach vornehmen und auf ihre (lokale)
-Korrektheit in &uuml;berpr&uuml;fen.
+Nach dem Entpacken der Sourcen starten Sie <CODE>./configure</CODE>.  Auf
+jeden Fall mu&szlig; der Parameter <CODE>--with-area-code=x</CODE> angegeben
+werden.  Ersetzen Sie x durch Ihre Vorwahl (ohne die 0).  F&uuml;r eine Liste
+aller unterst&uuml;zten Parameter rufen Sie <CODE>./configure</CODE> mit
+<CODE>--help</CODE> auf.
 </P>
 <P>
-Ist das erledigt, k&ouml;nnen Sie sich <CODE>Makefile</CODE> vornehmen.  Als
-wichtiger Punkt hier w&auml;re <CODE>DATABASE</CODE> zu nennen.  Dies kann entweder
-<CODE>postgres</CODE> oder <CODE>msql</CODE> sein.  Ferner sollten Sie die
-Werte f&uuml; <CODE>DATABASE_BASE, DATABASE_LINK, DATABASE_INCLUDE, DATABASE_LIB und
-DATABASE_OBJ</CODE> &uuml;berpr&uuml;fen und ggf. an ihre Situation anpassen.
-Die anderen Punkte k&ouml;nnen nach eigenem Ermessen bei Bedarf ge&auml;ndert
-werden, ich denke jedoch, da&szlig; die Default-Werte ganz brauchbar sind.
+Werfen Sie danach einen Blick in das erzeugte <CODE>Makefile</CODE>.  Die
+Umstellung auf <CODE>autoconf</CODE> ist noch nicht v&ouml;llig abgeschlossen,
+so da&szlig; evtl. noch einige Anpassungen im <CODE>Makefile</CODE>
+vorgenommen werden m&uuml;ssen (Pfade zum DBMS).
 </P>
 <P>
 Danach sollte ein <CODE>make</CODE> alle ben&ouml;tigten Programme erzeugen.  Auf
@@ -223,7 +219,7 @@ mitgelieferte Manual page von
 </P>
 <P>
 Am sinnvollsten ist es, wenn Sie das Programm <CODE>euracom</CODE> automatisch
-beim Hochfahren des Systems starten.  Ein Beispiel f&uuml;r eine SYSV-like
+beim Hochfahren des Systems starten.  Ein Beispiel f&uuml;r eine SysV-like
 Startup-Prozedur, die dies bewerkstelligt ist z.B.:
 </P>
 <PRE>
@@ -264,7 +260,7 @@ Gespr&auml;chsgeb&uuml;hren berechnen lassen, etc. pp.  Mit dem mitgelieferten
 Perl-Skript <CODE>charger.pl</CODE> geht man noch einen kleinen Schritt
 weiter.  Man erh&auml;lt einen Einzelverbindungsnachweis f&uuml;r einen, vom Benutzer
 festgelegten Zeitraum, in dem Zeitpunkt des Gespr&auml;ches, Zielnummer,
-verbrauchte Einheiten und Geb&uuml;hren, sowie die Summe der Einheiten und Geb&uuml;hren
+und Geb&uuml;hren, sowie die Summe der Geb&uuml;hren
 aufgef&uuml;hrt sind.  Optional wird noch der Ortsnetzname der Nummer, sowie der
 Inhaber der Nummer ausgegeben, falls diese Werte in der Datenbank vorhanden
 sind.
@@ -427,11 +423,6 @@ Bugreports vor:
           mit <CODE>./configure --disable-cts-check</CODE> &uuml;bersetzen.
   </DL>
 
-<LI>
-  <DL><DT>Unter Linux 2.1.132 h&auml;ufen sich die Timeout-Fehler!
-      <DD>Ich w&auml;re froh, wenn ich w&uuml;sste, warum!  Ich arbeite daran...
-  </DL>
-
 <LI><DL><DT>Bei der Geb&uuml;hrenauswertung mittels <CODE>charger.pl</CODE>
             verbraucht der <CODE>postgres</CODE>-Proze&szlig; sehr viel
             Speicherplatz.
@@ -469,7 +460,7 @@ bus@fgan.de</A>.  Weitere Kontaktm&ouml;glichkeiten finden Sie
 
 <ADDRESS> ruf098 WWW, <A HREF="http://www.fgan.de/~bus/">Michael Bussmann</A>,
 <A HREF="mailto:bus@fgan.de">&lt;bus@fgan.de&gt;</A> ,
-Last change: $Date: 1999/03/13 16:56:57 $, $Revision: 1.14 $
+Last change: $Date: 1999/06/03 12:44:18 $, $Revision: 1.15 $
 </ADDRESS>
 
 </BODY>
