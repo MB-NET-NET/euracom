@@ -1,11 +1,11 @@
 /* Euracom 18x, Gebührenerfassung
-   Copyright (C) 1996 MB Computrex
+   Copyright (C) 1996-1997 MB Computrex
 
    Released under GPL
 
    Michael Bussmann <bus@fgan.de>
 
-   $Id: euracom.c,v 1.10 1996/11/23 11:50:59 bus Exp $
+   $Id: euracom.c,v 1.11 1997/07/26 07:35:39 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/euracom.c,v $
  */
 
@@ -25,7 +25,7 @@
 #include "fileio.h"
 
 
-#define DEFAULT_DEVICE		"/dev/cua0"
+#define DEFAULT_DEVICE		"/dev/ttyS0"
 #define GEBUEHR_FILE		"/var/lib/euracom/gebuehr.dat"
 #define PROTOCOL_FILE		"/var/lib/euracom/protocol.dat"
 #define DEF_LOGFAC		LOG_LOCAL0
@@ -38,21 +38,7 @@
 int euracom_fd = 0;			/* RS232 port to Euracom */
 char *gebuehr_filename = NULL;		/* Filename für Gebuehrendaten */
 char *proto_filename = NULL;		/* Filename für Euracom-backup file */
-
 extern char *readln_rs232();
-
-
-/*------------------------------------------------------*/
-/* unsigned int guess_duration()                        */
-/* */
-/* RetCode: Estimated duration in secs                  */
-/*------------------------------------------------------*/
-unsigned int guess_duration(const struct GebuehrInfo *geb)
-{
-  unsigned int sec = (unsigned int)((geb->doe)-(geb->datum));
-
-  return(sec);
-}
 
 
 /*------------------------------------------------------*/
@@ -73,13 +59,23 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
     FILE *fp;
 
     if (fp=fopen(gebuehr_filename, "a")) {
-      strcpy(res, "");
-      fprintf(fp, "%d;%lu;%lu;%d;%s;%d;%7.2f\n",
-	      geb->art,
-	      (unsigned long)geb->datum, (unsigned long)geb->doe,
+      struct tm *tm_sys = localtime(&geb->datum_sys);
+      struct tm *tm_vst = localtime(&geb->datum_vst);
+      char t_1[30], t_2[30];
+
+      strftime(t_1, 15, "%b %d %X %Y\0", tm_sys);
+      strftime(t_2, 15, "%H:%M\0", tm_vst);
+      
+      fprintf(fp, "%s | %2d |%.16s | %ld | %s | %4d |%c|%.2f|%s| %.2f|\n",
+	      t_1,
 	      geb->teilnehmer,
 	      geb->nummer,
+	      (unsigned long)geb->datum_sys,
+	      t_2,
 	      geb->einheiten,
+	      (geb->art==GEHEND?'O':'I'),
+	      (geb->betrag_base),
+	      (geb->waehrung),
 	      geb->betrag);
       fclose(fp);
     } else {
@@ -100,10 +96,6 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
     lookup_number(geb->nummer, &fqtn);
   }
   switch (geb->art) {
-    case FEHLER:
-      log_msg(ERR_WARNING, "Invalid geb->art");
-      return(FALSE);
-      break;
     case GEHEND: {
       TelNo telno;
 
@@ -116,27 +108,26 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
       break;
     case KOMMEND:
       if (unknown_no) {
-        sprintf(res, "Incoming call but no connection");
+	if (geb->teilnehmer) {
+	  sprintf(res, "Incoming call for %d",
+		  geb->teilnehmer);
+	} else {
+	  sprintf(res, "Incoming call but no connection");
+	}
       } else {
 	TelNo telno;
 
 	convert_telno(telno, &fqtn);
-        sprintf(res, "Incoming call from %s. No connection",
-	      telno);
-      }
-      break;
-    case VERBINDUNG:
-      if (unknown_no) {
-      	sprintf(res, "Incoming call for %d",
-      		geb->teilnehmer);
-      } else {
-	TelNo telno;
-
-	convert_telno(telno, &fqtn);
-      	sprintf(res, "Incoming call from %s for %d",
+	if (geb->teilnehmer) {
+       	  sprintf(res, "Incoming call from %s for %d",
 	      telno, geb->teilnehmer);
+	} else {
+          sprintf(res, "Incoming call from %s. No connection",
+		  telno);
+	}
       }
       break;
+
     default:
       log_msg(ERR_WARNING, "CASE missing in geb->art");
       break;
@@ -178,13 +169,11 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
       geb->art=GEHEND;
       break;
     case 'V':
-      geb->art=VERBINDUNG;
-      break;
     case 'K':
       geb->art=KOMMEND;
       break;
     default:
-      geb->art=FEHLER;
+      geb->art=-1;
       log_msg(ERR_CRIT, "Field 1 descriptor missing. Can't happen");
       return(NULL);
       break;
@@ -199,7 +188,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
     strptime(tok, "%d.%m.%y, %H:%M", &tm);
     tm.tm_sec=tm.tm_yday=tm.tm_wday=0;
     tm.tm_isdst=-1;
-    geb->datum=mktime(&tm);
+    geb->datum_vst=mktime(&tm);
   } else {
     log_msg(ERR_ERROR, "Field 2 invalid"); 
     return(NULL); 
@@ -214,7 +203,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
     strcpy(geb->nummer, tok);
   }
 
-  if ((geb->art==KOMMEND) || (geb->art==VERBINDUNG)) {
+  if (geb->art==KOMMEND) {
     geb->einheiten=0;
     geb->betrag=0;
   } else {
@@ -233,7 +222,12 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   }
 
   free(buf);
-  /* geb->doe wird *nicht* gesetzt! */
+
+  /* Default-Infos */
+  strcpy(geb->waehrung, "DM");
+  geb->betrag_base=0.12;
+
+  /* geb->datum_sys wird *nicht* gesetzt! */
   return(geb);
 }
 
@@ -340,7 +334,7 @@ BOOLEAN parse_euracom_data(const char *buf)
     }
     
     /* Aktuelle Zeit einsetzen */
-    gebuehr.doe=time(NULL);
+    gebuehr.datum_sys=time(NULL);
 
     /* Logging */
     gebuehr_log(&gebuehr);

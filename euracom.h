@@ -1,5 +1,5 @@
 /* Euracom.h
-   $Id: euracom.h,v 1.3 1996/11/05 17:51:24 bus Exp $
+   $Id: euracom.h,v 1.4 1997/07/26 07:35:39 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/euracom.h,v $
 */
 
@@ -10,25 +10,27 @@
 #include <time.h>
 
 /* Maximale Länge einer Telefonnummer bzw. deren einz. Einheiten */
-#define MAX_PHONE_LEN	32	/* Gesamtlänge */
-#define MAX_AVON_LEN	10	/* Vorwahl */
-#define MAX_REST_LEN	32	/* Nachwahlziffern (hinter WKN) */
+#define MAX_PHONE_LEN	 32	/* Gesamtlänge */
+#define MAX_AVON_LEN	 10	/* Vorwahl */
+#define MAX_REST_LEN	 32	/* Nachwahlziffern (hinter WKN) */
 #define MAX_AVONNAME_LEN 40	/* Name des Ortsnetzes */
-#define MAX_WKNAME_LEN	40	/* WK Name */
+#define MAX_WKNAME_LEN	 40	/* WK Name */
 
-enum TVerbindung { FEHLER=0, GEHEND, KOMMEND, VERBINDUNG};
+enum TVerbindung { FEHLER, GEHEND, KOMMEND};
 
 typedef char TelNo[MAX_PHONE_LEN+1];
 
 /* Aufbau Gebühreninfo */
 struct GebuehrInfo {
+  int    teilnehmer;	/* Interner Teilnehmer */
+  TelNo  nummer;	/* Remote # */
+  time_t datum_vst;	/* Datum/Zeit Verbindungsaufbau (von VSt) */
+  time_t datum_sys;	/* Datum/Zeit Eintrag (approx. Verbindungsende) */
+  int    einheiten;	/* Anzahl verbrauchter Einheiten */
   enum TVerbindung art;
-  int teilnehmer;
-  time_t datum;		/* Datum/Zeit Verbindungsaufbau */
-  time_t doe;		/* Datum/Zeit Eintrag (approx. Verbindungsende) */
-  TelNo nummer;
-  int einheiten;
-  float betrag;
+  float  betrag_base;	/* Betrag für eine EH */
+  float  betrag;        /* Gesamtbetrag */
+  char   waehrung[4];	/* Währungsbezeichnung */
 };
 
 /* Fully Qualified Telephone Number */

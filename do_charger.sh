@@ -3,7 +3,7 @@
 #
 # Telefongebührenauswertung
 # 108537, 13155, 4275, 4095
-# $Id: do_charger.sh,v 1.3 1997/01/19 12:11:48 bus Exp $
+# $Id: do_charger.sh,v 1.4 1997/07/26 07:35:39 bus Exp $
 #
 
 EXEFILE="/var/lib/euracom/charger"
@@ -59,4 +59,3 @@ done
 # Perform S0 analysis
 $ISDNREP -av | mail -s"ISDN S0 Analyse" $MAILTO
 $ISDNREP -d -
-done

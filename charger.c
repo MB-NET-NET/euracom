@@ -1,4 +1,4 @@
-/* $Id: charger.c,v 1.7 1996/12/22 11:00:20 bus Exp $ */
+/* $Id: charger.c,v 1.8 1997/07/26 07:35:38 bus Exp $ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -34,7 +34,7 @@ float base_charge = 18.0;
 void usage(const char *prg)
 {
   printf("Usage: %s [-g]\n", prg);
-  printf("\t-a art\tDisplay only class 'art' calls\n"
+  printf("\t-a I/O\tDisplay only Incoming/Outgoing calls\n"
          "\t-b date\tDisplay calls until date (sec)\n"
 	 "\t-g file\tSet chargeinfo file\n"
 	 "\t-m DM\tSet base charge amount\n"
@@ -51,10 +51,10 @@ struct GebuehrInfo *file2geb(const char *stc, struct GebuehrInfo *geb)
   int i;
 
   sbuf=(char *)malloc(strlen(stc)+5); strcpy(sbuf, stc);
-  strcat(sbuf, ";");
+  strcat(sbuf, "|");
 
   /* Eingabezeile aufsplitten */
-  if ((i=get_args(sbuf, items, ';'))!=7) {
+  if ((i=get_args(sbuf, items, '|'))!=7) {
     log_msg(ERR_WARNING, "Input line scrambled. Args are %d",i );
     free(sbuf);
     return(NULL);
@@ -293,28 +293,41 @@ int main(argc, argv)
     switch (opt) {
       case 'a':
 	log_msg(ERR_DEBUG, "Filter \"art\" set to %s", optarg);
-	filter.art=atoi(optarg);
+	switch (optarg[0]) {
+	  case 'I': case 'i':
+	    filter.art=KOMMEND;
+	    break;
+	  case 'O': case 'o':
+	    filter.art=GEHEND;
+	    break;
+	}
 	break;
+
       case 'b':
 	filter.datum_bis=atol(optarg);
 	log_msg(ERR_DEBUG, "Filter \"date_to\" set to %lu", filter.datum_bis);
 	break;
+
       case 'g':
 	gebuehr_filename=strdup(optarg);
         break;
+
       case 'm':
       	base_charge=(float)atof(optarg);
       	break;
+
       case 't':
 	filter.teilnehmer[filter.teilnehmer_num++]=atoi(optarg);
 	log_msg(ERR_DEBUG, "Filter \"teilnehmer\" (%d) set to %d", 
 		filter.teilnehmer_num,
 		filter.teilnehmer[filter.teilnehmer_num-1]);
 	break;
+
       case 'v':
 	filter.datum_von=atol(optarg);
 	log_msg(ERR_DEBUG, "Filter \"date_from\" set to %lu", filter.datum_von);
 	break;
+
       default:
         usage(argv[0]);
         exit(0);
