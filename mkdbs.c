@@ -9,7 +9,9 @@
 #define DB_MODE		0644
 #define DB_BLOCK_SIZE	1024
 #define AVON_TXT_NAME	"/var/lib/euracom/avon.dat"
+#define AVON_DB_NAME	"/var/lib/euracom/avon"
 #define WKN_TXT_NAME	"/var/lib/euracom/wkn.dat"
+#define WKN_DB_NAME	"/var/lib/euracom/wkn"
 
 /*------------------------------------------------------*/
 /* BOOLEAN createDB()                                   */
@@ -83,7 +85,6 @@ BOOLEAN check_createDB(char *txt, char *db)
 int main()
 {
   char *cp;
-  struct FQTN fqtn;
 
   init_log("mkdbs", ERR_JUNK, USE_STDERR, NULL);
   log_msg(ERR_INFO, "Checking database files...");

@@ -1,4 +1,4 @@
-/* $Id: serial.c,v 1.2 1996/10/26 09:32:40 bus Exp $
+/* $Id: serial.c,v 1.3 1997/08/28 09:30:44 bus Exp $
    $File$
 */
 
@@ -114,19 +114,11 @@ int init_euracom_port(const char *device)
     log_msg(ERR_CRIT, "tcgetattr: %s", strerror(errno));
     return(-1);
   }
-#if 0
-  memset(term.c_cc, 0, sizeof(term.c_cc));
-  term.c_cc[VMIN]=1;	/* Exakt ein Zeichen lesen */
-  term.c_cflag=B9600 | CS8 | CREAD | CLOCAL | CRTSCTS;
-  term.c_iflag|=IGNCR;
-  term.c_oflag=0;
-  term.c_lflag=0;
-#else
+
   cfmakeraw(&term);
   term.c_iflag|=IGNCR;
   cfsetispeed(&term, B9600);
   cfsetospeed(&term, B9600);
-#endif
 
   if (TTY_SETATTR(fd, &term)==-1) {
     log_msg(ERR_CRIT, "tcsetattr: %s", strerror(errno));

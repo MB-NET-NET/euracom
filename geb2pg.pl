@@ -54,6 +54,9 @@ while (<GEBFILE>) {
   # Add OKZ
   $nummer=~s/^([123456789])(\d+)/02364$1$2/;
 
+  # Add int exit code
+  $nummer=~s/^00(\d+)/+$1/;
+
   # Add intl code
   $nummer=~s/^0(\d+)/+49$1/;
 

@@ -5,7 +5,7 @@
 
    Michael Bussmann <bus@fgan.de>
 
-   $Id: euracom.c,v 1.11 1997/07/26 07:35:39 bus Exp $
+   $Id: euracom.c,v 1.12 1997/08/28 09:30:43 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/euracom.c,v $
  */
 
@@ -24,106 +24,66 @@
 #include "utils.h"
 #include "fileio.h"
 
-
+#ifdef TEST_ONLY
+#define DEFAULT_DEVICE		"/dev/stdin"
+#define PROTOCOL_FILE		"/tmp/protocol.dat"
+#define DEF_LOGFAC		LOG_LOCAL0
+#else
 #define DEFAULT_DEVICE		"/dev/ttyS0"
-#define GEBUEHR_FILE		"/var/lib/euracom/gebuehr.dat"
 #define PROTOCOL_FILE		"/var/lib/euracom/protocol.dat"
 #define DEF_LOGFAC		LOG_LOCAL0
+#endif
 
 #define UNKNOWN_TEXT_EURA	"Rufnr.unbekannt"
 #define	UNKNOWN_NO		"???"
 
-
 /* Globals */
 int euracom_fd = 0;			/* RS232 port to Euracom */
-char *gebuehr_filename = NULL;		/* Filename für Gebuehrendaten */
 char *proto_filename = NULL;		/* Filename für Euracom-backup file */
 extern char *readln_rs232();
 
 
 /*------------------------------------------------------*/
-/* BOOLEAN gebuehr_log()                                */
+/* BOOLEAN gebuehr_sys_log()                            */
 /* */
-/* Schreibt Gebuehrinfo auf disk/syslog                 */
+/* Schreibt Gebuehrinfo auf syslog                      */
 /* */
-/* RetCode: Ptr to static string, NULL: Error           */
+/* RetCode: Success/No success                          */
 /*------------------------------------------------------*/
-BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
+BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
 {
-  char res[1024];
-  struct FQTN fqtn;
-  BOOLEAN unknown_no = FALSE;
+  char res[1024] = "";
+  BOOLEAN unknown_no = (strcmp(geb->nummer, UNKNOWN_NO)==0);
 
-  /* Logfile öffnen */
-  if (gebuehr_filename) {
-    FILE *fp;
-
-    if (fp=fopen(gebuehr_filename, "a")) {
-      struct tm *tm_sys = localtime(&geb->datum_sys);
-      struct tm *tm_vst = localtime(&geb->datum_vst);
-      char t_1[30], t_2[30];
-
-      strftime(t_1, 15, "%b %d %X %Y\0", tm_sys);
-      strftime(t_2, 15, "%H:%M\0", tm_vst);
-      
-      fprintf(fp, "%s | %2d |%.16s | %ld | %s | %4d |%c|%.2f|%s| %.2f|\n",
-	      t_1,
-	      geb->teilnehmer,
-	      geb->nummer,
-	      (unsigned long)geb->datum_sys,
-	      t_2,
-	      geb->einheiten,
-	      (geb->art==GEHEND?'O':'I'),
-	      (geb->betrag_base),
-	      (geb->waehrung),
-	      geb->betrag);
-      fclose(fp);
-    } else {
-      log_msg(ERR_CRIT, "Could not open logfile: %s", strerror(errno));
-    }
-  }
-
-  /* Open databases */
-  if (!openDB(AVON_DB_NAME, WKN_DB_NAME)) {
-    log_msg(ERR_CRIT, "Could not open databases");
-  }
-
-  /* Syslog meldung */
-  strcpy(res, "");
-  unknown_no=(strcmp(geb->nummer, UNKNOWN_NO)==0);
-
-  if (!unknown_no) {
-    lookup_number(geb->nummer, &fqtn);
-  }
   switch (geb->art) {
     case GEHEND: {
-      TelNo telno;
-
-      convert_telno(telno, &fqtn);
-      sprintf(res, "%d called %s. %d units = %.2f DM",
-	      geb->teilnehmer, telno,
+      sprintf(res, "%d called %s. %d units = %.2f %s",
+	      geb->teilnehmer, 
+	      geb->nummer,
 	      geb->einheiten,
-	      geb->betrag);
+	      geb->betrag,
+	      geb->waehrung);
     }
       break;
-    case KOMMEND:
-      if (unknown_no) {
-	if (geb->teilnehmer) {
-	  sprintf(res, "Incoming call for %d",
-		  geb->teilnehmer);
-	} else {
-	  sprintf(res, "Incoming call but no connection");
-	}
-      } else {
-	TelNo telno;
 
-	convert_telno(telno, &fqtn);
-	if (geb->teilnehmer) {
-       	  sprintf(res, "Incoming call from %s for %d",
-	      telno, geb->teilnehmer);
+    case KOMMEND:
+      if (geb->teilnehmer) {
+        /* Mit Verbindung */
+        if (unknown_no) {
+	  sprintf(res, "Incoming call for %d", 
+	    geb->teilnehmer);
 	} else {
-          sprintf(res, "Incoming call from %s. No connection",
-		  telno);
+	  sprintf(res, "Incoming call from %s for %d",
+	          geb->nummer,
+		  geb->teilnehmer);
+        }
+      } else {
+        /* Ohne Verbindung */
+	if (unknown_no) {
+          sprintf(res, "Unresponded incoming call");
+	} else {
+       	  sprintf(res, "Unresponded incoming call from %s",
+	    geb->nummer);
 	}
       }
       break;
@@ -133,12 +93,74 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
       break;
   }	/* SWITCH */
 
+#ifndef TEST_ONLY
   syslog(LOG_NOTICE, "%s", res);
+#endif
   
-  /* Close DB */
-  closeDB();
-
   return(TRUE);
+}
+
+
+/*------------------------------------------------------*/
+/* BOOLEAN gebuehr_db_log()                             */
+/* */
+/* Writes charge data into database                     */
+/* */
+/* RetCode: Ptr to static string, NULL: Error           */
+/*------------------------------------------------------*/
+BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
+{
+  char buf1[4096]; /* Attributes */
+  char buf2[4096]; /* Final statement */
+  char vst_date[20], vst_time[20], sys_date[20], sys_time[20];
+  struct tm *tm;
+
+  /* Convert time/date specs */
+  tm=localtime(&geb->datum_vst);
+  strftime(vst_date, 15, "%d %b %Y", tm);
+  strftime(vst_time, 15, "%H:%M:%S", tm);
+
+  tm=localtime(&geb->datum_sys);
+  strftime(sys_date, 15, "%d %b %Y", tm);
+  strftime(sys_time, 15, "%H:%M:%S", tm);
+
+  switch (geb->art) {
+    case GEHEND:
+      sprintf(buf1,"'%d', '%s', '%s', '%s', '%s', '%s', '%d', '%c', '%.3f', '%.3f', '%s'",
+        geb->teilnehmer,
+	geb->nummer,
+	vst_date, vst_time, sys_date, sys_time,
+	geb->einheiten,
+	'G',
+	geb->betrag_base,
+	geb->betrag,
+	geb->waehrung);
+      break;
+
+    case KOMMEND:
+      sprintf(buf1,"'%d', '%s', '%s', '%s', '%s', '%s', '', '%c', '', '', ''",
+        geb->teilnehmer,
+	geb->nummer,
+	vst_date, vst_time, sys_date, sys_time,
+	(geb->teilnehmer?'V':'K'));
+      break;
+  } 
+
+  sprintf(buf2, "INSERT into test (int_no, remote_no, vst_date, vst_time, sys_date, sys_time, einheiten, geb_art, factor, pay, currency) values (%s);", buf1);
+
+  return (database_log(buf2));
+}
+
+
+void conv_phone(char *dst, char *src)
+{
+  if (strncmp(src, "00", 2)==0) {
+    strcpy(dst, "+"); strcat(dst, &src[2]);
+  } elsif (strncmp(src, "0", 1)==0) {
+    strcpy(dst, "+49"); strcat(dst, &src[1]);
+  } else {
+    strcpy(dst, "+492364"); strcat(dst, src);
+  }
 }
 
 
@@ -156,14 +178,15 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   char teiln[25];
 
   /* Art und Teilnehmer*/
-  if (!(tok=strtok(buf, "|"))) { 
+  unless (tok=strtok(buf, "|")) { 
     log_msg(ERR_ERROR, "Error extracting first token");
     return(NULL);
   }
-  if (!(cp=strpbrk(tok, "GVK"))) { 
+  unless (cp=strpbrk(tok, "GVK")) { 
     log_msg(ERR_ERROR, "Field 1 does not contain any char of G,V,K");
     return(NULL);
-   }
+  }
+
   switch (*cp++) {
     case 'G':
       geb->art=GEHEND;
@@ -195,12 +218,12 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   }
 
   /* Telefonnummer */
-  if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 3 invalid"); return(NULL); }
+  unless (tok=strtok(NULL, "|")) { log_msg(ERR_ERROR, "Field 3 invalid"); return(NULL); }
   stripblank(tok);
   if (strcasecmp(tok, UNKNOWN_TEXT_EURA)==0) {
     strcpy(geb->nummer, UNKNOWN_NO);
   } else {
-    strcpy(geb->nummer, tok);
+    conv_phone(geb->nummer, tok);
   }
 
   if (geb->art==KOMMEND) {
@@ -208,11 +231,11 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
     geb->betrag=0;
   } else {
     /* Einheiten */
-    if (!(tok=strtok(NULL, "|"))) {log_msg(ERR_ERROR, "Field 4 invalid");  return(NULL); }
+    unless (tok=strtok(NULL, "|")) {log_msg(ERR_ERROR, "Field 4 invalid");  return(NULL); }
     geb->einheiten=atoi(tok);
 
     /* Gebuehr */
-    if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 5 invalid"); return(NULL); }
+    unless (tok=strtok(NULL, "|")) { log_msg(ERR_ERROR, "Field 5 invalid"); return(NULL); }
     stripblank(tok);
     { char *cp;
       if (cp=strchr(tok, ',')) {*cp='.';}
@@ -242,6 +265,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 int shutdown_program(int force)
 {
   close_euracom_port();
+  database_shutdown();
   close_log();
   exit(force);
 }
@@ -310,6 +334,7 @@ void usage(const char *prg)
 /*------------------------------------------------------*/
 BOOLEAN parse_euracom_data(const char *buf)
 {
+  /* Make a copy of everything into procol file */
   if (proto_filename) {
     FILE *fp = fopen(proto_filename, "a");
     
@@ -320,16 +345,20 @@ BOOLEAN parse_euracom_data(const char *buf)
   }
 
   /* Check message type */
-  if (!strchr(buf, '|')) {
+  unless (strchr(buf, '|')) {
     /* Junk daten */
+#ifndef TEST_ONLY
     syslog(LOG_INFO, "%s", buf);
+#endif
     return(TRUE);
   } else {
     struct GebuehrInfo gebuehr;
     FILE *fp;
 
-    if (!eura2geb(&gebuehr, buf)) {
+    unless (eura2geb(&gebuehr, buf)) {
+#ifndef TEST_ONLY
       syslog(LOG_ERR, "Invalid charge data: %s", buf);
+#endif
       return(FALSE);
     }
     
@@ -337,7 +366,8 @@ BOOLEAN parse_euracom_data(const char *buf)
     gebuehr.datum_sys=time(NULL);
 
     /* Logging */
-    gebuehr_log(&gebuehr);
+    gebuehr_sys_log(&gebuehr);
+    gebuehr_db_log(&gebuehr);
   }    
 }
 
@@ -368,12 +398,18 @@ int select_loop()
     tv.tv_sec=10; tv.tv_usec=0;
     retval=select(FD_SETSIZE, &rfds, NULL, NULL, &tv);
 
-    if (retval>0) {
+    if (retval==0) {	/* Timeout */
+      database_check_state();
+    } elsif (retval>0) {
       if (FD_ISSET(euracom_fd, &rfds)) {
 	char *buf;
 
+#ifndef TEST_ONLY
 	/* Data from Euracom Port */
-	if (!(buf=readln_rs232(euracom_fd))) {
+	unless (buf=readln_rs232(euracom_fd)) {
+#else
+	unless (buf=fgetline(stdin, NULL)) {
+#endif
 	  log_msg(ERR_ERROR, "Euracom read failed. Ignoring line");
 	} else {
 	  parse_euracom_data(buf);
@@ -382,7 +418,7 @@ int select_loop()
 	log_msg(ERR_FATAL, "Data on non-used socket");
       }
     }	/* IF retval */
-  } while (retval!=-1);
+  } while (retval>=0);
 
   log_msg(ERR_ERROR, "Select failed: %s", strerror(errno));
   return(0);
@@ -397,17 +433,14 @@ int main(argc, argv)
   extern int optind;
   int opt;
 
-  char devname[1024];
+  char devname[1024] = DEFAULT_DEVICE;
 
   /* Logging */
   init_log("Euracom", ERR_JUNK, USE_STDERR | TIMESTAMP, NULL);
 
   /* Parse command line options */
-  while ((opt = getopt(argc, argv, "g:p:")) != EOF) {
+  while ((opt = getopt(argc, argv, "p:")) != EOF) {
     switch (opt) {
-      case 'g':
-	gebuehr_filename=strdup(optarg);
-        break;
       case 'p':
 	proto_filename=strdup(optarg);
         break;
@@ -421,19 +454,20 @@ int main(argc, argv)
   /* Check command line arguments */
   if (optind==argc-1) {
     strcpy(devname, argv[optind]);
-  } else {
-    strcpy(devname, DEFAULT_DEVICE);
   }
 
   /* Check logfiles */
-  if (!gebuehr_filename) { gebuehr_filename=strdup(GEBUEHR_FILE); }
-  if (!proto_filename)	{ proto_filename=strdup(PROTOCOL_FILE); }
+  unless (proto_filename) { proto_filename=strdup(PROTOCOL_FILE); }
 
+#ifndef TEST_ONLY
   /* Initialize Euracom */
   if ((euracom_fd=init_euracom_port(devname))==-1) {
     log_msg(ERR_FATAL, "Error initializing serial interface");
     exit(1);
   }
+#else
+  euracom_fd=0;
+#endif
 
   /* Re-open syslog facility */
   openlog("Euracom", 0, DEF_LOGFAC);
@@ -459,6 +493,10 @@ int main(argc, argv)
   signal(SIGSTOP, SIG_IGN);
   signal(SIGTSTP, SIG_IGN);
 
+  /* Initialize database */
+  database_initialize(NULL, NULL, NULL, NULL);
+
+  /* Read data */
   select_loop();
 
   /* Shutdown gracefully */
