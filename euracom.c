@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.34 $
- * Last modified:       $Date: 1998/05/29 07:26:51 $
+ * Version:             $Revision: 1.35 $
+ * Last modified:       $Date: 1998/08/29 08:33:35 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.34 1998/05/29 07:26:51 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.35 1998/08/29 08:33:35 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -42,7 +42,6 @@ static char rcsid[] = "$Id: euracom.c,v 1.34 1998/05/29 07:26:51 bus Exp $";
 
 #include "log.h"
 #include "utils.h"
-#include "fileio.h"
 #include "privilege.h"
 
 #include "euracom.h"

@@ -8,8 +8,8 @@
  * Authors:             Michael Bussmann <bus@fgan.de>
  *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.4 $
- * Last modified:       $Date: 1998/05/22 07:10:10 $
+ * Version:             $Revision: 1.5 $
+ * Last modified:       $Date: 1998/08/29 08:33:37 $
  * Keywords:            ISDN, Euracom, Ackermann, mSQL
  *
  * based on 'postgres.c' applied with changes needed by msql
@@ -25,7 +25,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: msql.c,v 1.4 1998/05/22 07:10:10 bus Exp $";
+static char rcsid[] = "$Id: msql.c,v 1.5 1998/08/29 08:33:37 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -39,7 +39,6 @@ static char rcsid[] = "$Id: msql.c,v 1.4 1998/05/22 07:10:10 bus Exp $";
 
 #include "log.h"
 #include "utils.h"
-#include "fileio.h"
 
 #include "euracom.h"
 

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.16 $
- * Last modified:       $Date: 1998/05/22 07:10:09 $
+ * Version:             $Revision: 1.17 $
+ * Last modified:       $Date: 1998/08/29 08:33:38 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.16 1998/05/22 07:10:09 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.17 1998/08/29 08:33:38 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -36,7 +36,6 @@ static char rcsid[] = "$Id: postgres.c,v 1.16 1998/05/22 07:10:09 bus Exp $";
 
 #include "log.h"
 #include "utils.h"
-#include "fileio.h"
 
 #include "euracom.h"
 
