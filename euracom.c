@@ -5,7 +5,7 @@
 
    Michael Bussmann <bus@fgan.de>
 
-   $Id: euracom.c,v 1.13 1997/09/02 11:03:41 bus Exp $
+   $Id: euracom.c,v 1.14 1997/09/25 11:27:06 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/euracom.c,v $
  */
 
@@ -319,8 +319,7 @@ int terminate(int sig)
 /*------------------------------------------------------*/
 void usage(const char *prg)
 {
-  printf("Usage: %s [-gp] [device]\n", prg);
-  printf("\t-g file\tGebührenfile\n");
+  printf("Usage: %s [-p] [device]\n", prg);
   printf("\t-p file\tProtokollfile\n");
   exit(0);
 }
@@ -490,9 +489,6 @@ int main(argc, argv)
   signal(SIGTERM, (void *)terminate);
   signal(SIGSTKFLT, (void *)fatal);
   signal(SIGCHLD, SIG_IGN);
-  signal(SIGCONT, SIG_IGN);
-  signal(SIGSTOP, SIG_IGN);
-  signal(SIGTSTP, SIG_IGN);
 
   /* Initialize database */
   database_initialize(NULL, NULL, NULL, NULL);
