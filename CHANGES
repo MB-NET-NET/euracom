@@ -1,4 +1,4 @@
-$Date: 1998/05/22 07:14:28 $, $Revision: 1.9 $
+$Date: 1998/05/23 07:57:42 $, $Revision: 1.10 $
 
 |------------+--------+------------------------------------------------------
 | Datum/STag |Version | Wichtigste Änderungen
@@ -35,5 +35,5 @@ $Date: 1998/05/22 07:14:28 $, $Revision: 1.9 $
 | rel-1_2_0  |        | 
 |------------+--------+-------------------------------------------------------
 | 1998-05-25 | 1.2.1  | - Bugfix bei 2.x-style-Eingabe (fehlendes Stringende)
-| rel-1_2_0  |        | - Parsing von Gebührenspeicher-Dump (KIT_DUMP_MODE)
+| rel-1_2_1  |        | - Parsing von Gebührenspeicher-Dump (KIT_DUMP_MODE)
 |------------+--------+-------------------------------------------------------

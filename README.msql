@@ -80,7 +80,7 @@ das programm fuer msql anzupassen.
 
 so waren ergaenzungen/aenderungen in 'euracom.c' nur in einer einzigen funktion
 erforderlich, 'gebuehr_db_log'. diese funktion schreibt die ermittelten daten 
-in die datenbank.
+in die datenbank. [ Die Funktion ist jetzt im Datenbank-Modul enthaltern]
 
 um das umbenennen (s. o.) zu minimieren, habe ich precompiler statements eingefuegt. so dass
 in abhaengigkeit, ob in der Datei 'config.h' die Variable 'MINISQL' definiert ist,
