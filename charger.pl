@@ -7,7 +7,7 @@ require 'getopts.pl';
 #
 # Telefon Gebuehrenauswertung
 #
-# $Id: charger.pl,v 1.1 1997/09/02 11:03:41 bus Exp $
+# $Id: charger.pl,v 1.2 1997/09/02 13:08:23 bus Exp $
 #
 
 #
@@ -25,19 +25,72 @@ require 'getopts.pl';
 #
 # Parse CMD line params
 #
-&Getopts('H:D:v:b:t:X:b:');
+$opt_H=$opt_D=$opt_v=$opt_b=$opt_X=$opt_t=$opt_b=$opt_d="";
+
+&Getopts('dH:D:v:b:t:X:b:');
+
 $db_host= $opt_H || "tardis";
 $db_db  = $opt_D || "isdn";
 
 $von    = $opt_v || "";
 $bis    = $opt_b || "";
 $MSN    = $opt_X || "";
+$tln    = $opt_t || "";
 $charge = $opt_b || 18.0;
+$debugp = $opt_d || "";
+
+$TMPNAME="/tmp/charger.$$";
 
 #
 # Fire up connection
 #
+&debug("Opening connection to database...");
 $db = db_connect($db_db,$db_host,"") || die "Open DB failed: $Postgres::error";
+&debug("o.k.\n");
+
+#
+# Create filter expression and build internal list
+#
+&debug("Creating filter expression...");
+$filter_count=0;
+if ($von) { $filter_cmd[$filter_count++]="vst_date>='$von'"; }
+if ($bis) { $filter_cmd[$filter_count++]="vst_date<='$bis'"; }
+if ($tln) {
+  $flag=0; $tmp="(";
+  @tln = split(",", $tln);
+  map {
+    if ($flag) { $tmp.=" OR "; } else { $flag=1; }
+    $tmp.="int_no='$_'";
+  } @tln;
+  $filter_cmd[$filter_count++]=$tmp.")";
+}
+
+#
+# Construct real filter statement
+#
+$flag=0; $filter_cmd="";
+map {
+  if ($flag) { $filter_cmd.=" AND "; } else { $filter_cmd.="WHERE "; $flag=1;}
+  $filter_cmd.=$_;
+} @filter_cmd;
+&debug("o.k.: $filter_cmd\n");
+
+#
+# Copy data to temporary file
+#
+&debug("Fetching data from db...");
+open(TMPFILE, ">$TMPNAME") || die "Cannot create temporary file";
+$db->execute("BEGIN") || die "BEGIN: $Postgres::error";
+$db->execute("DECLARE cx CURSOR FOR SELECT int_no,remote_no,vst_date,vst_time,sys_date,sys_time,einheiten,geb_art,factor,pay,currency FROM euracom $filter_cmd ORDER BY vst_date,vst_time") || die "DECLARE: $Postgres::error";
+do {
+  $res=$db->execute("FETCH forward 1 IN cx") || die "FETCH: $Postgres::error";
+  if (@data=$res->fetchrow()) {
+    print TMPFILE join(";", @data)."\n";
+  }
+} while (@data);
+$db->execute("END") || die "END: $Postgres::error";
+close(TMPFILE);
+&debug("o.k.\n");
 
 #
 # Print bloody HTML header
@@ -49,19 +102,15 @@ print "<center><table border=\"5\" cellspacing=\"2\" cellpadding=\"2\">\n";
 print "<tr><th>Anschlu&szlig;</th><th>Datum</th> <th>Rufnummer</th><th>Einheiten</th><th>Betrag</th></tr>\n";
 
 #
-# Create temporary file containing charge info
+# Do evaluation
 #
-$db->execute("BEGIN") || die "BEGIN: $Postgres::error";
-
-# Create SELECT query
 $counter=0;
-$filter_cmd="WHERE sys_date>'01-Jul-1997'";
-$db->execute("DECLARE cx CURSOR FOR SELECT int_no,remote_no,vst_date,vst_time,sys_date,sys_time,einheiten,geb_art,factor,pay,currency FROM euracom $filter_cmd") || die "DECLARE: $Postgres::error";
-do {
-  $res=$db->execute("FETCH forward 1 IN cx") || die "FETCH: $Postgres:error";
-  @data=$res->fetchrow();
-  htmlize_data(@data) if @data;
-} while (@data);
+open(TMPFILE, "$TMPNAME") || die "Cannot open temporary file";
+while (<TMPFILE>) {
+  @data=split(";", $_);
+  &htmlize_data(@data) if (@data);
+}
+close(TMPFILE);
 
 #
 # Print footer
@@ -74,13 +123,19 @@ printf "<tr><td></td><td></td><td>GESAMT:</td><td></td><td><B>%.2f DEM</B></td><
 print "</table></center><br><hr><address>";
 print "Michael Bussmann, Im Brook 8, 45721 Haltern</address></body></html>\n";
 
-$db->execute("END") || die "END: $Postgres::error";
 #
 # That's it
 #
 undef $db;
+unlink($TMPNAME);
 
 
+#
+# sub htmlize_data()
+#
+# Input : fetchrow() array
+# Output: Table items
+#
 sub htmlize_data()
 {
   my (@arr) = @_;
@@ -89,10 +144,9 @@ sub htmlize_data()
 
   # Interne Nummer und Datum
   print "<TR><TD>";
-  if ($arr[0]) {
-    print "$arr[0]";
-  }
-  print "</TD><TD>$arr[2] $arr[3]</TD>";
+  print "$arr[0]" if ($arr[0]);
+  $arr[2]=~tr/-/./;
+  print "</TD><TD>$arr[2] ".substr($arr[3], 0, 5)."</TD>";
 
   # Je nach Art
   SWITCH: {
@@ -183,4 +237,11 @@ sub split_text()
     $rest=chop($in) . $rest;
   }
   return($input, "", "");
+}
+
+sub debug()
+{
+  if ($debugp) {
+    print @_;
+  }
 }

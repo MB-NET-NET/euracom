@@ -3,12 +3,12 @@
 #
 # Telefongebührenauswertung
 # 108537, 13155, 4275, 4095
-# $Id: do_charger.sh,v 1.6 1997/09/02 11:03:41 bus Exp $
+# $Id: do_charger.sh,v 1.7 1997/09/02 13:08:24 bus Exp $
 #
 
 PATH=/bin:/usr/bin:/usr/local/bin:/usr/sbin:/sbin
 
-EXEFILE="/var/lib/euracom/charger"
+EXEFILE="/var/lib/euracom/charger.pl"
 LASTFILE="/var/lib/euracom/last.checked"
 MAILTO="bus@goliath"
 ISDNREP="/usr/bin/isdnrep"
@@ -38,7 +38,7 @@ if [ -f $LASTFILE ] ; then
 fi
 
 # Update timestamp file
-getdate "now" >$LASTFILE
+"date "+%d %b %Y" >$LASTFILE"
 
 #
 # Now for the main stuff...
@@ -50,7 +50,7 @@ for ndx in $ALL_MSN; do
 	ERRFILE=/tmp/euracom.$$.err
 	OUTFILE=/tmp/euracom.$THIS_MSN.$$.out
 
-	$EXEFILE -t "$THIS_APP" -v$TIME_FROM -X "+492364${THIS_MSN}" 2>>$ERRFILE >$OUTFILE
+	$EXEFILE -t "$THIS_APP" -v "$TIME_FROM" -X "+492364${THIS_MSN}" 2>>$ERRFILE >$OUTFILE
 
 # Mail results to admin
 	mail -s"Gebührenauswertung +49 2364 $THIS_MSN" $MAILTO <$OUTFILE
