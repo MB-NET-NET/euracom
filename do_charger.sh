@@ -3,14 +3,17 @@
 #
 # Telefongebührenauswertung
 # 108537, 13155, 4275, 4095
-# $Id: do_charger.sh,v 1.8 1997/09/26 10:06:06 bus Exp $
+#
+# DO NOT USE WITHOUT ADAPTING IT TO YOUR LOCAL REQUIREMENTS
+#
+# $Id: do_charger.sh,v 1.9 1998/01/16 13:30:38 bus Exp $
 #
 
 PATH=/bin:/usr/bin:/usr/local/bin:/usr/sbin:/sbin
 
 EXEFILE="/var/lib/euracom/charger.pl"
 LASTFILE="/var/lib/euracom/last.checked"
-MAILTO="bus@goliath"
+MAILTO="bus@goliath.mb.priv"
 ISDNREP="/usr/bin/isdnrep"
 
 ALL_MSN="0 1 2"
