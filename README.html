@@ -139,6 +139,25 @@ auf diese beiden Tabellen! </P>
 Als Eingabedaten für die "avon"-Tabelle empfehle ich die OKZ-Datei aus dem
 <EM>isdnlog</EM> Paket.</P>
 
+<H3>User-defined functions</H3>
+<P>
+Für die Auswertung ist es erforderlich, PostgreSQL um 2 Funktionen zu erweitern,
+nämlich <EM>prefix_match(text,text)</EM> und <EM>length(text)</EM>.  Kopieren
+Sie dazu das beim "make" erzeugte "prefixmatch.so" in ein, dem PostgreSQL-
+superuser zugängliches Verzeichnis (z.B. /usr/local/postgres/obj).  Dann
+definieren Sie folgende Funktionen:</P>
+<PRE>
+CREATE FUNCTION prefix_match (text, text) 
+  RETURNS bool
+  AS '/usr/local/postgres/obj/prefixmatch.so'
+  LANGUAGE 'c';
+
+CREATE FUNCTION length (text)
+  RETURNS int2
+  AS '/usr/local/postgres/obj/prefixmatch.so'
+  LANGUAGE 'c';
+</PRE>
+
 <H3>Beispielausgabe von "charger.pl"</H3>
 <PRE>
 bus@goliath [108] =>./charger.pl -v'24.09.1997'
@@ -185,7 +204,7 @@ Viel Spass!
 
 <ADDRESS> ruf098 WWW, Michael Bussmann,
 <A HREF="mailto:bus@www.fgan.de">bus@www.fgan.de</A> ,
-Last change: $Date: 1997/09/26 10:12:19 $, $Revision: 1.1 $
+Last change: $Date: 1997/09/26 10:36:02 $, $Revision: 1.2 $
 </ADDRESS>
 
 </BODY>
