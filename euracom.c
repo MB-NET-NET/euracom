@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.28 $
- * Last modified:       $Date: 1998/02/15 12:06:09 $
+ * Version:             $Revision: 1.29 $
+ * Last modified:       $Date: 1998/02/18 09:07:32 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.28 1998/02/15 12:06:09 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.29 1998/02/18 09:07:32 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -33,6 +33,7 @@ static char rcsid[] = "$Id: euracom.c,v 1.28 1998/02/15 12:06:09 bus Exp $";
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
+#include <sysexits.h>
 #include <signal.h>
 #include <string.h>
 #include <syslog.h>
@@ -322,7 +323,7 @@ BOOLEAN daemon_create_pid_file()
 /* */
 /* RetCode: No return                                   */
 /*------------------------------------------------------*/
-int shutdown_program(int force)
+int shutdown_program(int retcode)
 {
   if (privilege_active()) {
     privilege_enter_priv();
@@ -335,52 +336,44 @@ int shutdown_program(int force)
 
   logger_shutdown();			/* Close log file/syslog */
 
-  if (privilege_active()) {
+  if (privilege_active()) {		/* Nonsense, but nice gesture */
     privilege_drop_priv();
   }
-  exit(force);				/* Have a nice day */
+  exit(retcode);			/* Have a nice day */
 }
 
-/*------------------------------------------------------*/
-/* int hangup()                                         */
-/* */
-/* Signal handler für non-fatal signals                 */
-/* */
-/* RetCode: 0                                           */
-/*------------------------------------------------------*/
-int hangup(int sig)
+/*--------------------------------------------------------------------------
+ * void hangup()
+ *
+ * Signal handler for non-fatal signal.  Will be used to re-open files an
+ * the like later
+ *------------------------------------------------------------------------*/
+void hangup(int sig)
 {
   signal(sig, (void *)hangup);	/* Restart signal handler */
   log_msg(ERR_INFO, "Signal %d received. Ignoring", sig);
-  return(0);
 }
 
-/*------------------------------------------------------*/
-/* int fatal()                                          */
-/* */
-/* Signal handler für fatal signals                     */
-/* */
-/* RetCode: 0                                           */
-/*------------------------------------------------------*/
-int fatal(int sig)
+/*--------------------------------------------------------------------------
+ * void fatal()
+ *
+ * Signal handler for fatal signals.  Print ill-humoured comment, then quit
+ *------------------------------------------------------------------------*/
+void fatal(int sig)
 {
   log_msg(ERR_FATAL, "Signal %d received. Giving up", sig);
-  shutdown_program(3);
-  return(0);    /* Make compiler happy */
+  shutdown_program(EX_SOFTWARE);
 }
 
-/*------------------------------------------------------*/
-/* int terminate()                                      */
-/* */
-/* Signal handler für Programm-Beendigung               */
-/* */
-/* RetCode: 0                                           */
-/*------------------------------------------------------*/
-int terminate(int sig)
+/*--------------------------------------------------------------------------
+ * void terminate()
+ *
+ * Signal handler for terminate signals.
+ *------------------------------------------------------------------------*/
+void terminate(int sig)
 {
   log_msg(ERR_NOTICE, "Euracom exiting on signal %d", sig);
-  shutdown_program(0);
-  return(0);
+  shutdown_program(EX_OK);
 }
 
 /*------------------------------------------------------*/
@@ -484,7 +477,6 @@ void usage(const char *prg)
 #if defined (DONT_CHECK_CTS)
   printf("\nCTS check has been disabled\n");
 #endif
-  exit(0);
 }
 
 
@@ -494,10 +486,7 @@ void usage(const char *prg)
  * Main programme
  *
  * Inputs: argv, argc
- * RetCode: 0: Successful termination;
- *          1: Error in command line arguments
- *          2: Error during initialization
- *          3: Fatal errors
+ * RetCode: Follows sysexits convention
  *------------------------------------------------------------------------*/
 int main(int argc, char **argv)
 {
@@ -580,7 +569,7 @@ int main(int argc, char **argv)
             /* If argument starts with # it's a numerical id */
             unless ((pwd=((optarg[0]=='#')?getpwuid(atoi(&optarg[1])):getpwnam(optarg)))) {
               log_msg(ERR_ERROR, "UID or username %s not found.", optarg);
-              exit(1);
+              exit(EX_NOUSER);
             }
             privilege_set_alternate_uid(pwd->pw_uid);
             privilege_set_alternate_gid(pwd->pw_gid);
@@ -593,7 +582,7 @@ int main(int argc, char **argv)
       case 'h':
       default:
         usage(argv[0]);
-        exit(0);
+        exit(EX_OK);
         break;
     }     /* SWITCH */
   }     /* WHILE */
@@ -604,7 +593,7 @@ int main(int argc, char **argv)
   } else {
     log_msg(ERR_ERROR, "You must specify a device where to read from");
     usage(argv[0]);
-    exit(1);
+    exit(EX_USAGE);
   }
   
   /* Set up signal handlers */
@@ -629,7 +618,7 @@ int main(int argc, char **argv)
   unless (no_daemon) {
     logger_set_options(TIMESTAMP | USE_SYSLOG);
     unless (detach()) {
-      shutdown_program(2);
+      shutdown_program(EX_OSERR);
     }
   }
 
@@ -642,26 +631,26 @@ int main(int argc, char **argv)
   /* Write pid file. */
   unless (daemon_create_pid_file()) {
     log_msg(ERR_FATAL, "Error writing PID file");
-    shutdown_program(2);
+    shutdown_program(EX_CANTCREAT);
   }
 
   /* Open euracom port */
   unless (serial_open_device(euracom_port)) {
     log_msg(ERR_FATAL, "Error initializing serial interface");
-    shutdown_program(2);
+    shutdown_program(EX_NOINPUT);
   }
  
   /* Since all required files are open (or created), we can safely drop privileges */ 
   if (privilege_active()) {
     unless (privilege_leave_priv()) {
       log_msg(ERR_FATAL, "Could not leave privileged section");
-      shutdown_program(2);
+      shutdown_program(EX_OSERR);
     }
   }
 
   unless (database_initialize()) {
     log_msg(ERR_FATAL, "Error initializing database subsystem");
-    shutdown_program(2);
+    shutdown_program(EX_UNAVAILABLE);
   }
 
   /* Open syslog facility */
@@ -673,6 +662,6 @@ int main(int argc, char **argv)
   select_loop();
 
   /* Shutdown gracefully */
-  shutdown_program(0);
-  return(0);
+  shutdown_program(EX_OK);
+  return(EX_OK);
 }
