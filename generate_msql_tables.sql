@@ -1,5 +1,5 @@
 # generate_msql_tables.sql -- Create necessary tables for Euracom(msql)
-# $Id: generate_msql_tables.sql,v 1.2 1998/05/22 07:07:32 bus Exp $
+# $Id$
 
 # Create table containing AVON
 

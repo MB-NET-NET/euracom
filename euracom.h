@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.19 $
- * Last modified:       $Date: 2002/05/10 07:04:29 $
+ * Version:             $LastChangedRevision$
+ * Last modified:       $Date$
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it

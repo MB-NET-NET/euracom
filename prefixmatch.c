@@ -1,7 +1,7 @@
 /*
  * prefixmatch.c -- Some stupid routines for PostgreSQL
  *
- * $Id: prefixmatch.c,v 1.3 2003/10/13 13:24:19 bus Exp $
+ * $Id$
  */
 #include <string.h>
 #include "postgres_ext.h"

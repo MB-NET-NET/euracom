@@ -4,12 +4,7 @@
 /* Copyright (C) 1996-2004 MB Computrex           Released under GPL */
 /*********************************************************************/
 
-/*---------------------------------------------------------------------
- * Version:	$Id: log.c,v 1.5 2001/06/16 17:07:21 bus Exp $
- * File:	$Source: /home/bus/Y/CVS/euracom/log.c,v $
- *-------------------------------------------------------------------*/
-
-static char rcsid[] = "$Id: log.c,v 1.5 2001/06/16 17:07:21 bus Exp $";
+static char rcsid[] = "$Id$";
 
 #include "config.h"
 

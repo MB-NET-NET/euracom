@@ -4,12 +4,7 @@
 /* Copyright (C) 1998-2004 MB Computrex           Released under GPL */
 /*********************************************************************/
 
-/*---------------------------------------------------------------------
- * Version:	$Id: privilege.c,v 1.4 2001/06/16 17:07:21 bus Exp $
- * File:	$Source: /home/bus/Y/CVS/euracom/privilege.c,v $
- *-------------------------------------------------------------------*/
-
-static char rcsid[] = "$Id: privilege.c,v 1.4 2001/06/16 17:07:21 bus Exp $";
+static char rcsid[] = "$Id$";
 
 #include "config.h"
 

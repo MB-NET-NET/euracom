@@ -6,7 +6,7 @@
 #
 # DO NOT USE WITHOUT ADAPTING IT TO YOUR LOCAL REQUIREMENTS
 #
-# $Id: do_charger.sh,v 1.10 2001/06/16 17:07:21 bus Exp $
+# $Id$
 #
 
 PATH=/bin:/usr/bin:/usr/local/bin:/usr/sbin:/sbin

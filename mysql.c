@@ -9,8 +9,8 @@
  *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>
  * 			Stefan Schorsch <sschorsch@mail.rmc.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             1.4
- * Last modified:       1998/05/22 07:10:10
+ * Version:             $LastChangedRevision$
+ * Last modified:       $Date$
  * Keywords:            ISDN, Euracom, Ackermann, mySQL
  *
  * based on 'mysql.c' applied with changes needed by mysql

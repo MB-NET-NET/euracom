@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.4 $
- * Last modified:       $Date: 2002/05/10 07:04:29 $
+ * Version:             $LastChangedRevision$
+ * Last modified:       $Date$
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  **************************************************************************/
 
 /*
- * $Id: config.h.in,v 1.4 2002/05/10 07:04:29 bus Exp $
+ * $Id$
  */
 
 #if !defined(_CONFIG_H)
