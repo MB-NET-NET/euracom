@@ -7,7 +7,7 @@
 
    Michael Bussmann <bus@fgan.de>
 
-   $Id: postgres.c,v 1.1 1997/08/28 09:30:44 bus Exp $
+   $Id: postgres.c,v 1.2 1997/09/02 11:03:42 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/postgres.c,v $
  */
 
@@ -23,10 +23,10 @@
 #include "utils.h"
 #include "fileio.h"
 
-#define DEF_DB          "bus"
-#define DEF_TABLE       "test"
+#define DEF_DB          "isdn"
+#define DEF_TABLE       "euracom"
 
-#define RECOVERY_FILE   "/tmp/test.recovery"
+#define RECOVERY_FILE   "/tmp/euracom.recovery"
 
 #define SHUTDOWN_TIMEOUT 30
 #define RECOVERY_TIMEOUT 60
@@ -236,7 +236,7 @@ BOOLEAN database_perform_recovery()
 
     log_msg(ERR_INFO, "Starting recovering from file %s", cp);
     while (zeile=fgetline(fp, NULL)) {
-      unless (database_pg_execute(zeile)) {
+      unless (database_pg_execute(zeile, TRUE)) {
         reco_failed=TRUE;
 	database_change_state(RECOVERY);
       }
@@ -258,7 +258,7 @@ BOOLEAN database_log(const char *cp)
   if (db_state==DB_CLOSED) database_change_state(DB_OPEN);
 
   /* Writing into DB failed? -> Switch to recovery mode */
-  unless (database_pg_execute(cp)) {
+  unless (database_pg_execute(cp, TRUE)) {
     database_change_state(RECOVERY);
   }
   return(TRUE);
@@ -289,11 +289,11 @@ BOOLEAN database_pg_connect()
 
 
 /*
-   Execute "INSERT into table *" statement.
+   Executes SQL statement.
 
    RetCode: TRUE: Written into DB; FALSE: Recovery file
 */
-BOOLEAN database_pg_execute(const char *stc)
+BOOLEAN database_pg_execute(const char *stc, BOOLEAN do_recovery)
 {
   PGresult *pgres;
 
@@ -303,7 +303,7 @@ BOOLEAN database_pg_execute(const char *stc)
       if (PQresultStatus(pgres)!=PGRES_COMMAND_OK) {
         log_msg(ERR_ERROR, "Unexpected error while writing into database");
         PQclear(pgres);
-        database_write_recovery(stc);
+        if (do_recovery) { database_write_recovery(stc); }
 	return(FALSE);
       } else {
         /* Write successful */
@@ -318,7 +318,7 @@ BOOLEAN database_pg_execute(const char *stc)
       break;
 
     case RECOVERY:
-      database_write_recovery(stc);
+      if (do_recovery) { database_write_recovery(stc); }
       break;
   }
   return(FALSE);

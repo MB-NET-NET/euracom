@@ -5,7 +5,7 @@
 
    Michael Bussmann <bus@fgan.de>
 
-   $Id: euracom.c,v 1.12 1997/08/28 09:30:43 bus Exp $
+   $Id: euracom.c,v 1.13 1997/09/02 11:03:41 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/euracom.c,v $
  */
 
@@ -113,6 +113,7 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
   char buf1[4096]; /* Attributes */
   char buf2[4096]; /* Final statement */
   char vst_date[20], vst_time[20], sys_date[20], sys_time[20];
+  BOOLEAN unknown_no = (strcmp(geb->nummer, UNKNOWN_NO)==0);
   struct tm *tm;
 
   /* Convert time/date specs */
@@ -128,7 +129,7 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
     case GEHEND:
       sprintf(buf1,"'%d', '%s', '%s', '%s', '%s', '%s', '%d', '%c', '%.3f', '%.3f', '%s'",
         geb->teilnehmer,
-	geb->nummer,
+	(unknown_no?"":geb->nummer),
 	vst_date, vst_time, sys_date, sys_time,
 	geb->einheiten,
 	'G',
@@ -140,13 +141,13 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
     case KOMMEND:
       sprintf(buf1,"'%d', '%s', '%s', '%s', '%s', '%s', '', '%c', '', '', ''",
         geb->teilnehmer,
-	geb->nummer,
+	(unknown_no?"":geb->nummer),
 	vst_date, vst_time, sys_date, sys_time,
 	(geb->teilnehmer?'V':'K'));
       break;
   } 
 
-  sprintf(buf2, "INSERT into test (int_no, remote_no, vst_date, vst_time, sys_date, sys_time, einheiten, geb_art, factor, pay, currency) values (%s);", buf1);
+  sprintf(buf2, "INSERT into euracom (int_no, remote_no, vst_date, vst_time, sys_date, sys_time, einheiten, geb_art, factor, pay, currency) values (%s);", buf1);
 
   return (database_log(buf2));
 }

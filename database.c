@@ -1,5 +1,5 @@
 /* Database.c - Routines for phone-number lookups
-   $Id: database.c,v 1.6 1997/08/28 09:30:43 bus Exp $
+   $Id: database.c,v 1.7 1997/09/02 11:03:41 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/Attic/database.c,v $
 */
 
@@ -97,3 +97,61 @@ static BOOLEAN split_text(GDBM_FILE dbf,
   }	/* FOR i */
   return(FALSE);
 }
+
+
+#ifdef 0
+/*------------------------------------------------------*/
+/* void lookup_number()                                 */
+/* */
+/* Converts plain telephone-number in FQTN struct       */
+/*------------------------------------------------------*/
+void lookup_number(TelNo num, struct FQTN *fqtn)
+{
+  char t1[128], t2[128], t3[128];
+
+  /* Teil 1: WKN */
+  if (split_text(db_wkn, num, t1, t2, t3)) {
+    strcpy(fqtn->telno, t1);
+    strcpy(fqtn->wkn, t2);
+    strcpy(fqtn->rest, t3);
+  } else {
+    strcpy(fqtn->telno, num);
+    strcpy(fqtn->wkn, "");
+    strcpy(fqtn->rest, "");
+  }
+      
+  /* Teil 2. AVON */
+  if (split_text(db_avon, fqtn->telno, t1, t2, t3)) {
+    strcpy(fqtn->avon, t1); 
+    strcpy(fqtn->avon_name, t2);
+    strcpy(fqtn->telno, t3); 
+  } else {
+    strcpy(fqtn->avon, "");
+    strcpy(fqtn->avon_name, "");
+  }
+}
+
+/*------------------------------------------------------*/
+/* void convert_telno()                                 */
+/* */
+/* Converts FQTN struct into short human readable form  */
+/* of TelNo: avon telno-ext                             */
+/*------------------------------------------------------*/
+void convert_telno(TelNo telno, struct FQTN *fqtn)
+{
+  strcpy(telno, "");
+  if (strlen(fqtn->avon)) {
+    strcat(telno, fqtn->avon);
+    strcat(telno, " ");
+  }
+ 
+  if (strlen(fqtn->telno)) {
+    strcat(telno, fqtn->telno);
+  }
+
+  if (strlen(fqtn->rest)) {
+    strcat(telno, "-");
+    strcat(telno, fqtn->rest);
+  }
+}
+#endif

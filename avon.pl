@@ -7,7 +7,7 @@ require 'getopts.pl';
 #
 # Telno -> FQTN converter
 #
-# $Id: avon.pl,v 1.1 1997/08/29 09:44:19 bus Exp $
+# $Id: avon.pl,v 1.2 1997/09/02 11:03:41 bus Exp $
 #
 
 #
@@ -20,6 +20,8 @@ require 'getopts.pl';
 #
 # Parse CMD line params
 #
+$opt_H=$opt_D="";
+
 &Getopts('H:D:');
 $db_host= $opt_H || "tardis";
 $db_db  = $opt_D || "isdn";
