@@ -1,7 +1,29 @@
+#***************************************************************************
+# euracom -- Euracom 18x Gebührenerfassung
 #
-# tel-utils.pm - Euracom Gebührenauswertung, Perl utitilites
+# tel-utils.pm -- Perl utilities
 #
-# $Id: tel-utils.pm,v 1.5 1998/01/15 15:08:35 bus Exp $
+# Copyright (C) 1996-1998 by Michael Bussmann
+#
+# Authors:             Michael Bussmann <bus@fgan.de>
+# Created:             1997-09-25 11:25:24 GMT
+# Version:             $Revision: 1.6 $
+# Last modified:       $Date: 1998/01/16 13:33:28 $
+# Keywords:            ISDN, Euracom, Ackermann
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public Licence as published by the
+# Free Software Foundation; either version 2 of the licence, or (at your
+# opinion) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
+# or fitness for a particular purpose.  See the GNU Public Licence for
+# more details.
+#**************************************************************************
+
+#
+# $Id: tel-utils.pm,v 1.6 1998/01/16 13:33:28 bus Exp $
 #
 
 use Pg;
