@@ -1,0 +1,49 @@
+TODO:
+=====
+
++----
+| *	To be done
+| ?	To be done sometime if possible
+| P	In progress
+| D	Delayed until later date
+| U	Done, untested
+| V	Done and verified
++----
+
+
+Euracom:
+--------
+*	Signal-hander fruehzeitig einbinden
+*	RTS Problem
+P	Daemon mode
+P	Foreground mode
+P	SUID mode
+*	PID file
+*	KIT1000 support
+*	Test Kompatibilitaet mit F/W 2.x
+
+
+Perl-Utilities:
+---------------
+V	-h Help Option
+U	Volker's 'isn't numeric' fehler (alter charger)
+U	Div. warnings von getopt und tel-utils
+
+
+PostgreSQL:
+-----------
+D	prefix_match noch noetig? (substr geht nun)
+
+
+Dokumentation:
+--------------
+P	Man-page [Volker Schmidt <volker@illuminatus.mz.rhein-main.de>]
+
+*	Verwendete Hardware
+*	Welches Kabel
+*	Anschluss an Druckerport (Konfig der Anlage)
+*	Hinweis auf default syslog fac
+*	make database
+*	Hinweis RTS/CTS Problem
+*	Directories/Permissions (/var/lock /var/run)
+*	Hinweis auf TBL_FREE_CMD (ist default bei postgres 6.3)
