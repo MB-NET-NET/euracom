@@ -7,14 +7,13 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.18 $
- * Last modified:       $Date: 1999/01/08 11:40:28 $
+ * Version:             $Revision: 1.19 $
+ * Last modified:       $Date: 1999/03/13 16:56:59 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public Licence as published by the
- * Free Software Foundation; either version 2 of the licence, or (at your
- * opinion) any later version.
+ * under the terms of the GNU General Public Licence version 2 as published
+ * by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
@@ -22,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.18 1999/01/08 11:40:28 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.19 1999/03/13 16:56:59 bus Exp $";
 
 #include "config.h"
 

@@ -7,14 +7,13 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.8 $
-# Last modified:       $Date: 1998/01/31 11:18:09 $
+# Version:             $Revision: 1.9 $
+# Last modified:       $Date: 1999/03/13 16:56:59 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public Licence as published by the
-# Free Software Foundation; either version 2 of the licence, or (at your
-# opinion) any later version.
+# under the terms of the GNU General Public Licence version 2 as published
+# by the Free Software Foundation.
 #
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
@@ -23,7 +22,7 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.8 1998/01/31 11:18:09 bus Exp $
+# $Id: tel-utils.pm,v 1.9 1999/03/13 16:56:59 bus Exp $
 #
 
 use Pg;

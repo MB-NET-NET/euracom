@@ -3,9 +3,9 @@
 #
 # Copyright (C) 1996-1999 by Michael Bussmann
 #
-# Released unter the terms of the GPL.  See LICENCE for details
+# Released unter the terms of the GPL version 2.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.4 1999/02/07 10:32:20 bus Exp $
+# $Id: Makefile.in,v 1.5 1999/03/13 16:56:57 bus Exp $
 #
 
 # !! PLEASE CHECK config.h AS WELL !!
@@ -55,8 +55,8 @@ ifeq ($(DATABASE), postgres)
   DATABASE_OBJ     = $(DATABASE_BASE)/obj
 
   # glibc2 users may need to use the second line
-  DATABASE_LINK    = -lpq
-  #DATABASE_LINK   = -lpq -lcrypt
+  #DATABASE_LINK    = -lpq
+  DATABASE_LINK   = -lpq -lcrypt
 endif
 
 ifeq ($(DATABASE), msql)

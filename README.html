@@ -417,8 +417,19 @@ Bugreports vor:
 	  Verbindungskabel
 	  hin. <B>ABER:</B> bei gewissen V24-Karten (die <EM>Cyclades</EM> ist so
 	  ein Fall) scheint das Programm Schwierigkeiten zu haben CTS zu erkennen.
-	  Falls das Verbindungskabel als Fehlerursache ausscheidet, definieren Sie
-	  in <CODE>config.h</CODE> das Makro <CODE>DONT_CHECK_CTS</CODE>.
+	  Falls das Verbindungskabel als Fehlerursache ausscheidet, &uuml;bersetzen
+	  Sie das Programm mit <CODE>./configure --disable-cts-check</CODE>.
+  </DL>
+
+<LI>
+  <DL><DT>Euracom meldet beim Programmende: <CODE>Euracom did not unset CTS</CODE>
+      <DD>Ignorieren.  Einfach ignorieren :-) Falls es zusehr st&ouml;rt, einfach
+          mit <CODE>./configure --disable-cts-check</CODE> &uuml;bersetzen.
+  </DL>
+
+<LI>
+  <DL><DT>Unter Linux 2.1.132 h&auml;ufen sich die Timeout-Fehler!
+      <DD>Ich w&auml;re froh, wenn ich w&uuml;sste, warum!  Ich arbeite daran...
   </DL>
 
 <LI><DL><DT>Bei der Geb&uuml;hrenauswertung mittels <CODE>charger.pl</CODE>
@@ -458,7 +469,7 @@ bus@fgan.de</A>.  Weitere Kontaktm&ouml;glichkeiten finden Sie
 
 <ADDRESS> ruf098 WWW, <A HREF="http://www.fgan.de/~bus/">Michael Bussmann</A>,
 <A HREF="mailto:bus@fgan.de">&lt;bus@fgan.de&gt;</A> ,
-Last change: $Date: 1999/02/07 10:32:20 $, $Revision: 1.13 $
+Last change: $Date: 1999/03/13 16:56:57 $, $Revision: 1.14 $
 </ADDRESS>
 
 </BODY>
