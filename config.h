@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.8 $
- * Last modified:       $Date: 1998/03/14 12:35:04 $
+ * Version:             $Revision: 1.9 $
+ * Last modified:       $Date: 1998/05/22 07:12:31 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -55,12 +55,6 @@
 #define LOCAL_CURRENCY		"DEM"
 
 /*
- * Price for 1 unit.  Should be consistent with the settings in Euracom's
- * PROM or things will be, umm, inconsistent :-)
- */
-#define PRICE_PER_UNIT		0.12
-
-/*
  * Facility for syslog()
  */
 #define DEF_LOGFAC		LOG_LOCAL0
@@ -71,6 +65,11 @@
  * --------------------------------------------------------------------------
  */
 #define FIRMWARE_MAJOR	1
+
+/*
+ * Define this to support parsing of KIT bulk data transfer
+ */
+#define KIT_DUMP_MODE	1
 
 
 /* --------------------------------------------------------------------------

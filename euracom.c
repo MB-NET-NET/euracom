@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.31 $
- * Last modified:       $Date: 1998/03/21 13:55:59 $
+ * Version:             $Revision: 1.32 $
+ * Last modified:       $Date: 1998/05/22 07:12:32 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.31 1998/03/21 13:55:59 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.32 1998/05/22 07:12:32 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -67,7 +67,7 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
               geb->einheiten,
               (geb->einheiten?"s":""),
               geb->betrag,
-              geb->waehrung);
+              LOCAL_CURRENCY);
     }
       break;
 
@@ -121,25 +121,29 @@ void conv_phone(char *dst, const char *src)
  *------------------------------------------------------------------------*/
 struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 {
-  #define MAX_ARGS 6
+  #define MAX_ARGS 7
+
   char *buf=strdup(str);	/* Make a copy */
   char *argv[MAX_ARGS];		/* Arguments */
-  struct tm tm;
-  int num;
+  int num, cnt;
+#if defined(KIT_DUMP_MODE)
+  BOOLEAN kitdump = FALSE;
+#endif
 
   /* Split up input line, I hope short-circuit evaluation is what it's used to be  */
   for (num=0; ((num<MAX_ARGS) && 
                (argv[num]=strtok(num?NULL:buf, "|")) && 
                (stripblank(argv[num]))); num++);
 
-  if ((num<3) || (num>5)) {
+  if ((num<3) || (num>6)) {
     log_msg(ERR_ERROR, "Got %d fields in input line", num);
     safe_free(buf);
     return(NULL);
   }
 
   /* 0: Art und Teilnehmer*/
-  switch (*argv[0]++) {
+  cnt=0;
+  switch (*argv[cnt]++) {
     case 'G':
       geb->art=GEHEND;
       if (num==4) { log_debug(1, "Call seems to be free of charge."); }
@@ -150,46 +154,77 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
       geb->art=KOMMEND;
       break;
     default:
+#if defined(KIT_DUMP_MODE)
+      log_debug(3, "Assuming KIT dump entry");
+      if (num!=6) {
+        log_msg(ERR_ERROR, "KIT dump entry must have 6 fields");
+        safe_free(buf);
+        return(NULL);
+      }
+      geb->art=GEHEND;
+      kitdump=TRUE;
+#else
       log_msg(ERR_ERROR, "Field 1 does not contain any class descriptor");
       safe_free(buf);
       return(NULL);
+#endif
       break;
   }
-  geb->teilnehmer=atoi(argv[0]);
+  geb->teilnehmer=atoi(argv[cnt]); cnt++;
 
   /* 1: Datum/Zeit Verbindungsaufbau */
-  memset(&tm, 0, sizeof(tm));
-  strptime(argv[1], "%d.%m.%y, %H:%M", &tm);
-  tm.tm_isdst=-1;
-  if ((geb->datum_vst=mktime(&tm))==(time_t)-1) {
-    log_msg(ERR_WARNING, "Invalid time spec \"%s\". Using system time instead", argv[1]);
-    geb->datum_vst=time(NULL);
-  }
+  {
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    strptime(argv[cnt], "%d.%m.%y, %H:%M", &tm);
+    tm.tm_isdst=-1;
+    if ((geb->datum_vst=mktime(&tm))==(time_t)-1) {
+      log_msg(ERR_WARNING, "Invalid time spec \"%s\". Using system time instead", argv[cnt]);
+      geb->datum_vst=time(NULL);
+    }
+    cnt++;
+   }
 
+  geb->length=0;
+#if defined(KIT_DUMP_MODE)
+  /* (2) Len */
+  if (kitdump) {
+    int h,m,s;
+  
+    sscanf(argv[cnt], "%d.%d:%d", &h, &m, &s);
+    if ((h<0) || (h>100) || (m<0) || (m>59) || (s<0) || (s>59)) {
+      log_msg(ERR_WARNING, "Strange H.M:%S line \"%s\".  Ignoring...", argv[cnt]);
+      geb->length=0;
+    } else {
+      geb->length=((h*60)+m)*60+s;
+    }
+    cnt++;
+  }
+#endif
+      
   /* 2: Telephone-# */
-  if (str_isdigit(argv[2])) {
-    conv_phone(geb->nummer, argv[2]);
+  if (str_isdigit(argv[cnt])) {
+    conv_phone(geb->nummer, argv[cnt]);
   } else {
     strcpy(geb->nummer, "");    /* Null string */
   }
+  cnt++;
 
   /* 3: Einheiten */
-  geb->einheiten=(num>3)?atoi(argv[3]):0;
+  geb->einheiten=(num>cnt)?atoi(argv[cnt]):0;
+  cnt++;
 
   /* 4: Gebuehr */
-  if (num>4) {
+  if (num>cnt) {
     char *cp;
 
-    if ((cp=strchr(argv[4], ','))) {*cp='.';}
-    if ((cp=strchr(argv[4], ' '))) {*cp='\0';}
-    geb->betrag=(float)atof(argv[4]);
+    if ((cp=strchr(argv[cnt], ','))) { *cp='.';}
+    if ((cp=strchr(argv[cnt], ' '))) { *cp='\0';}
+    geb->betrag=(float)atof(argv[cnt]);
   } else {
     geb->betrag=0;
   }
-
-  /* Default-Infos */
-  strcpy(geb->waehrung, LOCAL_CURRENCY);
-  geb->betrag_base=PRICE_PER_UNIT;
+  cnt++;
 
   /* Don't touch geb->datum_sys */
   safe_free(buf);

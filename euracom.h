@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.12 $
- * Last modified:       $Date: 1998/03/14 12:36:44 $
+ * Version:             $Revision: 1.13 $
+ * Last modified:       $Date: 1998/05/22 07:12:33 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -68,15 +68,14 @@ typedef char TelNo[33];
 
 /* Aufbau Gebühreninfo */
 struct GebuehrInfo {
+  enum TVerbindung art;
   int    teilnehmer;    /* Interner Teilnehmer */
   TelNo  nummer;        /* Remote # */
   time_t datum_vst;     /* Datum/Zeit Verbindungsaufbau (von OVSt bzw. Euracom) */
   time_t datum_sys;     /* Datum/Zeit Eintrag (approx. Verbindungsende) */
   int    einheiten;     /* Anzahl verbrauchter Einheiten */
-  enum TVerbindung art;
-  float  betrag_base;   /* Betrag für eine EH */
+  int    length;	/* Duration of call (in s) */
   float  betrag;        /* Gesamtbetrag */
-  char   waehrung[4];   /* Währungsbezeichnung */
 };
 
 /* Database subsystem: postgres.c, msql.c */
