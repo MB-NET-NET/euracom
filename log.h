@@ -1,7 +1,7 @@
 /*********************************************************************/
 /* log.h - Logging utilities                                         */
 /*                                                                   */
-/* Copyright (C) 1996-1996 MB Computrex           Released under GPL */
+/* Copyright (C) 1996-2001 MB Computrex           Released under GPL */
 /*********************************************************************/
 
 #if !defined(_LOG_H)

@@ -5,12 +5,12 @@
 #
 # avon.pl -- TelNo -> FQTN converter
 #
-# Copyright (C) 1996-2000 by Michael Bussmann
+# Copyright (C) 1996-2001 Michael Bussmann
 #
-# Authors:             Michael Bussmann <bus@fgan.de>
+# Authors:             Michael Bussmann <bus@mb-net.net>
 # Created:             1997-08-29 09:44:19 GMT
-# Version:             $Revision: 1.14 $
-# Last modified:       $Date: 2000/09/10 08:05:41 $
+# Version:             $Revision: 1.15 $
+# Last modified:       $Date: 2001/06/16 17:07:21 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: avon.pl,v 1.14 2000/09/10 08:05:41 bus Exp $
+# $Id: avon.pl,v 1.15 2001/06/16 17:07:21 bus Exp $
 #
 
 use DBI;

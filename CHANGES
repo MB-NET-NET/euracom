@@ -1,4 +1,4 @@
-$Date: 1999/06/03 12:30:40 $, $Revision: 1.16 $
+$Date: 2001/06/16 17:07:21 $, $Revision: 1.17 $
 
 [*]: Nicht öffentliche oder Beta Release
 
@@ -48,4 +48,7 @@ $Date: 1999/06/03 12:30:40 $, $Revision: 1.16 $
 | rel-1_3_1  |        | - Lizenz auf GPL version 2 eingeschränkt
 |            |        | - Restliche Probleme vom V24 Interface beseitigt
 |            |        |   (Cyclades CR/NL Prob. bei Volker)
+|------------+--------+-------------------------------------------------------
+| 2001-06-16 | 1.3.2 *| - Exotische Tk-Anlage (Alex)
+|            |        | 
 |------------+--------+-------------------------------------------------------

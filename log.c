@@ -1,15 +1,15 @@
 /*********************************************************************/
 /* log.c - Logging utilities                                         */
 /*                                                                   */
-/* Copyright (C) 1996-1998 MB Computrex           Released under GPL */
+/* Copyright (C) 1996-2001 MB Computrex           Released under GPL */
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: log.c,v 1.4 2000/12/17 17:14:48 bus Exp $
+ * Version:	$Id: log.c,v 1.5 2001/06/16 17:07:21 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/log.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: log.c,v 1.4 2000/12/17 17:14:48 bus Exp $";
+static char rcsid[] = "$Id: log.c,v 1.5 2001/06/16 17:07:21 bus Exp $";
 
 #include "config.h"
 

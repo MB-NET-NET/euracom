@@ -1,15 +1,15 @@
 /*********************************************************************/
 /* privilege.c - Utils for changing UID/EUID                         */
 /*                                                                   */
-/* Copyright (C) 1998-1998 MB Computrex           Released under GPL */
+/* Copyright (C) 1998-2001 MB Computrex           Released under GPL */
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: privilege.c,v 1.3 1999/11/02 09:55:13 bus Exp $
+ * Version:	$Id: privilege.c,v 1.4 2001/06/16 17:07:21 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/privilege.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: privilege.c,v 1.3 1999/11/02 09:55:13 bus Exp $";
+static char rcsid[] = "$Id: privilege.c,v 1.4 2001/06/16 17:07:21 bus Exp $";
 
 #include "config.h"
 

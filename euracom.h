@@ -3,12 +3,12 @@
  *
  * euracom.h -- Various function prototypes and externals
  *
- * Copyright (C) 1996-1998 by Michael Bussmann
+ * Copyright (C) 1996-2001 Michael Bussmann
  *
- * Authors:             Michael Bussmann <bus@fgan.de>
+ * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.17 $
- * Last modified:       $Date: 1999/03/13 16:56:58 $
+ * Version:             $Revision: 1.18 $
+ * Last modified:       $Date: 2001/06/16 17:07:21 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it

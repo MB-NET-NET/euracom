@@ -6,14 +6,14 @@
 #
 # DO NOT USE WITHOUT ADAPTING IT TO YOUR LOCAL REQUIREMENTS
 #
-# $Id: do_charger.sh,v 1.9 1998/01/16 13:30:38 bus Exp $
+# $Id: do_charger.sh,v 1.10 2001/06/16 17:07:21 bus Exp $
 #
 
 PATH=/bin:/usr/bin:/usr/local/bin:/usr/sbin:/sbin
 
 EXEFILE="/var/lib/euracom/charger.pl"
 LASTFILE="/var/lib/euracom/last.checked"
-MAILTO="bus@goliath.mb.priv"
+MAILTO="bus@goliath.intranet.mb-net.net"
 ISDNREP="/usr/bin/isdnrep"
 
 ALL_MSN="0 1 2"

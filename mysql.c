@@ -5,7 +5,7 @@
  *
  * Copyright (C) 1998 by Stefan Schorsch
  *
- * Authors:             Michael Bussmann <bus@fgan.de>
+ * Authors:             Michael Bussmann <bus@mb-net.net>
  *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>
  * 			Stefan Schorsch <sschorsch@mail.rmc.de>
  * Created:             1997-08-28 09:30:44 GMT
