@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.16 $
- * Last modified:       $Date: 1998/05/23 07:56:16 $
+ * Version:             $Revision: 1.17 $
+ * Last modified:       $Date: 1998/05/29 07:26:36 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.16 1998/05/23 07:56:16 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.17 1998/05/29 07:26:36 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -78,6 +78,7 @@ struct SerialFile *serial_allocate_file()
   sf=safe_malloc(sizeof(struct SerialFile));
   sf->fd=0;
   sf->protocol_filename=sf->fd_device=NULL;
+  sf->buffer=(char *)malloc(1024);
 
   log_debug(3, "serial: Allocation request");
   return(sf);
@@ -96,6 +97,7 @@ void serial_deallocate_file(struct SerialFile *sf)
   if (sf) { 
     safe_free(sf->protocol_filename);
     safe_free(sf->fd_device);
+    safe_free(sf->buffer);
     safe_free(sf);
   }
 }
@@ -134,13 +136,12 @@ void serial_set_device(struct SerialFile *sf, const char *str)
  * Converts sf->fd_device name into lockfile name.  Can only be called
  * _after_ serial_set_device()
  *
- * Inputs: SerialFile
- * RetCode: Lockfile name (Ptr to static string)
+ * Inputs: SerialFile, Buffer
+ * RetCode: Lockfile name
  *------------------------------------------------------------------------*/
-static char *device2lockfile(const struct SerialFile *sf)
+static char *device2lockfile(const struct SerialFile *sf, char *lock_file)
 {
   char *s;
-  static char lock_file[128];
 
   /* Construct lockfile-name */
   unless ((s=strrchr(sf->fd_device,'/'))) {
@@ -180,9 +181,10 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
   FILE *fp;
   int flags;
   struct termios term;
-  char *lock_file = device2lockfile(sf);
+  char lock_file[128];
 
   log_debug(1, "Initializing RS232 port %s...", sf->fd_device);
+  device2lockfile(sf, lock_file);
 
   /* Part 1a - Check for old lockfile */
   log_debug(2, "Checking status of lockfile %s", lock_file);
@@ -289,7 +291,7 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
  *------------------------------------------------------------------------*/
 BOOLEAN serial_close_device(struct SerialFile *sf)
 {
-  char *lock_file;
+  char lock_file[128];
 
   log_debug(1, "Shutting down RS232 port %s...", sf->fd_device);
 
@@ -326,7 +328,7 @@ BOOLEAN serial_close_device(struct SerialFile *sf)
   }
 
   /* Remove lockfile */
-  if ((lock_file=device2lockfile(sf))) {
+  if (device2lockfile(sf, lock_file)) {
     delete_file(lock_file);
   }
 
@@ -343,8 +345,7 @@ BOOLEAN serial_close_device(struct SerialFile *sf)
  *------------------------------------------------------------------------*/
 char *readln_rs232(struct SerialFile *sf)
 {
-  static char buf[1024];
-  char *cp=buf;
+  char *cp=sf->buffer;
 
   do {
     struct timeval tv;
@@ -377,7 +378,7 @@ char *readln_rs232(struct SerialFile *sf)
         /* I think this is unlikely to happen, but:
            "Be prepared... that's the Boy Scout's solemn creed"
         */
-        if ((cp-buf)>1023) {
+        if ((cp-(sf->buffer))>1023) {
 	  log_msg(ERR_CRIT, "Buffer overflow while reading RS232 input");
           return(NULL);
         }
@@ -395,9 +396,9 @@ char *readln_rs232(struct SerialFile *sf)
 
     if (fp) {
       log_debug(5, "Appending to protocol file");
-      fputline(fp, buf);
+      fputline(fp, sf->buffer);
       fclose(fp);
     }
   }
-  return(buf);
+  return(sf->buffer);
 }
