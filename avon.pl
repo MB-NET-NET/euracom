@@ -1,33 +1,64 @@
 #!/usr/bin/perl -w
 
+#***************************************************************************
+# euracom -- Euracom 18x Gebührenerfassung
+#
+# avon.pl -- TelNo -> FQTN converter
+#
+# Copyright (C) 1996-1997 by Michael Bussmann
+#
+# Authors:             Michael Bussmann <bus@fgan.de>
+# Created:             1997-09-02 11:03:41 GMT
+# Version:             $Revision: 1.7 $
+# Last modified:       $Date: 1998/01/15 15:08:01 $
+# Keywords:            ISDN, Euracom, Ackermann
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public Licence as published by the
+# Free Software Foundation; either version 2 of the licence, or (at your
+# opinion) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
+# or fitness for a particular purpose.  See the GNU Public Licence for
+# more details.
+#**************************************************************************
+
+#
+# $Id: avon.pl,v 1.7 1998/01/15 15:08:01 bus Exp $
+#
+
 use Pg;
 
 require 'getopts.pl';
 require 'tel-utils.pm';
-
-#
-# Telno -> FQTN converter
-#
-# $Id: avon.pl,v 1.6 1997/10/05 09:16:59 bus Exp $
-#
-
-#
-# CmdLineParameters
-# charger.pl 
-#	-H host 
-#	-D database
-#
 
 $| = 1;
 
 #
 # Parse CMD line params
 #
-$opt_H=$opt_D=$opt_d=$main::debugp=undef;
-&Getopts('H:D:d');
+$opt_H=$opt_D=$opt_d=$opt_h=$main::debugp=undef;
+&Getopts('dhH:D:');
 $main::db_host= $opt_H || "tardis";
 $main::db_db  = $opt_D || "isdn";
 $main::debugp = $opt_d || "";
+
+#
+# Print help
+#
+if ($opt_h) {
+  print <<"EOF";
+Usage: $0 [options]
+
+  -H host       Sets database host
+  -D name       Sets database name to connect to
+
+  -d            Enable debug mode
+  -h            You're reading it
+EOF
+  exit(0);
+}
 
 #
 # Fire up connection

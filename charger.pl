@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.9 $
-# Last modified:       $Date: 1998/01/08 12:31:19 $
+# Version:             $Revision: 1.10 $
+# Last modified:       $Date: 1998/01/15 15:08:02 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -25,15 +25,7 @@
 #**************************************************************************
 
 #
-# CmdLineParameters
-# charger.pl 
-#	-H host 
-#	-D database
-#	-v von
-#	-b bis
-#	-t Interne Nummer [,Interne Nummer ...]
-#	-X Titel MSN
-#	-d
+# $Id: charger.pl,v 1.10 1998/01/15 15:08:02 bus Exp $
 #
 
 use Pg;
@@ -47,14 +39,17 @@ require 'tel-utils.pm';
 #
 $usedate="sys_date";
 
+#
+# Make output unbuffered (e.g. for cgi scripts)
+#
 $| = 1;
 
 #
 # Parse CMD line params
 #
-$opt_H=$opt_D=$opt_v=$opt_b=$opt_X=$opt_t=$opt_b=$opt_d=$debugp="";
+$opt_h=$opt_H=$opt_D=$opt_v=$opt_b=$opt_X=$opt_t=$opt_B=$opt_d=$debugp=undef;
 
-&Getopts('dH:D:v:b:t:X:b:');
+&Getopts('hdH:D:v:b:t:X:B:');
 
 $db_host= $opt_H || "tardis";
 $db_db  = $opt_D || "isdn";
@@ -63,8 +58,32 @@ $von    = $opt_v || "";
 $bis    = $opt_b || "";
 $MSN    = $opt_X || "";
 $tln    = $opt_t || "";
-$charge = $opt_b || 18.0;
+$charge = $opt_B || 18.0;
+
 $debugp = $opt_d || "";
+
+#
+# Print help
+#
+if ($opt_h) {
+  print <<"EOF";
+Usage: $0 [options]
+
+  -H host	Sets database host
+  -D name	Sets database name to connect to
+
+  -v dspec	Date/Time
+  -b dspec	Date/Time
+  -t no[,no...]	Limit to these internal numbers
+
+  -X msn	Sets title
+  -B amount	Sets base charge
+
+  -d		Enable debug mode
+  -h		You're reading it
+EOF
+  exit(0);
+}
 
 #
 # Fire up connection
@@ -117,6 +136,7 @@ print "<tr><th>Anschlu&szlig;</th><th>Datum</th> <th>Rufnummer</th><th>Einheiten
 #
 # Perform evaluation
 #
+$counter=0;
 SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),einheiten,direction,pay,currency,$usedate FROM euracom $filter_cmd ORDER BY $usedate", "eval_result");
 
 #
@@ -127,8 +147,9 @@ SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),einheiten,direct
 #
 # Print footer
 #
-$res=$db->exec("SELECT sum(einheiten), sum(pay) from euracom $filter_cmd");
-$val1=$res->getvalue(0,0); $val2=$res->getvalue(0,1);
+$res=$db->exec("SELECT sum(einheiten), sum(pay) from euracom $filter_cmd") || die "SELECT sum";
+$val1=$res->getvalue(0,0);
+$val2=$res->getvalue(0,1);
 print "<tr><td></td><td></td><td>$counter Gespr&auml;che</td><td>$val1</td><td>$val2 DEM</td></tr>\n";
 printf "<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td></td><td>%.2f DEM</td></tr>\n", $charge;
 printf "<tr><td></td><td></td><td>GESAMT:</td><td></td><td><B>%.2f DEM</B></td></tr>\n", $val2+$charge;
