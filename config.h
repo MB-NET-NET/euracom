@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.9 $
- * Last modified:       $Date: 1998/05/22 07:12:31 $
+ * Version:             $Revision: 1.10 $
+ * Last modified:       $Date: 1998/08/29 08:44:58 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -59,6 +59,14 @@
  */
 #define DEF_LOGFAC		LOG_LOCAL0
 
+/*
+ * Shall I use the time/date spec as given by the PABX
+ * or may I trust the System Clock?
+ * Note that the euracom clock is buggy in f/w 1.1x.
+ * !! THIS OPTION CURRENTLY HAS NO EFFECT
+ */
+#define	USE_DATE_FROM		pabx
+/* #define	USE_DATE_FROM	system */
 
 /* --------------------------------------------------------------------------
  * Euracom settings
