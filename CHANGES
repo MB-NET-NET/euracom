@@ -1,4 +1,4 @@
-$Date: 1998/03/14 12:33:50 $, $Revision: 1.7 $
+$Date: 1998/03/21 13:57:28 $, $Revision: 1.8 $
 
 |------------+--------+------------------------------------------------------
 | Datum/STag |Version | Wichtigste Änderungen
@@ -28,6 +28,9 @@ $Date: 1998/03/14 12:33:50 $, $Revision: 1.7 $
 | rel-1_1_3  |        |   |-> Support fur Ausgabe "Gebührenfreies Gespräch"
 |------------+--------+-------------------------------------------------------
 | 1998-03-14 | 1.2.0 *| - Kleinere Änderungen: MM, perl-scripts, Exit-code
-| rel-1_2_0a1|[Micha.]| - Test Support minisql (Michael) 
+| rel-1_2_0a1|[Micha.]| - Test Support mSQL (Michael) 
 |            |        | - F/W 2.x fix (Markus)
+|------------+--------+-------------------------------------------------------
+| 1998-03-22 | 1.2.0  | - mSQL support (Michael)
+| rel-1_2_0  |        | 
 |------------+--------+-------------------------------------------------------
