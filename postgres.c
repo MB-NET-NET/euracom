@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.19 $
- * Last modified:       $Date: 1999/03/13 16:56:59 $
+ * Version:             $Revision: 1.20 $
+ * Last modified:       $Date: 1999/03/14 09:29:43 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.19 1999/03/13 16:56:59 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.20 1999/03/14 09:29:43 bus Exp $";
 
 #include "config.h"
 
@@ -411,7 +411,7 @@ BOOLEAN database_geb_log(const struct GebuehrInfo *geb)
 
   switch (geb->art) {
     case GEHEND:
-      strcatf(statement, "'%d', 'O', '%.2f', '%d', '%s'",
+      strcatf(statement, "'%d', 'O', '%.4f', '%d', '%s'",
         geb->einheiten,
         geb->betrag,
         geb->length,

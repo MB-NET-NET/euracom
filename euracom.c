@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.38 $
- * Last modified:       $Date: 1999/03/13 16:56:58 $
+ * Version:             $Revision: 1.39 $
+ * Last modified:       $Date: 1999/03/14 09:29:43 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.38 1999/03/13 16:56:58 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.39 1999/03/14 09:29:43 bus Exp $";
 
 #include "config.h"
 
@@ -61,7 +61,7 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
 {
   switch (geb->art) {
     case GEHEND: {
-      syslog(LOG_NOTICE, "%d called %s. %d unit%s = %.2f %s",
+      syslog(LOG_NOTICE, "%d called %s. %d unit%s = %.4f %s",
               geb->teilnehmer, 
               geb->nummer,
               geb->einheiten,
