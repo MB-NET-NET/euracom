@@ -1,4 +1,4 @@
-/* $Id: charger.c,v 1.1 1996/10/27 13:21:52 bus Exp $ */
+/* $Id: charger.c,v 1.2 1996/11/02 15:18:18 bus Exp $ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -132,11 +132,24 @@ int print_line(const struct GebuehrInfo *geb)
       break; 
 
     case GEHEND:
-      sprintf(buf2, "%s & %d & %.2f DM", 
-	      geb->nummer,
+      {
+	struct FQTN fqtn;
+	TelNo telno;
+
+	lookup_number(geb->nummer, &fqtn);
+	convert_telno(telno, &fqtn);
+
+	sprintf(buf2, "%s & %d & %.2f DM", 
+	      telno,
 	      geb->einheiten,
 	      geb->betrag);
-      strcat(buf, buf2);
+	strcat(buf, buf2);
+	if (strlen(fqtn.avon_name) || strlen(fqtn.wkn)) {
+	  sprintf(buf2, "\\\\\n& & \\footnotesize{%s (%s)} & &",
+		  fqtn.wkn, fqtn.avon_name);
+	  strcat(buf, buf2);
+	}
+      }
       break;
 
     default:
@@ -279,8 +292,21 @@ int main(argc, argv)
   /* Check logfiles */
   if (!gebuehr_filename) { gebuehr_filename=strdup(GEBUEHR_FILE); }
 
+  /* Check for DB files */
+  check_createDB(AVON_TXT_NAME, AVON_DB_NAME);
+  check_createDB(WKN_TXT_NAME, WKN_DB_NAME);
+
+  /* Open database files */
+  if (!openDB(AVON_DB_NAME, WKN_DB_NAME)) {
+    log_msg(ERR_FATAL, "Could not open database files");
+    exit(1);
+  }
+
   /* Open charge file. Do evaluation */
   eval_chargefile(gebuehr_filename, &filter);
+
+  closeDB();
+  close_log();
 
   return(0);  
 }

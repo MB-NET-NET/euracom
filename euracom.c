@@ -54,7 +54,8 @@ unsigned int guess_duration(const struct GebuehrInfo *geb)
 BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
 {
   char res[1024];
-  char art;
+  struct FQTN fqtn;
+  BOOLEAN unknown_no = FALSE;
 
   /* Logfile öffnen */
   if (gebuehr_filename) {
@@ -74,39 +75,59 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
       log_msg(ERR_CRIT, "Could not open logfile: %s", strerror(errno));
     }
   }
-      
+
+  /* Open databases */
+  if (!openDB(AVON_DB_NAME, WKN_DB_NAME)) {
+    log_msg(ERR_CRIT, "Could not open databases");
+  }
+
   /* Syslog meldung */
   strcpy(res, "");
+  unknown_no=(strcmp(geb->nummer, UNKNOWN_NO)==0);
+
+  if (!unknown_no) {
+    lookup_number(geb->nummer, &fqtn);
+  }
   switch (geb->art) {
     case FEHLER:
       log_msg(ERR_WARNING, "Invalid geb->art");
       return(FALSE);
       break;
-    case GEHEND:
+    case GEHEND: {
+      TelNo telno;
+
+      convert_telno(telno, &fqtn);
       sprintf(res, "%d called %s. %d units = %6.2f DM (%u s)",
-	      geb->teilnehmer, geb->nummer,
+	      geb->teilnehmer, telno,
 	      geb->einheiten,
 	      geb->betrag,
 	      guess_duration(geb));
+    }
       break;
     case KOMMEND:
-      if (strcmp(geb->nummer, UNKNOWN_NO)==0) {
+      if (unknown_no) {
         sprintf(res, "Incoming call but no connection (%u s)",
 	      guess_duration(geb));
       } else {
+	TelNo telno;
+
+	convert_telno(telno, &fqtn);
         sprintf(res, "Incoming call from %s. No connection (%u s)",
-	      geb->nummer,
+	      telno,
 	      guess_duration(geb));
       }
       break;
     case VERBINDUNG:
-      if (strcmp(geb->nummer, UNKNOWN_NO)==0) {
+      if (unknown_no) {
       	sprintf(res, "Incoming call for %d (%u s)",
       		geb->teilnehmer,
       		guess_duration(geb));
       } else {
+	TelNo telno;
+
+	convert_telno(telno, &fqtn);
       	sprintf(res, "Incoming call from %s for %d (%u s)",
-	      geb->nummer, geb->teilnehmer,
+	      telno, geb->teilnehmer,
 	      guess_duration(geb));
       }
       break;
@@ -116,6 +137,10 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
   }	/* SWITCH */
 
   syslog(LOG_NOTICE, "%s", res);
+  
+  /* Close DB */
+  closeDB();
+
   return(TRUE);
 }
 
@@ -226,7 +251,10 @@ int shutdown_program(int force)
 /*------------------------------------------------------*/
 int hangup(int sig)
 {
-  log_msg(ERR_NOTICE, "Signal %d received", sig);
+  log_msg(ERR_NOTICE, "SIGHUP received. Building databases");
+  signal(sig, (void *)hangup);
+  check_createDB(AVON_TXT_NAME, AVON_DB_NAME);
+  check_createDB(WKN_TXT_NAME, WKN_DB_NAME);
   return(0);
 }
 
