@@ -5,18 +5,18 @@
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: log.c,v 1.2 1999/01/08 11:40:28 bus Exp $
+ * Version:	$Id: log.c,v 1.3 1999/11/02 09:55:13 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/log.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: log.c,v 1.2 1999/01/08 11:40:28 bus Exp $";
+static char rcsid[] = "$Id: log.c,v 1.3 1999/11/02 09:55:13 bus Exp $";
 
 #include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <paths.h>
