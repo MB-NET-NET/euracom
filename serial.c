@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.8 $
- * Last modified:       $Date: 1998/01/18 10:58:15 $
+ * Version:             $Revision: 1.9 $
+ * Last modified:       $Date: 1998/01/22 15:16:07 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.8 1998/01/18 10:58:15 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.9 1998/01/22 15:16:07 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -215,14 +215,14 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
   }
 
   /* Part 2 - Open device */
-  if ((sf->fd=open(sf->fd_device, O_RDWR | O_NOCTTY))<0) {
+  if ((sf->fd=open(sf->fd_device, O_RDWR | O_NOCTTY | O_NDELAY))<0) {
     log_msg(ERR_CRIT, "Error opening %s: %s", sf->fd_device, strerror(errno));
     sf->fd=0;
     serial_close_device(sf);
     return(FALSE);
   }
 
-  fcntl(sf->fd, F_SETFL, O_RDONLY);
+  fcntl(sf->fd, F_SETFL, O_RDWR);
 
   /* Part 3 - Set line parameters (9600, N, 8, 1) */
 
@@ -252,6 +252,8 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
   term.c_oflag=0;
   term.c_cflag=CSIZE | CS8 | CREAD | HUPCL | CLOCAL | CRTSCTS;
   term.c_lflag=0;
+  term.c_cc[VMIN]=1;
+  term.c_cc[VTIME]=0;
 #endif
 
   /* Set in/out speed to 9600 baud */
