@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-08-29 09:44:19 GMT
-# Version:             $Revision: 1.10 $
-# Last modified:       $Date: 1999/03/13 16:56:58 $
+# Version:             $Revision: 1.11 $
+# Last modified:       $Date: 1999/10/29 09:46:07 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: avon.pl,v 1.10 1999/03/13 16:56:58 bus Exp $
+# $Id: avon.pl,v 1.11 1999/10/29 09:46:07 bus Exp $
 #
 
 use Pg;
@@ -102,11 +102,11 @@ sub print_fqtn()
 
   # Construct HTML
   $msg="";
-  if ($avon) { $msg.="($avon) "; }
-  if ($telno) { $msg.="$telno"; } else { $msg.="(No number)"; }
-  if ($rest) { $msg.=" - $rest"; }
+  $msg.="($avon) " if ($avon);
+  $msg.=($telno?$telno:"(No number)");
+  $msg.=" - $rest" if ($rest);
   $msg.=";";
-  if ($wkn) { $msg.=" $wkn"; }
-  if ($avon_name) { $msg.=" ($avon_name)"; }
+  $msg.=" $wkn" if ($wkn);
+  $msg.=" ($avon_name)" if ($avon_name);
   return($msg);
 }
