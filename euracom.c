@@ -6,7 +6,6 @@
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <signal.h>
-#include <termios.h>
 #include <string.h>
 #include <syslog.h>
 #include "log.h"
@@ -27,12 +26,14 @@ struct GebuehrInfo {
 
 #define DEFAULT_DEVICE		"/dev/cua0"
 #define GEBUEHR_FILE		"/var/log/euracom.gebuehr"
+#define DEF_LOGFAC		LOG_LOCAL0
+
 
 /* Globals */
 int euracom_fd = 0;			/* RS232 port to Euracom */
 char *gebuehr_filename = NULL;		/* Filename für Gebuehrendaten */
 
-
+extern char *readln_rs232();
 
 /*------------------------------------------------------*/
 /* BOOLEAN gebuehr_log()                                */
@@ -111,11 +112,14 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   char *tok;
   char *buf=strdup(str);
   char art[3];
+  char teiln[25];
   struct tm tm;
 
   /* Art und Teilnehmer*/
   if (!(tok=strtok(buf, "|"))) { return(NULL); }
-  sscanf(tok, "%s %d", art, &geb->teilnehmer);
+  geb->teilnehmer=0;
+  sscanf(tok, "%s %s", art, teiln);
+  geb->teilnehmer=atoi(teiln);
   switch (art[0]) {
     case 'G':
       geb->art=GEHEND;
@@ -164,88 +168,6 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   free(buf);
   /* geb->doe wird *nicht* gesetzt! */
   return(geb);
-}
-
-/*------------------------------------------------------*/
-/* int init_euracom_port()                              */
-/* */
-/* Öffnet RS232 device, setzt RTS                       */
-/* */
-/* RetCode: fd, -1: Error                               */
-/*------------------------------------------------------*/
-int init_euracom_port(const char *device)
-{
-  struct termios term;
-  int fd;
-  int flags;
-
-  log_msg(ERR_DEBUG, "Initializing Euracom RS232 port (%s)", device);
-
-  if ((fd=open(device, O_RDWR))<0) {
-    log_msg(ERR_CRIT, "Error opening %s: %s", device, strerror(errno));
-    return(-1);
-  }
-
-  if (tcgetattr(fd, &term) == -1 ) {
-    log_msg(ERR_CRIT, "tcgetattr: %s", strerror(errno));
-    return(-1);
-  }
-  memset(term.c_cc, 0, sizeof(term.c_cc));
-  term.c_cc[VMIN]=1;
-  term.c_cflag=B9600 | CS8 | CREAD | CRTSCTS;
-  term.c_iflag=IGNBRK | IGNPAR;
-  term.c_oflag=0;
-  term.c_lflag=0;
-
-  if (tcsetattr(fd, TCSANOW, &term)==-1) {
-    log_msg(ERR_CRIT, "tcsetattr: %s", strerror(errno));
-    return(-1);
-  }
-
-  sleep(1);
-  ioctl(fd, TIOCMGET, &flags);
-  if (!(flags & TIOCM_RTS)) {
-    log_msg(ERR_CRIT, "RTS not set");
-    close_euracom_port(fd);
-    return(-1);
-  }
-  if (!(flags & TIOCM_CTS)) {
-    log_msg(ERR_CRIT, "Euracom did not raise CTS. Check connection");
-    close_euracom_port(fd);
-    return(-1);
-  }
-
-  return(fd);
-}
-
-
-/*------------------------------------------------------*/
-/* int close_euracom_port()                             */
-/* */
-/* Schließt RS232 port, setzt RTS zurück                */
-/* */
-/* RetCode: 0: O.k, -1: Error                           */
-/*------------------------------------------------------*/
-int close_euracom_port(fd)
-{
-  int flags = 0;
-
-  log_msg(ERR_DEBUG, "Shutting down Euracom RS232 port");
-
-  ioctl(fd, TIOCMSET, &flags);
-
-  sleep(1);
-  ioctl(fd, TIOCMGET, &flags);
-  if ((flags & TIOCM_RTS)) {
-    log_msg(ERR_CRIT, "RTS still set");
-    return(-1);
-  }
-  if ((flags & TIOCM_CTS)) {
-    log_msg(ERR_CRIT, "CTS still set");
-    return(-1);
-  }
-
-  close(fd);
 }
 
 
@@ -311,63 +233,9 @@ int terminate(int sig)
 /*------------------------------------------------------*/
 void usage(const char *prg)
 {
-  printf("Usage: %s [-gjp] device\n", prg);
+  printf("Usage: %s [-g] device\n", prg);
   printf("\t-g file\tGebührenfile\n");
-  printf("\t-j file\tJunkfile\n");
-  printf("\t-p file\tProtokollfile\n");
   exit(0);
-}
-
-
-/*------------------------------------------------------*/
-/* char *readln_rs232()                                 */
-/* */
-/* Daten liegen an fd an. Lesen bis 0A 0D 00 oder timeo */
-/* */
-/* RetCode: Ptr to static string, NULL: Error           */
-/*------------------------------------------------------*/
-char *readln_rs232(int fd)
-{
-  static char buf[1024];
-  char *cp=buf;
-  fd_set fds;
-  int retval;
-
-  FD_ZERO(&fds);
-  FD_SET(fd, &fds);
-  do {
-    struct timeval tv;
-    char inbuf;
-
-    tv.tv_sec=5; tv.tv_usec=0;
-    if ((retval=select(fd+1, &fds, NULL, NULL, &tv))>0) {
-      /* Data from Euracom Port */
-      if (read(fd, &inbuf, 1)!=1) {
-	log_msg(ERR_ERROR, "read() failed in readln_rs232: %s", strerror(errno));
-	break;
-      }
-      *cp=inbuf;
-      if (*cp=='\0') {
-	if ((*(cp-1)!='\r') || (*(cp-2)!='\n')) {
-	  log_msg(ERR_ERROR, "Incomplete line from Euracom");
-	}
-	*(cp-2)='\0';
-	break;
-      } else {
-	cp++;
-      }
-    }
-  } while (retval>0);
-
-  if (retval==0) {
-    log_msg(ERR_WARNING, "Timeout during RS232 I/O");
-    return(NULL);
-  } else if (retval<0) {
-    log_msg(ERR_ERROR, "select() failed: %s", strerror(errno));
-    return(NULL);
-  } else {
-    return(buf);
-  }
 }
 
 
@@ -380,6 +248,15 @@ char *readln_rs232(int fd)
 /*------------------------------------------------------*/
 BOOLEAN parse_euracom_data(const char *buf)
 {
+  {
+    FILE *fp = fopen("/var/log/euracom.protocol", "a");
+    
+    if (fp) { 
+      fprintf(fp, "%s\n", buf); 
+      fclose(fp); 
+    }
+  }
+
   /* Check message type */
   if (!strchr(buf, '|')) {
     /* Junk daten */
@@ -423,9 +300,11 @@ int select_loop()
   max_fd++;
   do {
     struct timeval tv;
-
+ 
+    FD_ZERO(&rfds);
+    FD_SET(euracom_fd, &rfds);
     tv.tv_sec=10; tv.tv_usec=0;
-    retval=select(max_fd, &rfds, NULL, NULL, &tv);
+    retval=select(FD_SETSIZE, &rfds, NULL, NULL, &tv);
 
     if (retval>0) {
       if (FD_ISSET(euracom_fd, &rfds)) {
@@ -437,6 +316,8 @@ int select_loop()
 	} else {
 	  parse_euracom_data(buf);
 	}
+      } else {
+	log_msg(ERR_FATAL, "Data on non-used socket");
       }
     }	/* IF retval */
   } while (retval!=-1);
@@ -489,7 +370,7 @@ int main(argc, argv)
   }
 
   /* Re-open syslog facility */
-  openlog("Euracom", 0, LOG_LOCAL0);
+  openlog("Euracom", 0, DEF_LOGFAC);
 
   /* Set up signal handlers */
   signal(SIGHUP,(void *)hangup);
