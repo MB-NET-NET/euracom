@@ -3,7 +3,7 @@
 #
 # Telefongebührenauswertung
 # 108537, 13155, 4275, 4095
-# $Id: do_charger.sh,v 1.1 1996/10/27 12:38:35 bus Exp $
+# $Id: do_charger.sh,v 1.2 1996/10/27 12:50:50 bus Exp $
 #
 
 EXEFILE="/var/lib/euracom/charger"
@@ -48,7 +48,7 @@ for ndx in $ALL_MSN; do
 	$EXEFILE -g $GEBFILE $THIS_APP -v$TIME_FROM 2>>$ERRFILE >$OUTFILE
 
 # Mail results to admin
-	mail -s\"Gebührenauswertung +49 2364 $THIS_MSN\" $MAILTO <$OUTFILE
+	mail -s"Gebührenauswertung +49 2364 $THIS_MSN" $MAILTO <$OUTFILE
 
 # Clean up
 	/bin/rm -f $OUTFILE
