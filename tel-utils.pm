@@ -7,8 +7,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.6 $
-# Last modified:       $Date: 1998/01/16 13:33:28 $
+# Version:             $Revision: 1.7 $
+# Last modified:       $Date: 1998/01/18 09:36:22 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -23,7 +23,7 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.6 1998/01/16 13:33:28 bus Exp $
+# $Id: tel-utils.pm,v 1.7 1998/01/18 09:36:22 bus Exp $
 #
 
 use Pg;
@@ -62,7 +62,7 @@ sub SQLselect()
     debug("Got $tuples records\n");
     while ($i<$tuples) {
       for ($j=0; $j<$res->nfields; $j++) {
-        @datas[$j]=$res->getvalue($i, $j);
+        $datas[$j]=$res->getvalue($i, $j);
       }
       &$callback(@datas);
       $i++;
