@@ -3,10 +3,10 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@fgan.de>
 dnl
-dnl $Id: configure.in,v 1.5 1999/03/19 09:28:05 bus Exp $
+dnl $Id: configure.in,v 1.6 1999/03/19 10:30:04 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.5 $)
+AC_REVISION($Revision: 1.6 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(autoconf.h)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -14,6 +14,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 dnl
 dnl Set default variables
 dnl
+database=postgres
 pidfile="/var/run/euracom.pid"
 lockpath="/var/lock"
 shutdowntimeout=120
@@ -42,8 +43,37 @@ dnl
 AC_MSG_CHECKING(for PostgreSQL support)
 AC_ARG_WITH(postgres,
 [  --with-postgreSQL[=dir]	Use PostgreSQL ],
-[ dbdir=$withval ])
-AC_MSG_RESULT($dbdir)
+[
+  dbdir=$withval
+  database=postgres
+  AC_MSG_RESULT($dbdir)
+],
+[ AC_MSG_RESULT(no) ]
+)
+
+AC_MSG_CHECKING(for msql support)
+AC_ARG_WITH(msql,
+[  --with-msql[=dir]		Use msql ],
+[ dbdir=$withval
+  database=msql
+  AC_MSG_RESULT($dbdir)
+],
+[ AC_MSG_RESULT(no) ]
+)
+
+AC_MSG_CHECKING(for mysql support)
+AC_ARG_WITH(mysql,
+[  --with-mysql[=dir]		Use mysql ],
+[ dbdir=$withval
+  database=mysql
+  AC_MSG_RESULT($dbdir)
+],
+[ AC_MSG_RESULT(no) ]
+)
+
+AC_MSG_CHECKING(what database to use after all)
+AC_SUBST(database)
+AC_MSG_RESULT($database)
 
 dnl
 dnl Check for libraries

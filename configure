@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.4 
+# From configure.in Revision: 1.5 
 # Guess values for system-dependent variables and create Makefiles.
 # Generated automatically using autoconf version 2.12 
 # Copyright (C) 1992, 93, 94, 95, 96 Free Software Foundation, Inc.
@@ -15,6 +15,10 @@ ac_default_prefix=/usr/local
 ac_default_prefix=/usr/local
 ac_help="$ac_help
   --with-postgreSQL[=dir]	Use PostgreSQL "
+ac_help="$ac_help
+  --with-msql[=dir]		Use msql "
+ac_help="$ac_help
+  --with-mysql[=dir]		Use msql "
 ac_help="$ac_help
   --enable-debugging		include debugging code (yes)"
 ac_help="$ac_help
@@ -551,6 +555,7 @@ fi
 
 
 
+database=postgres
 pidfile="/var/run/euracom.pid"
 lockpath="/var/lock"
 shutdowntimeout=120
@@ -566,7 +571,7 @@ dbdir="/opt/postgreSQL"
 # Extract the first word of "gcc", so it can be a program name with args.
 set dummy gcc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:570: checking for $ac_word" >&5
+echo "configure:575: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -595,7 +600,7 @@ if test -z "$CC"; then
   # Extract the first word of "cc", so it can be a program name with args.
 set dummy cc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:599: checking for $ac_word" >&5
+echo "configure:604: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -643,7 +648,7 @@ fi
 fi
 
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works""... $ac_c" 1>&6
-echo "configure:647: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
+echo "configure:652: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
 
 ac_ext=c
 # CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
@@ -653,11 +658,11 @@ ac_link='${CC-cc} -o conftest $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 
 cross_compiling=$ac_cv_prog_cc_cross
 
 cat > conftest.$ac_ext <<EOF
-#line 657 "configure"
+#line 662 "configure"
 #include "confdefs.h"
 main(){return(0);}
 EOF
-if { (eval echo configure:661: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:666: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   ac_cv_prog_cc_works=yes
   # If we can't run a trivial program, we are probably using a cross compiler.
   if (./conftest; exit) 2>/dev/null; then
@@ -677,12 +682,12 @@ if test $ac_cv_prog_cc_works = no; then
   { echo "configure: error: installation or configuration problem: C compiler cannot create executables." 1>&2; exit 1; }
 fi
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler""... $ac_c" 1>&6
-echo "configure:681: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
+echo "configure:686: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
 echo "$ac_t""$ac_cv_prog_cc_cross" 1>&6
 cross_compiling=$ac_cv_prog_cc_cross
 
 echo $ac_n "checking whether we are using GNU C""... $ac_c" 1>&6
-echo "configure:686: checking whether we are using GNU C" >&5
+echo "configure:691: checking whether we are using GNU C" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gcc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -691,7 +696,7 @@ else
   yes;
 #endif
 EOF
-if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:695: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
+if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:700: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
   ac_cv_prog_gcc=yes
 else
   ac_cv_prog_gcc=no
@@ -706,7 +711,7 @@ if test $ac_cv_prog_gcc = yes; then
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS=
   echo $ac_n "checking whether ${CC-cc} accepts -g""... $ac_c" 1>&6
-echo "configure:710: checking whether ${CC-cc} accepts -g" >&5
+echo "configure:715: checking whether ${CC-cc} accepts -g" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_cc_g'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -763,7 +768,7 @@ ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
 echo $ac_n "checking for a BSD compatible install""... $ac_c" 1>&6
-echo "configure:767: checking for a BSD compatible install" >&5
+echo "configure:772: checking for a BSD compatible install" >&5
 if test -z "$INSTALL"; then
 if eval "test \"`echo '$''{'ac_cv_path_install'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -813,7 +818,7 @@ test -z "$INSTALL_PROGRAM" && INSTALL_PROGRAM='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 echo $ac_n "checking whether ln -s works""... $ac_c" 1>&6
-echo "configure:817: checking whether ln -s works" >&5
+echo "configure:822: checking whether ln -s works" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_LN_S'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -836,7 +841,7 @@ fi
 # Extract the first word of "false", so it can be a program name with args.
 set dummy false; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:840: checking for $ac_word" >&5
+echo "configure:845: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_FALSE'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -868,7 +873,7 @@ fi
 # Extract the first word of "true", so it can be a program name with args.
 set dummy true; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:872: checking for $ac_word" >&5
+echo "configure:877: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_TRUE'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -900,7 +905,7 @@ fi
 # Extract the first word of "rm", so it can be a program name with args.
 set dummy rm; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:904: checking for $ac_word" >&5
+echo "configure:909: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_RM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -931,17 +936,58 @@ fi
 
 
 echo $ac_n "checking for PostgreSQL support""... $ac_c" 1>&6
-echo "configure:935: checking for PostgreSQL support" >&5
+echo "configure:940: checking for PostgreSQL support" >&5
 # Check whether --with-postgres or --without-postgres was given.
 if test "${with_postgres+set}" = set; then
   withval="$with_postgres"
-   dbdir=$withval 
+  
+  dbdir=$withval
+  database=postgres
+  echo "$ac_t""$dbdir" 1>&6
+
+else
+   echo "$ac_t""no" 1>&6 
+
 fi
 
-echo "$ac_t""$dbdir" 1>&6
+
+echo $ac_n "checking for msql support""... $ac_c" 1>&6
+echo "configure:956: checking for msql support" >&5
+# Check whether --with-msql or --without-msql was given.
+if test "${with_msql+set}" = set; then
+  withval="$with_msql"
+   dbdir=$withval
+  database=msql
+  echo "$ac_t""$dbdir" 1>&6
+
+else
+   echo "$ac_t""no" 1>&6 
+
+fi
+
+
+echo $ac_n "checking for mysql support""... $ac_c" 1>&6
+echo "configure:971: checking for mysql support" >&5
+# Check whether --with-mysql or --without-mysql was given.
+if test "${with_mysql+set}" = set; then
+  withval="$with_mysql"
+   dbdir=$withval
+  database=mysql
+  echo "$ac_t""$dbdir" 1>&6
+
+else
+   echo "$ac_t""no" 1>&6 
+
+fi
+
+
+echo $ac_n "checking what database to use after all""... $ac_c" 1>&6
+echo "configure:986: checking what database to use after all" >&5
+
+echo "$ac_t""$database" 1>&6
 
 echo $ac_n "checking for crypt in -lpq""... $ac_c" 1>&6
-echo "configure:945: checking for crypt in -lpq" >&5
+echo "configure:991: checking for crypt in -lpq" >&5
 ac_lib_var=`echo pq'_'crypt | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -949,7 +995,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lpq  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 953 "configure"
+#line 999 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -960,7 +1006,7 @@ int main() {
 crypt()
 ; return 0; }
 EOF
-if { (eval echo configure:964: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:1010: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -988,7 +1034,7 @@ else
 fi
 
 echo $ac_n "checking for crypt in -lcrypt""... $ac_c" 1>&6
-echo "configure:992: checking for crypt in -lcrypt" >&5
+echo "configure:1038: checking for crypt in -lcrypt" >&5
 ac_lib_var=`echo crypt'_'crypt | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -996,7 +1042,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lcrypt  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1000 "configure"
+#line 1046 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1007,7 +1053,7 @@ int main() {
 crypt()
 ; return 0; }
 EOF
-if { (eval echo configure:1011: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:1057: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1039,12 +1085,12 @@ fi
 
 
 echo $ac_n "checking for working const""... $ac_c" 1>&6
-echo "configure:1043: checking for working const" >&5
+echo "configure:1089: checking for working const" >&5
 if eval "test \"`echo '$''{'ac_cv_c_const'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1048 "configure"
+#line 1094 "configure"
 #include "confdefs.h"
 
 int main() {
@@ -1093,7 +1139,7 @@ ccp = (char const *const *) p;
 
 ; return 0; }
 EOF
-if { (eval echo configure:1097: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1143: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_c_const=yes
 else
@@ -1115,12 +1161,12 @@ fi
 
 
 echo $ac_n "checking if sys_errlist is already declared""... $ac_c" 1>&6
-echo "configure:1119: checking if sys_errlist is already declared" >&5
+echo "configure:1165: checking if sys_errlist is already declared" >&5
 if eval "test \"`echo '$''{'ac_cv_needs_sys_errlist'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1124 "configure"
+#line 1170 "configure"
 #include "confdefs.h"
 
     #include <stdio.h>
@@ -1131,7 +1177,7 @@ int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:1135: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1181: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_needs_sys_errlist="yes"
 else
@@ -1155,12 +1201,12 @@ fi
 for ac_func in strerror
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:1159: checking for $ac_func" >&5
+echo "configure:1205: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1164 "configure"
+#line 1210 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -1183,7 +1229,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:1187: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:1233: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -1210,12 +1256,12 @@ done
 
 
 echo $ac_n "checking for getopt_long""... $ac_c" 1>&6
-echo "configure:1214: checking for getopt_long" >&5
+echo "configure:1260: checking for getopt_long" >&5
 if eval "test \"`echo '$''{'ac_cv_func_getopt_long'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1219 "configure"
+#line 1265 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char getopt_long(); below.  */
@@ -1238,7 +1284,7 @@ getopt_long();
 
 ; return 0; }
 EOF
-if { (eval echo configure:1242: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:1288: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_func_getopt_long=yes"
 else
@@ -1262,7 +1308,7 @@ fi
 
 
 echo $ac_n "checking if we're including all debugging code""... $ac_c" 1>&6
-echo "configure:1266: checking if we're including all debugging code" >&5
+echo "configure:1312: checking if we're including all debugging code" >&5
 # Check whether --enable-debugging or --disable-debugging was given.
 if test "${enable_debugging+set}" = set; then
   enableval="$enable_debugging"
@@ -1280,7 +1326,7 @@ fi
 echo "$ac_t""$myres" 1>&6
 
 echo $ac_n "checking whether KIT DUMP mode should be enabled""... $ac_c" 1>&6
-echo "configure:1284: checking whether KIT DUMP mode should be enabled" >&5
+echo "configure:1330: checking whether KIT DUMP mode should be enabled" >&5
 # Check whether --enable-kit-dump-mode or --disable-kit-dump-mode was given.
 if test "${enable_kit_dump_mode+set}" = set; then
   enableval="$enable_kit_dump_mode"
@@ -1298,7 +1344,7 @@ fi
 echo "$ac_t""$myres" 1>&6
 
 echo $ac_n "checking if we should check for CTS""... $ac_c" 1>&6
-echo "configure:1302: checking if we should check for CTS" >&5
+echo "configure:1348: checking if we should check for CTS" >&5
 # Check whether --enable-cts-check or --disable-cts-check was given.
 if test "${enable_cts_check+set}" = set; then
   enableval="$enable_cts_check"
@@ -1316,7 +1362,7 @@ fi
 echo "$ac_t""$myres" 1>&6
 
 echo $ac_n "checking firmware release""... $ac_c" 1>&6
-echo "configure:1320: checking firmware release" >&5
+echo "configure:1366: checking firmware release" >&5
 # Check whether --with-firmware or --without-firmware was given.
 if test "${with_firmware+set}" = set; then
   withval="$with_firmware"
@@ -1358,7 +1404,7 @@ fi
 
 
 echo $ac_n "checking location of PID file""... $ac_c" 1>&6
-echo "configure:1362: checking location of PID file" >&5
+echo "configure:1408: checking location of PID file" >&5
 # Check whether --with-pidfile or --without-pidfile was given.
 if test "${with_pidfile+set}" = set; then
   withval="$with_pidfile"
@@ -1375,7 +1421,7 @@ EOF
 
 
 echo $ac_n "checking location of lock file""... $ac_c" 1>&6
-echo "configure:1379: checking location of lock file" >&5
+echo "configure:1425: checking location of lock file" >&5
 # Check whether --with-lockpath or --without-lockpath was given.
 if test "${with_lockpath+set}" = set; then
   withval="$with_lockpath"
@@ -1392,7 +1438,7 @@ EOF
 
 
 echo $ac_n "checking for default shutdown timeout""... $ac_c" 1>&6
-echo "configure:1396: checking for default shutdown timeout" >&5
+echo "configure:1442: checking for default shutdown timeout" >&5
 # Check whether --with-shutdown-timeout or --without-shutdown-timeout was given.
 if test "${with_shutdown_timeout+set}" = set; then
   withval="$with_shutdown_timeout"
@@ -1408,7 +1454,7 @@ EOF
 
 
 echo $ac_n "checking for default recovery timeout""... $ac_c" 1>&6
-echo "configure:1412: checking for default recovery timeout" >&5
+echo "configure:1458: checking for default recovery timeout" >&5
 # Check whether --with-recovery-timeout or --without-recovery-timeout was given.
 if test "${with_recovery_timeout+set}" = set; then
   withval="$with_recovery_timeout"
@@ -1424,7 +1470,7 @@ EOF
 
 
 echo $ac_n "checking for recovery file""... $ac_c" 1>&6
-echo "configure:1428: checking for recovery file" >&5
+echo "configure:1474: checking for recovery file" >&5
 # Check whether --with-recovery-file or --without-recovery-file was given.
 if test "${with_recovery_file+set}" = set; then
   withval="$with_recovery_file"
@@ -1440,7 +1486,7 @@ EOF
 
 
 echo $ac_n "checking for your country code""... $ac_c" 1>&6
-echo "configure:1444: checking for your country code" >&5
+echo "configure:1490: checking for your country code" >&5
 # Check whether --with-country-code or --without-country-code was given.
 if test "${with_country_code+set}" = set; then
   withval="$with_country_code"
@@ -1460,7 +1506,7 @@ else
 fi
 
 echo $ac_n "checking for your area prefix code""... $ac_c" 1>&6
-echo "configure:1464: checking for your area prefix code" >&5
+echo "configure:1510: checking for your area prefix code" >&5
 # Check whether --with-area-code or --without-area-code was given.
 if test "${with_area_code+set}" = set; then
   withval="$with_area_code"
@@ -1482,7 +1528,7 @@ else
 fi
 
 echo $ac_n "checking for name of local currency""... $ac_c" 1>&6
-echo "configure:1486: checking for name of local currency" >&5
+echo "configure:1532: checking for name of local currency" >&5
 # Check whether --with-currency-name or --without-currency-name was given.
 if test "${with_currency_name+set}" = set; then
   withval="$with_currency_name"
@@ -1498,7 +1544,7 @@ EOF
 
 
 echo $ac_n "checking for database name""... $ac_c" 1>&6
-echo "configure:1502: checking for database name" >&5
+echo "configure:1548: checking for database name" >&5
 # Check whether --with-database-name or --without-database-name was given.
 if test "${with_database_name+set}" = set; then
   withval="$with_database_name"
@@ -1651,6 +1697,7 @@ s%@LN_S@%$LN_S%g
 s%@FALSE@%$FALSE%g
 s%@TRUE@%$TRUE%g
 s%@RM@%$RM%g
+s%@database@%$database%g
 s%@LIBOBJS@%$LIBOBJS%g
 
 CEOF
