@@ -1,6 +1,6 @@
 TODO-Liste:
 ===========
-$Date: 1998/01/16 10:27:41 $ $Revision: 1.2 $
+$Date: 1998/01/17 13:31:41 $ $Revision: 1.3 $
 
 +----
 | *	To be done
@@ -14,41 +14,42 @@ $Date: 1998/01/16 10:27:41 $ $Revision: 1.2 $
 
 Euracom:
 --------
-P	Signal-hander fruehzeitig einbinden
-*	RTS Problem
-P	Daemon mode
-P	Foreground mode
-P	SUID mode
-P	PID file
-*	KIT1000 support
-*	Test Kompatibilitaet mit F/W 2.x
+U	1998-01-17 Signal-hander fruehzeitig einbinden
+U	1998-01-17 RTS Problem
+U	1998-01-17 Daemon mode
+U	1998-01-17 Foreground mode
+U	1998-01-17 PID file
+U	1998-01-17 Root-mode (droppen der Privileges nach Zugriff auf Lock, PID und Device
+*	1998-01-15 KIT1000 support
+*	1998-01-15 Test Kompatibilitaet mit F/W 2.x
+D	1998-01-15 Erfassung der Gespraechsdauer
 
 
 Perl-Utilities:
 ---------------
-V	-h Help Option
-U	Volker's 'isn't numeric' fehler (alter charger)
-U	Div. warnings von getopt und tel-utils
+V	1998-01-16 -h Help Option
+D	1998-01-15 Volker's 'isn't numeric' fehler (alter charger)
+U	1998-01-16 Div. warnings von getopt und tel-utils
 
 
 PostgreSQL:
 -----------
-D	prefix_match noch noetig? (substr geht nun)
-?	Neues Feld 'length' (Gespraechsdauer) -> Fuer KIT mode
+D	1998-01-15 prefix_match noch noetig? (substr geht nun)
+V	1998-01-17 Neues Feld 'length' (Gespraechsdauer) -> Fuer KIT mode
 
 
 Dokumentation:
 --------------
-P	Man-page [Volker Schmidt <volker@illuminatus.mz.rhein-main.de>]
+P	1998-01-15 Man-page [Volker Schmidt <volker@illuminatus.mz.rhein-main.de>]
 
-*	Verwendete Hardware
-*	Welches Kabel
-*	Anschluss an Druckerport (Konfig der Anlage)
-*	Hinweis auf default syslog fac
-*	make database
-*	Hinweis RTS/CTS Problem
-*	Directories/Permissions (/var/lock /var/run)
-*	Hinweis auf TBL_FREE_CMD (ist default bei postgres 6.3)
+*	1998-01-15 Verwendete Hardware
+*	1998-01-15 Welches Kabel
+*	1998-01-15 Anschluss an Druckerport (Konfig der Anlage)
+*	1998-01-15 Hinweis auf default syslog fac
+*	1998-01-15 make database
+*	1998-01-15 Hinweis RTS/CTS Problem
+*	1998-01-15 Directories/Permissions (/var/lock /var/run)
+*	1998-01-15 Hinweis auf TBL_FREE_CMD (ist default bei postgres 6.3)
 
 -- 
-$Id: TODO,v 1.2 1998/01/16 10:27:41 bus Exp $
+$Id: TODO,v 1.3 1998/01/17 13:31:41 bus Exp $
