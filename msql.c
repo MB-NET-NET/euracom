@@ -8,8 +8,8 @@
  * Authors:             Michael Bussmann <bus@fgan.de>
  *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.3 $
- * Last modified:       $Date: 1998/03/21 13:55:26 $
+ * Version:             $Revision: 1.4 $
+ * Last modified:       $Date: 1998/05/22 07:10:10 $
  * Keywords:            ISDN, Euracom, Ackermann, mSQL
  *
  * based on 'postgres.c' applied with changes needed by msql
@@ -25,7 +25,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: msql.c,v 1.3 1998/03/21 13:55:26 bus Exp $";
+static char rcsid[] = "$Id: msql.c,v 1.4 1998/05/22 07:10:10 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -455,18 +455,17 @@ BOOLEAN database_geb_log(const struct GebuehrInfo *geb)
   char date_fmt[ 15 ];    /* dd-mmm-yyyy; warum ich 15 statt 12 benoetige, ist mir unklar*/
   char time_fmt[ 9 ];     /* hh:mm:ss */
 
-  sprintf(statement, "INSERT INTO euracom ( int_no, remote_no, einheiten, direction,
-factor, pay, currency, vst_date, vst_time, sys_date, sys_time ) values ( %d, '%s', ",
+  sprintf(statement, "INSERT INTO euracom ( int_no, remote_no, einheiten, direction, pay, length, currency, vst_date, vst_time, sys_date, sys_time ) values ( %d, '%s', ",
            geb->teilnehmer,
            geb->nummer );  
 
   switch (geb->art) {
     case GEHEND:
-      strcatf(statement, "%d, 'O', %f, %.2f, '%s'",
+      strcatf(statement, "%d, 'O', %f, %d, '%s'",
                geb->einheiten,
-               geb->betrag_base,
                geb->betrag,
-               geb->waehrung);
+               geb->length,
+               LOCAL_CURRENCY);
       break;
 
     case KOMMEND:

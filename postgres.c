@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.15 $
- * Last modified:       $Date: 1998/03/14 12:36:45 $
+ * Version:             $Revision: 1.16 $
+ * Last modified:       $Date: 1998/05/22 07:10:09 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.15 1998/03/14 12:36:45 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.16 1998/05/22 07:10:09 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -405,17 +405,17 @@ BOOLEAN database_geb_log(const struct GebuehrInfo *geb)
   char statement[2048]; /* SQL Statement */
   char date_fmt[21];	/* yyyy-mm-dd hh:mm:ss */
 
-  sprintf(statement, "INSERT INTO euracom (int_no, remote_no, einheiten, direction, factor, pay, currency, vst_date, sys_date) values ('%d','%s',",
+  sprintf(statement, "INSERT INTO euracom (int_no, remote_no, einheiten, direction, pay, length, currency, vst_date, sys_date) values ('%d','%s',",
     geb->teilnehmer, 
     geb->nummer);
 
   switch (geb->art) {
     case GEHEND:
-      strcatf(statement, "'%d', 'O', '%.2f', '%.2f', '%s'",
+      strcatf(statement, "'%d', 'O', '%.2f', '%d', '%s'",
         geb->einheiten,
-        geb->betrag_base,
         geb->betrag,
-        geb->waehrung);
+        geb->length,
+        LOCAL_CURRENCY);
       break;
 
     case KOMMEND:
