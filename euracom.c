@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.21 $
- * Last modified:       $Date: 1998/01/18 10:58:15 $
+ * Version:             $Revision: 1.22 $
+ * Last modified:       $Date: 1998/02/04 09:25:52 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.21 1998/01/18 10:58:15 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.22 1998/02/04 09:25:52 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -45,7 +45,7 @@ static char rcsid[] = "$Id: euracom.c,v 1.21 1998/01/18 10:58:15 bus Exp $";
 
 #include "euracom.h"
 
-enum TVerbindung { FEHLER, GEHEND, KOMMEND};
+enum TVerbindung { GEHEND=1, KOMMEND};
 typedef char TelNo[33];
 
 /* Aufbau Gebühreninfo */
@@ -107,10 +107,6 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
         }       /* IF unkown_no (ELSE) */
       } /* IF (geb->teilnehmer) (ELSE) */
       break;
-
-    default:
-      log_msg(ERR_WARNING, "CASE missing in geb->art");
-      break;
   }     /* SWITCH */
 
   syslog(LOG_NOTICE, "%s", res);
@@ -128,21 +124,17 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
 /*------------------------------------------------------*/
 BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
 {
-  char buf1[4096]; /* Attributes */
-  char buf2[4096]; /* Final statement */
-  char vst_date[35], sys_date[35];
+  char statement[4096]; /* SQL Statement */
+  char date_fmt[21];	/* yyyy-mm-dd hh:mm:ss */
   struct tm *tm;
 
-  /* Convert time/date specs */
-  tm=localtime(&geb->datum_vst);
-  strftime(vst_date, 30, "%d %b %Y %H:%M:%S", tm);
-
-  tm=localtime(&geb->datum_sys);
-  strftime(sys_date, 30, "%d %b %Y %H:%M:%S", tm);
+  sprintf(statement, "INSERT INTO euracom (int_no, remote_no, einheiten, direction, factor, pay, currency, vst_date, sys_date) values ('%d','%s',",
+    geb->teilnehmer, 
+    geb->nummer);
 
   switch (geb->art) {
     case GEHEND:
-      sprintf(buf1, "'%d', 'O', '%.2f', '%.2f', '%s'",
+      strcatf(statement, "'%d', 'O', '%.2f', '%.2f', '%s'",
         geb->einheiten,
         geb->betrag_base,
         geb->betrag,
@@ -150,22 +142,20 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
       break;
 
     case KOMMEND:
-      strcpy(buf1, "'', 'I', '', '', ''");
-      break;
-
-    case FEHLER:
-    default:
-      log_msg(ERR_CRIT, "CASE fehler not handled!");
+      strcatf(statement, "'', 'I', '', '', ''");
       break;
   } 
 
-  sprintf(buf2, "INSERT into euracom (int_no, remote_no, vst_date, sys_date, einheiten, direction, factor, pay, currency) values ('%d','%s','%s','%s', %s);", 
-    geb->teilnehmer,
-    geb->nummer,
-    vst_date, sys_date,
-    buf1);
+  /* Convert time/date specs into ISO 8601 strings */
+  tm=gmtime(&geb->datum_vst);
+  strftime(date_fmt, 20, "%Y-%m-%d %H:%M:%S", tm);
+  strcatf(statement, ",'%s +00'", date_fmt);
 
-  return (database_log(buf2));
+  tm=gmtime(&geb->datum_sys);
+  strftime(date_fmt, 20, "%Y-%m-%d %H:%M:%S", tm);
+  strcatf(statement, ",'%s +00')", date_fmt);
+
+  return (database_log(statement));
 }
 
 
@@ -173,13 +163,13 @@ void conv_phone(char *dst, char *src)
 {
   /* ^00: International call. Just strip 00 to get int'l phone number */
   if (strncmp(src, "00", 2)==0) {
-    strcpy(dst, "+"); strcat(dst, &src[2]);
+    sprintf(dst,"+%s", &src[2]);
   /* ^0: National call: Strip 0, add my contrycode, that's it */
   } elsif (strncmp(src, "0", 1)==0) {
-    strcpy(dst, COUNTRYCODE); strcat(dst, &src[1]);
+    sprintf(dst, "%s%s", COUNTRYCODE, &src[1]);
   /* anything else: Prepend countrycode and local areacode to get IPN */
   } else {
-    strcpy(dst, AREACODE); strcat(dst, src);
+    sprintf(dst, "%s%s", AREACODE, src);
   }
 }
 
@@ -215,7 +205,6 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
       geb->art=KOMMEND;
       break;
     default:
-      geb->art=-1;
       log_msg(ERR_CRIT, "Field 1 descriptor missing. Can't happen");
       return(NULL);
       break;
@@ -227,10 +216,10 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
     struct tm tm;
 
     stripblank(tok);
+    memset(&tm, 0, sizeof(tm));
     strptime(tok, "%d.%m.%y, %H:%M", &tm);
-    tm.tm_sec=tm.tm_yday=tm.tm_wday=0;
     tm.tm_isdst=-1;
-    geb->datum_vst=mktime(&tm);
+    geb->datum_vst=mktime(&tm);	/* into UTC */
   } else {
     log_msg(ERR_ERROR, "Field 2 invalid"); 
     return(NULL); 
@@ -424,7 +413,7 @@ BOOLEAN parse_euracom_data(const char *buf)
       return(FALSE);
     }
     
-    /* Aktuelle Zeit einsetzen */
+    /* Aktuelle Zeit (GMT) einsetzen */
     gebuehr.datum_sys=time(NULL);
 
     /* Logging */
