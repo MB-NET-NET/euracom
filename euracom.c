@@ -97,38 +97,33 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
       TelNo telno;
 
       convert_telno(telno, &fqtn);
-      sprintf(res, "%d called %s. %d units = %.2f DM (%u s)",
+      sprintf(res, "%d called %s. %d units = %.2f DM",
 	      geb->teilnehmer, telno,
 	      geb->einheiten,
-	      geb->betrag,
-	      guess_duration(geb));
+	      geb->betrag);
     }
       break;
     case KOMMEND:
       if (unknown_no) {
-        sprintf(res, "Incoming call but no connection (%u s)",
-	      guess_duration(geb));
+        sprintf(res, "Incoming call but no connection");
       } else {
 	TelNo telno;
 
 	convert_telno(telno, &fqtn);
-        sprintf(res, "Incoming call from %s. No connection (%u s)",
-	      telno,
-	      guess_duration(geb));
+        sprintf(res, "Incoming call from %s. No connection",
+	      telno);
       }
       break;
     case VERBINDUNG:
       if (unknown_no) {
-      	sprintf(res, "Incoming call for %d (%u s)",
-      		geb->teilnehmer,
-      		guess_duration(geb));
+      	sprintf(res, "Incoming call for %d",
+      		geb->teilnehmer);
       } else {
 	TelNo telno;
 
 	convert_telno(telno, &fqtn);
-      	sprintf(res, "Incoming call from %s for %d (%u s)",
-	      telno, geb->teilnehmer,
-	      guess_duration(geb));
+      	sprintf(res, "Incoming call from %s for %d",
+	      telno, geb->teilnehmer);
       }
       break;
     default:
