@@ -3,13 +3,14 @@
 #
 # Telefongebührenauswertung
 # 108537, 13155, 4275, 4095
-# $Id: do_charger.sh,v 1.2 1996/10/27 12:50:50 bus Exp $
+# $Id: do_charger.sh,v 1.3 1997/01/19 12:11:48 bus Exp $
 #
 
 EXEFILE="/var/lib/euracom/charger"
 GEBFILE="/var/lib/euracom/gebuehr.dat"
 LASTFILE="/var/lib/euracom/last.checked"
 MAILTO="bus@goliath"
+ISDNREP="/usr/bin/isdnrep"
 
 ALL_MSN="0 1 2"
 
@@ -53,4 +54,9 @@ for ndx in $ALL_MSN; do
 # Clean up
 	/bin/rm -f $OUTFILE
 	/bin/rm -f $ERRFILE
+done
+
+# Perform S0 analysis
+$ISDNREP -av | mail -s"ISDN S0 Analyse" $MAILTO
+$ISDNREP -d -
 done
