@@ -1,4 +1,4 @@
-/* $Id: charger.c,v 1.4 1996/11/16 10:53:34 bus Exp $ */
+/* $Id: charger.c,v 1.5 1996/11/23 11:50:59 bus Exp $ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -281,7 +281,7 @@ int main(argc, argv)
       case 'g':
 	gebuehr_filename=strdup(optarg);
         break;
-      case 'm:
+      case 'm':
       	base_charge=(float)atof(optarg);
       	break;
       case 't':

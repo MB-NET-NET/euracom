@@ -1,3 +1,14 @@
+/* Euracom 18x, Gebührenerfassung
+   Copyright (C) 1996 MB Computrex
+
+   Released under GPL
+
+   Michael Bussmann <bus@fgan.de>
+
+   $Id: euracom.c,v 1.10 1996/11/23 11:50:59 bus Exp $
+   $Source: /home/bus/Y/CVS/euracom/euracom.c,v $
+ */
+
 #include <unistd.h>
 #include <getopt.h>
 #include <stdio.h>

@@ -1,3 +1,7 @@
+/* $Id: avon.c,v 1.5 1996/11/23 11:50:59 bus Exp $
+   $Source: /home/bus/Y/CVS/euracom/Attic/avon.c,v $
+ */
+
 #include <stdio.h>
 #include "fileio.h"
 #include "log.h"
@@ -18,8 +22,8 @@ int main()
   while (cp=fgetline(stdin, NULL)) {
     lookup_number(cp, &fqtn);
     convert_telno(telno, &fqtn);
-    printf("->%s\n", telno);
-    printf("--> (%s) %s - %s; %s (%s)\n",
+    printf("%s:\n", telno);
+    printf("\t(%s) %s - %s; %s (%s)\n",
     	fqtn.avon, fqtn.telno, fqtn.rest,
     	fqtn.wkn, fqtn.avon_name);
   }
