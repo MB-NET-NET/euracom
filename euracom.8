@@ -1,0 +1,142 @@
+.\"   Database subsystem option:
+.\"   -H, --db-host=host            Sets database host
+.\"   -D, --db-name=name            Database name to connect to
+.\"   -P, --db-port=port            Sets database port number
+.\"   -R, --db-recovery-timeout=sec Time to stay in recovery mode
+.\"   -S, --db-shutdown-timeout=sec Disconnect after sec idle seconds
+.\" 
+.\"   Logging options:
+.\"   -l, --log-file=file           File where to write log and debug messages into
+.\"   -p, --protocol-file=file      Enable logging all RS232 messages
+.\"   -d, --debug[=level]           Sets debugging level
+.\" 
+.\"   Runtime options:
+.\"   -f, --no-daemon               Don't detach from tty and run in background
+.\"   -u, --run-as-user=#uid | name Run as user uid (or username, resp.)
+.\" 
+.\"   Misc:
+.\"   -h, --help                    You currently look at it
+.\" 
+.\" .TH EURACOM 8 "bus's Telephone Tools" "bus" \" -*- nroff -*-
+.TH EURACOM 8 1998-01-18 "bus's Telephone Tools" "GNU"
+.SH NAME
+euracom \- handle incoming charging information
+.SH SYNOPSIS
+.B euracom
+[\-fh] [\-l log-file] [\-p protocol-file] [\-d level]
+[\-u #uid] [\-H db-host-name] [\-D db-name] [\-P db-IP-Port-number]
+[\-R sec.] [\-S sec.]
+[\-\-help] [\-\-debug[=level]] [\-\-protocol-file=file] [\-\-log-file=file]
+[\-\-no-daemon] [\-\-run-as-user={#uid|name}]
+[\-\-db-shutdown-timeout=sec] [\-\-db-recovery-timeout=sec]
+[\-\-db-port=port] [\-\-db-name=name] [\-\-db-host=host]
+.SH DESCRIPTION
+.B euracom
+is a logging tool for incoming charge advises from a
+PBX-device (AKA german "Telephon-Anlage").
+.PP
+It is written to fit the output of PBX devices manufactured by
+Ackermann, Germany. There are some clones with nearly identical
+firmware. So this tool is also known to work with the
+Quante IS-{1,2,3}.
+.PP
+.B euracom
+takes the charge advises from the serial printer output of the
+PBX and enters them into a SQL-database.
+.PP
+At the moment only PostgreSQL databases were supported.
+.SS OPTIONS
+.TP
+.I "\-h"
+Gives a verbose help message containing all valid program
+options.
+.TP
+.I "\-f, \-\-no-daemon"
+Keeps
+.B euracom
+from detaching of the controlling tty and stays in foreground.
+.TP
+.I "\-u, \-\-run-as-user=#uid|name"
+Run as user uid (or username, resp.). If
+.B euracom
+is started from a run-time-shell-script (eg. rc.local) it's run
+as super-user. This gives you the option to detach from the
+super-user's id to the id given in this option.
+.TP
+.I "\-d, \-\-debug[=level]"
+Sets debugging level. Values are 1--10. A value of 5 is the
+default.
+.TP
+.I "\-p file, \-\-protocol-file=file"
+Enable logging all RS232 messages. All incoming RS232 messages
+were put unchanged into the given file.
+.TP
+.I "\-l file, \-\-log-file=file"
+File where to write log and debug messages into. This file
+contains all other messages from
+.B euracom
+except the RS232 messages.
+.TP
+.I "\-S, --db-shutdown-timeout=sec"
+Disconnect after 
+.I sec
+idle seconds from the
+.I PostgreSQL
+database. The default timeout is 120 seconds; it's compile-time
+configurable in config.h.
+.TP
+.I "-R, --db-recovery-timeout=sec"
+Time to stay in recovery mode. Hold the Database connection to the
+.I PostgreSQL
+database for
+.I sec
+idle seconds in recovery mode. The default timeout is 900
+seconds; it's compile-time configurable in config.h.
+.TP
+.I "\-P, --db-port=port"
+Sets TCP/IP port number to the
+.I PostgreSQL
+database.
+.TP
+.I "\-D, --db-name=name"
+Database name to connect to. By default
+.B euracom 
+connects to a 
+.I PostgreSQL
+database named "isdn". This can be changed by this option with
+argument
+.I name .
+.TP
+.I "\-H, --db-host=host"
+Database host name to connect to the 
+.I PostgreSQL
+database is given with
+argument
+.I name .
+By default
+.B euracom
+connects to the host
+.I localhost
+for the
+.I PostgreSQL
+server.
+.SH FILES
+.I /usr/local/sbin/euracom
+.br
+or
+.br
+.I /home/euracom/bin/euracom
+.SH BUGS
+Surely plenty of 'em. This is piece of cake is in an early
+state.
+.SH AUTHOR
+Michael Bussmann <bus@fgan.de>, (source code, blurb & ideas)
+.br
+Volker Schmidt <volker@Illuminatus.MZ.Rhein-Main.DE>, (this
+man-page, more annoying idea, bug-reports, general craziness)
+.SH "SEE ALSO"
+Linux Serial Port Programming mini-HOWTO
+.br
+iX issue 1995-1 p.152 ff.
+.br
+http://www.PostgreSQL.org
