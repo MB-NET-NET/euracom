@@ -3,15 +3,25 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@fgan.de>
 dnl
-dnl $Id: configure.in,v 1.3 1999/02/07 10:32:21 bus Exp $
+dnl $Id: configure.in,v 1.4 1999/03/13 18:09:23 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.3 $)
+AC_REVISION($Revision: 1.4 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(autoconf.h)
 AC_PREFIX_DEFAULT(/usr/local)
 
 dnl Set default variables
+pidfile="/var/run/euracom.pid"
+lockpath="/var/lock"
+shutdowntimeout=120
+recoverytimeout=900
+recoveryfile="/tmp/euracom.recovery"
+countrycode="49"
+areacode="2364"
+localcurrency="DEM"
+databasename="isdn"
+
 dbdir="/opt/postgreSQL"
 
 dnl
@@ -115,11 +125,9 @@ if test "$myres" = "no"; then
 fi
 AC_MSG_RESULT($myres)
 
-dnl
-dnl Firmware release:
 AC_MSG_CHECKING(firmware release)
 AC_ARG_WITH(firmware,
-[  --with-firmware={1,2,3}		compile for euracom f/w 1.x, 2.x or 3.x (1.x)],
+[  --with-firmware={1,2,3}	compile for euracom f/w 1.x, 2.x or 3.x],
 [ 
   case "$withval" in
     1) AC_MSG_RESULT(firmware 1.x)
@@ -135,8 +143,95 @@ AC_ARG_WITH(firmware,
        ;;
   esac
 ],
-[ AC_ERROR(You _must_ specify the firmware major number) ]
+[ 
+  AC_MSG_RESULT(firmware 3.x)
+  AC_MSG_WARN(No firmware revision specified.  Assuming f/w major 3)
+  AC_DEFINE_UNQUOTED(FIRMWARE_MAJOR, 3)
+]
 )
+
+AC_MSG_CHECKING(location of PID file)
+AC_ARG_WITH(pidfile,
+[  --with-pidfile=full-path	Location of PID file (/var/run/euracom.pid)],
+[
+  pidfile=$withval
+]
+)
+AC_MSG_RESULT($pidfile)
+AC_DEFINE_UNQUOTED(PIDFILE, "${pidfile}")
+
+AC_MSG_CHECKING(location of lock file)
+AC_ARG_WITH(lockpath,
+[  --with-lockpath=lock-dir	Location of lockfile (/var/lock)],
+[
+  lockpath=$withval
+]
+)
+AC_MSG_RESULT($lockpath)
+AC_DEFINE_UNQUOTED(LOCKPATH, "${lockpath}")
+
+AC_MSG_CHECKING(for default shutdown timeout)
+AC_ARG_WITH(shutdown-timeout,
+[  --with-shutdown-timeout=sec	Drop connection after x seconds idle time (120)],
+[  shutdowntimeout=$withval
+]
+)
+AC_MSG_RESULT($shutdowntimeout seconds)
+AC_DEFINE_UNQUOTED(SHUTDOWN_TIMEOUT, $shutdowntimeout)
+
+AC_MSG_CHECKING(for default recovery timeout)
+AC_ARG_WITH(recovery-timeout,
+[  --with-recovery-timeout=sec	Re-establish connection after x seconds (900)],
+[  recoverytimeout=$withval
+]
+)
+AC_MSG_RESULT($recoverytimeout seconds)
+AC_DEFINE_UNQUOTED(RECOVERY_TIMEOUT, $recoverytimeout)
+
+AC_MSG_CHECKING(for recovery file)
+AC_ARG_WITH(recovery-file,
+[  --with-recovery-file=file	Name of recovery file (/tmp/euracom.recovery)],
+[  recoveryfile=$withval
+]
+)
+AC_MSG_RESULT($recoveryfile)
+AC_DEFINE_UNQUOTED(RECOVERY_FILE, "${recoveryfile}")
+
+AC_MSG_CHECKING(for your country code)
+AC_ARG_WITH(country-code,
+[  --with-country-code=xx	Your international country code (49)],
+[  countrycode=$withval
+]
+)
+AC_MSG_RESULT(+$countrycode)
+AC_DEFINE_UNQUOTED(COUNTRYCODE, "+${countrycode}")
+
+AC_MSG_CHECKING(for your area prefix code)
+AC_ARG_WITH(area-code,
+[  --with-area-code=xxx		Your area code (no leading 0) (2364)],
+[  areacode=$withval
+]
+)
+AC_MSG_RESULT($areacode)
+AC_DEFINE_UNQUOTED(AREACODE, "+${countrycode}${areacode}")
+
+AC_MSG_CHECKING(for name of local currency)
+AC_ARG_WITH(currency-name,
+[  --with-currency-name=xxx	Name of your local currency (DEM)],
+[  localcurrency=$withval
+]
+)
+AC_MSG_RESULT($localcurrency)
+AC_DEFINE_UNQUOTED(LOCAL_CURRENCY, "${localcurrency}")
+
+AC_MSG_CHECKING(for database name)
+AC_ARG_WITH(database-name,
+[  --with-database-name=xxx	Name of the database to connect to (isdn)],
+[  databasename=$withval
+]
+)
+AC_MSG_RESULT($databasename)
+AC_DEFINE_UNQUOTED(DEF_DB, "${databasename}")
 
 dnl
 dnl Write output file

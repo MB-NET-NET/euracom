@@ -6,13 +6,11 @@ Installation gemacht werden muß:
 
   b) ./configure <options>
 
-     Die Firmware release muß in jedem Fall mit angegeben werden!
-
   c) Configure erzeugt 'Makefile' und 'autoconf.h'.
      * Ändern Sie 'Makefile', um das Programm für die richtige Datenbank
        zu übersezten.
 
-     * Ändern Sie 'config.h' für weitere Programmeinstellungen
+     * Sehen Sie sich autoconf.h an, und machen Sie ggf. Änderungen
 
-1999-02-07 -- MB
+1999-03-13 -- MB
 

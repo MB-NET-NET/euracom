@@ -5,10 +5,8 @@
 #
 # Released unter the terms of the GPL version 2.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.5 1999/03/13 16:56:57 bus Exp $
+# $Id: Makefile.in,v 1.6 1999/03/13 18:09:22 bus Exp $
 #
-
-# !! PLEASE CHECK config.h AS WELL !!
 
 #
 # Compiler settings
@@ -25,10 +23,7 @@ RM              = @RM@
 #
 # Program version number
 #
-VERSION = 1.3.0
-
-# Use debugging and profiling libs
-# DEBUG=1
+VERSION = 1.3.1
 
 #
 # Where executables/manpage should be installed
@@ -54,9 +49,7 @@ ifeq ($(DATABASE), postgres)
   DATABASE_LIB     = $(DATABASE_BASE)/lib
   DATABASE_OBJ     = $(DATABASE_BASE)/obj
 
-  # glibc2 users may need to use the second line
-  #DATABASE_LINK    = -lpq
-  DATABASE_LINK   = -lpq -lcrypt
+  DATABASE_LINK   = -lpq $(LIBS)
 endif
 
 ifeq ($(DATABASE), msql)
@@ -80,17 +73,6 @@ endif
 #
 # End of user serviceable parts.  From here on anything is my fault
 #
-
-# Debugging/profiling version?
-ifdef DEBUG
-  # Flags for developer's version
-  CFLAGS+=-g -pg
-  LDFLAGS+=-pg
-else
-  # Flags for production version
-  CFLAGS+=-O
-  LDFLAGS+=-s
-endif
 
 # Sets name of database interface file
 DATABASE_SUBSYS=$(DATABASE).c
@@ -117,14 +99,14 @@ endif
 
 install: euracom prefixmatch.so
 ifeq ($(DATABASE), postgres)
-	install -o postgres -m 755 -d $(DATABASE_OBJ)
-	install -o postgres -m 755 prefixmatch.so $(DATABASE_OBJ)
+	$(INSTALL_BIN) -o postgres -m 755 -d $(DATABASE_OBJ)
+	$(INSTALL_BIN) -o postgres -m 755 prefixmatch.so $(DATABASE_OBJ)
 endif
-	install -o root -m 755 -d $(bindir)
-	install -o root -m 755 euracom $(bindir)
+	$(INSTALL_BIN) -o root -m 755 -d $(bindir)
+	$(INSTALL_BIN) -o root -m 755 euracom $(bindir)
 
-	install -o man -g man -m 755 -d $(mandir)/man8
-	install -o man -g man -m 644 euracom.8 $(mandir)/man8
+	$(INSTALL_BIN) -o man -g man -m 755 -d $(mandir)/man8
+	$(INSTALL_BIN) -o man -g man -m 644 euracom.8 $(mandir)/man8
 
 database:
 ifeq ($(DATABASE), postgres)
@@ -159,13 +141,13 @@ ChangeLog: CVS/Entries
 
 release: ChangeLog euracom-man.txt
 	@echo Generating release $(VERSION)...
-	@cd /tmp && cvs export -D 'now' euracom
+	@cd /tmp && cvs export -kkv -D 'now' euracom
 	@cp ChangeLog /tmp/euracom/
 	@cd /tmp && mv euracom euracom-$(VERSION)
 	@cd /tmp && tar -czf euracom.tar.gz euracom-$(VERSION)
 	@-mkdir release
 	@mv /tmp/euracom.tar.gz release/euracom-$(VERSION).tar.gz
-	@rm -r /tmp/euracom-$(VERSION)
+	@$(RM) -r /tmp/euracom-$(VERSION)
 	@cp euracom-man.txt release
 	@cp README.html release/euracom-README.html
 	@cd release && pgps -ba -u 0xAA320021 +clearsig=on euracom-$(VERSION).tar.gz -o euracom-$(VERSION).pgpsig

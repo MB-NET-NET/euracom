@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.14 $
- * Last modified:       $Date: 1999/03/13 16:56:58 $
+ * Version:             $Revision: 1.15 $
+ * Last modified:       $Date: 1999/03/13 18:09:22 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -31,29 +31,6 @@
       YOUR LOCAL REQUIREMENTS
    !!
 */
-
-
-/* --------------------------------------------------------------------------
- * Local settings
- * --------------------------------------------------------------------------
- */
-
-/*
- * Define this to your local countrycode
- */
-#define COUNTRYCODE		"+49"
-
-/*
- * Define this to your local areacode (including countrycode)
- */
-#define AREACODE		"+492364"
-
-/*
- * Name of local currency
- * (I like the int'l currency names (e.g USD for US Dollar), but feel free
- * to use whatever you like (as long as it's max. 4 characters long)
- */
-#define LOCAL_CURRENCY		"DEM"
 
 /*
  * Facility for syslog()
@@ -79,43 +56,6 @@
  */
 #define HAVE_TERMIOS
 #undef  HAVE_TERMIO
-
-/*
- * Where to write the lockfile
- */
-#define LOCKPATH		"/var/lock"
-
-/* --------------------------------------------------------------------------
- * Daemon options
- * --------------------------------------------------------------------------
- */
-
-/*
- * Where to write PID file
- */
-#define PIDFILE			"/var/run/euracom.pid"
-
-
-/* --------------------------------------------------------------------------
- * Database options
- * --------------------------------------------------------------------------
- */
-
-/*
- * Name of DB to connect 
- */
-#define DEF_DB			"isdn"
-
-/*
- * Name of recovery file (in case connection to DB is down)
- */
-#define RECOVERY_FILE		"/tmp/euracom.recovery"
-
-/*
- * Timeouts (defaults)
- */
-#define SHUTDOWN_TIMEOUT	120    /* Drop connection after 2 minutes idle time */
-#define RECOVERY_TIMEOUT	900    /* Retry after 15 mins */
 
 /*
  * Use my weird macros
