@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.2 $
- * Last modified:       $Date: 1998/01/16 13:32:48 $
+ * Version:             $Revision: 1.3 $
+ * Last modified:       $Date: 1998/01/17 13:27:38 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -104,7 +104,7 @@
 #define RECOVERY_FILE		"/tmp/euracom.recovery"
 
 /*
- * Timeouts
+ * Timeouts (defaults)
  */
 #define SHUTDOWN_TIMEOUT	120    /* Drop connection after 2 minutes idle time */
 #define RECOVERY_TIMEOUT	900    /* Retry after 15 mins */
@@ -128,6 +128,5 @@
  */
 #define elsif else if
 #define unless(s) if (!(s))
-
 
 #endif
