@@ -5,11 +5,11 @@
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: utils.c,v 1.3 1999/11/02 09:55:13 bus Exp $
+ * Version:	$Id: utils.c,v 1.4 2000/12/17 17:15:16 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/utils.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: utils.c,v 1.3 1999/11/02 09:55:13 bus Exp $";
+static char rcsid[] = "$Id: utils.c,v 1.4 2000/12/17 17:15:16 bus Exp $";
 
 #include "config.h"
 
@@ -166,14 +166,36 @@ BOOLEAN delete_file(filename)
 /* */
 /* RetCode: TRUE: O.k. ; FALSE: Fehler				       */
 /*---------------------------------------------------------------------*/
-BOOLEAN copy_file(src, dst)
-  const char *src, *dst;
+BOOLEAN copy_file(const char *src, const char *dst)
 {
-  char    befehl[1024];
+  char *buf;
+  int fd_r, fd_w;
+  ssize_t r, len = 0;
 
   debug(2, "copy_file: Copying \"%s\" +==> \"%s\"", src, dst);
-  sprintf(befehl, "/bin/cp %s %s\n", src, dst);
-  system(befehl);		/* Blocking */
+
+  if ((fd_r=open(src, O_RDONLY))<0) {
+    log_msg(ERR_ERROR, "Could not open %s for reading: %s", src, get_strerror);
+    return(FALSE);
+  }
+  if ((fd_w=open(dst, O_WRONLY | O_CREAT, 0600))<0) {
+    log_msg(ERR_ERROR, "Could not open %s for writing: %s", dst, get_strerror);
+    close(fd_r);
+    return(FALSE);
+  }
+
+  buf=malloc(COPY_BUFSIZE+1);
+  while ((r=read(fd_r, buf, COPY_BUFSIZE))>0) {
+    len+=write(fd_w, buf, r);
+  }
+  debug( 3, "%ld bytes copied", len);
+  close(fd_r);
+  free(buf);
+
+  if (close(fd_w)<0) {
+    log_msg(ERR_ERROR, "Error closing %s: %s", dst, get_strerror);
+    return(FALSE);
+  }
   return (TRUE);
 }
 

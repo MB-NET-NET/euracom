@@ -11,6 +11,7 @@
 #define FOUND_AMBIGOUS	-2
 
 #define FGETLINE_BUFLEN	4096
+#define COPY_BUFSIZE	8192
 
 /* Prototypes */
 extern	char *fgetline(FILE *, int *);
