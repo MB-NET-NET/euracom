@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.22 $
- * Last modified:       $Date: 1999/03/13 16:56:59 $
+ * Version:             $Revision: 1.23 $
+ * Last modified:       $Date: 1999/05/27 09:08:11 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.22 1999/03/13 16:56:59 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.23 1999/05/27 09:08:11 bus Exp $";
 
 #include "config.h"
 
@@ -237,6 +237,7 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
     return(FALSE);
   }
 
+#ifdef 0
   /* Put line in transparent state */
   term.c_iflag=IGNBRK | IGNPAR | IGNCR;
   term.c_oflag=0;
@@ -244,6 +245,9 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
   term.c_lflag=0;
   term.c_cc[VMIN]=1;
   term.c_cc[VTIME]=0;
+#else
+  cfmakeraw(&term);
+#endif
 
   /* Set in/out speed to 9600 baud */
   cfsetispeed(&term, B9600);
@@ -368,12 +372,18 @@ char *readln_rs232(struct SerialFile *sf)
 
       read(sf->fd, &inbuf[0], 1);
       *cp=inbuf[0];
+      debug(6, "readln_rs232: Read char %d", *cp);
 #if (FIRMWARE_MAJOR<2)
       if (*cp=='\0') {	/* 1.x: blah (0D) 0A 00 */
         *(cp-1)='\0';
 #else
+#ifdef 0
       if (*cp==0x0a) {	/* 2.x: blah (0D) 0A */
         *cp='\0';
+#else
+      if (*cp==0x0d) {	/* 2.x: blah 0A 0D */
+        *(cp-1)='\0';
+#endif
 #endif
         break;
       } else {
