@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.5 $
-# Last modified:       $Date: 1997/09/26 10:14:07 $
+# Version:             $Revision: 1.6 $
+# Last modified:       $Date: 1997/09/30 10:40:33 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -36,7 +36,7 @@
 #	-d
 #
 
-use Postgres;
+use Pg;
 
 require 'getopts.pl';
 require 'tel-utils.pm';
@@ -63,9 +63,14 @@ $TMPNAME="/tmp/charger.$$";
 #
 # Fire up connection
 #
-&debug("Opening connection to database...");
-$db = db_connect($db_db,$db_host,"") || die "Open DB failed: $Postgres::error";
-&debug("o.k.\n");
+debug("Opening connection...");
+$db = Pg::connectdb("dbname=$db_db");
+if ($db->status!=PGRES_CONNECTION_OK) {
+  $msg=$db->errorMessage;
+  die "Open DB failed: $msg";
+}
+$my_db=$db->db; $my_user=$db->user; $my_host=$db->host; $my_port=$db->port;
+debug("connected to table $my_db on $my_user\@$my_host:$my_port\n");
 
 #
 # Create filter expression and build internal list
@@ -99,15 +104,23 @@ map {
 #
 &debug("Fetching data from db...");
 open(TMPFILE, ">$TMPNAME") || die "Cannot create temporary file";
-$db->execute("BEGIN") || die "BEGIN: $Postgres::error";
-$db->execute("DECLARE cx CURSOR FOR SELECT int_no,remote_no,vst_date,vst_time,sys_date,sys_time,einheiten,geb_art,factor,pay,currency FROM euracom $filter_cmd ORDER BY sys_date,sys_time") || die "DECLARE: $Postgres::error";
+$db->exec("BEGIN") || die "BEGIN: $db->errorMessage";
+$db->exec("DECLARE cx CURSOR FOR SELECT int_no,remote_no,vst_date,vst_time,sys_date,sys_time,einheiten,geb_art,factor,pay,currency FROM euracom $filter_cmd ORDER BY sys_date,sys_time") || die "DECLARE: $db->errorMessage";
+
 do {
-  $res=$db->execute("FETCH forward 1 IN cx") || die "FETCH: $Postgres::error";
-  if (@data=$res->fetchrow()) {
-    print TMPFILE join(";", @data)."\n";
-  }
-} while (@data);
-$db->execute("END") || die "END: $Postgres::error";
+  $res=$db->exec("FETCH forward 1 IN cx") || die "FETCH: $db->errorMessage";
+
+  if ($num=$res->ntuples) {
+    for ($i=0; $i<$res->nfields; $i++) {
+      $val=$res->getvalue(0,$i);
+      print TMPFILE "$val;";
+    }
+    print TMPFILE "\n";
+  };
+
+} while ($num);
+
+$db->exec("END") || die "END: $db->errorMessage\n";
 close(TMPFILE);
 &debug("o.k.\n");
 
@@ -133,11 +146,11 @@ close(TMPFILE);
 #
 # Print footer
 #
-$res=$db->execute("SELECT sum(einheiten), sum(pay) from euracom $filter_cmd");
-@data=$res->fetchrow();
-print "<tr><td></td><td></td><td>$counter Gespr&auml;che</td><td>$data[0]</td><td>$data[1] DEM</td></tr>\n";
+$res=$db->exec("SELECT sum(einheiten), sum(pay) from euracom $filter_cmd");
+$val1=$res->getvalue(0,0); $val2=$res->getvalue(0,1);
+print "<tr><td></td><td></td><td>$counter Gespr&auml;che</td><td>$val1</td><td>$val2 DEM</td></tr>\n";
 printf "<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td></td><td>%.2f DEM</td></tr>\n", $charge;
-printf "<tr><td></td><td></td><td>GESAMT:</td><td></td><td><B>%.2f DEM</B></td></tr>\n", $data[1]+$charge;
+printf "<tr><td></td><td></td><td>GESAMT:</td><td></td><td><B>%.2f DEM</B></td></tr>\n", $val2+$charge;
 print "</table></center><br><hr><address>";
 print "Michael Bussmann, Im Brook 8, 45721 Haltern</address></body></html>\n";
 

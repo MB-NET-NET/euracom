@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use Postgres;
+use Pg;
 
 require 'getopts.pl';
 require 'tel-utils.pm';
@@ -8,7 +8,7 @@ require 'tel-utils.pm';
 #
 # Telno -> FQTN converter
 #
-# $Id: avon.pl,v 1.4 1997/09/26 10:06:05 bus Exp $
+# $Id: avon.pl,v 1.5 1997/09/30 10:40:32 bus Exp $
 #
 
 #
@@ -23,23 +23,30 @@ $| = 1;
 #
 # Parse CMD line params
 #
+$opt_H=$opt_D=$opt_d=$main::debugp=undef;
 &Getopts('H:D:d');
-$db_host= $getopts::opt_H || "tardis";
-$db_db  = $getopts::opt_D || "isdn";
-$debugp = $getopts::opt_d || undef;
+$main::db_host= $opt_H || "tardis";
+$main::db_db  = $opt_D || "isdn";
+$main::debugp = $opt_d || "";
 
 #
 # Fire up connection
 #
 debug("Opening connection...");
-$db = db_connect($db_db,$db_host,"") || die "Open DB failed: $Postgres::error";
-debug("o.k.\n");
+$db = Pg::connectdb("dbname=$main::db_db");
+if ($db->status!=PGRES_CONNECTION_OK) { 
+  $msg=$db->errorMessage;
+  die "Open DB failed: $msg";
+}
+$my_db=$db->db; $my_user=$db->user; $my_host=$db->host; $my_port=$db->port;
+debug("connected to table $my_db on $my_user\@$my_host:$my_port\n");
 
 while (<>) {
   chop;
 
   printf "\t%s\n", print_fqtn($_);
 }
+debug("Connection closed\n");
 
 #
 # sub print_fqtn()

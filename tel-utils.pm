@@ -1,9 +1,16 @@
-use Postgres;
+#
+# tel-utils.pm - Euracom Gebührenauswertung, Perl utitilites
+#
+# $Id: tel-utils.pm,v 1.3 1997/09/30 10:40:33 bus Exp $
+#
+
+use Pg;
+# I'll use "Pg" in "new-style mode"
+# Actually I'm _not_ a friend of C++
 
 #
-# tel-utils.pm - Some useful routines for searching in PG database
-#
-# $Id: tel-utils.pm,v 1.2 1997/09/26 10:06:08 bus Exp $
+# Uses $main::db as DB handle
+#      $main::debugp as debug-mode var
 #
 
 #
@@ -21,9 +28,14 @@ sub split_text()
 
   $cmd="SELECT nummer,name FROM $table WHERE prefix_match('$input'::text, nummer)";
 
-  $res=$db->execute($cmd) || warn "$cmd: $Postgres::error";
-  if (($num=$res->ntuples())>4) {
-    warn "More than 4 tuples for $input";
+  $res=$db->exec($cmd);
+  if (!$res) {
+    $msg=$db->errorMessage;
+    warn "\n! $cmd: $msg !\n";
+  }
+
+  if (($num=$res->ntuples)>4) {
+    warn "\n! More than 4 tuples for $input!\n";
     $num=4;
   }
 
@@ -33,16 +45,25 @@ sub split_text()
 
   } elsif ($num==1) {
     # 1 Match, easy to manage
-    ($key, $value) = $res->fetchrow();
+
+    # Get field numbers
+    $num_nummer=$res->fnumber("nummer");
+    $num_name  =$res->fnumber("name");
+
+    $key=$res->getvalue(0,$num_nummer); $value=$res->getvalue(0,$num_name);
     $residual=substr($input, length($key));
-    debug("$key -> $value + $residual ");
+    debug("$key -> \"$value\" + \"$residual\"");
 
   } else {
     debug("($num tuples) ");
 
+    # Get field numbers
+    $num_nummer=$res->fnumber("nummer");
+    $num_name  =$res->fnumber("name");
+
     # Get all tuples and store them in a temporary array
     for ($i=0; $i<$num; $i++) {
-      push @data, [ $res->fetchrow() ];
+      push @data, [ ($res->getvalue($i, $num_nummer), $res->getvalue($i, $num_name)) ];
     }
 
     # Sort array by length of field 0 (nummer)
@@ -113,7 +134,7 @@ sub convert_fqtn()
 #
 sub debug()
 {
-  if ($debugp) {
+  if ($main::debugp) {
     print @_;
   }
 }

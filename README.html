@@ -46,9 +46,11 @@ gelungen ist, werden die fehlenden Datensätze eingefügt.</P>
 <H2>Zusätzliche Software</H2>
 <P> Folgende Software ist für die Benutzung von "euracom" erforderlich:</P>
 <UL>
-  <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder höher)
+  <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder höher, es wird
+       wohl auch mit älteren Versionen funktionieren)
   <LI> Perl (5.003 oder höher)
-  <LI> <A HREF="ftp://ftp.kciLink.com/pub/PostgresPerl-1.3.tar.gz">PostgresPerl</A> (1.3)
+  <LI> <A HREF="mailto:e.mergl@bawue.de>Edmund Mergl's</A> <EM>pgsql_perl5</EM> (1.6)
+       -- ist in den aktuellen PostgreSQL distributionen enthalten.
 </UL>
 
 <H2>Installation</H2>
@@ -58,8 +60,7 @@ Lediglich im Makefile müssen einige Einstellung überprüft werden (z.B.
 wo die PostgreSQL include/libraries zu finden sind).</P>
 
 <P>Ich gehe im Folgenden davon aus, daß sowohl PostgreSQL, als auch das
-Perl-Interface zu PostgreSQL (nicht das, das bei der PostgreSQL-Distribution
-dabei ist!) bereits installiert und funktionstüchtig ist.</P>
+Perl5-Interface zu PostgreSQL bereits installiert und funktionstüchtig ist.</P>
 
 <H3>Einrichten der euracom Datenbank</H3>
 <P>
@@ -204,7 +205,7 @@ Viel Spass!
 
 <ADDRESS> ruf098 WWW, Michael Bussmann,
 <A HREF="mailto:bus@www.fgan.de">bus@www.fgan.de</A> ,
-Last change: $Date: 1997/09/26 10:36:02 $, $Revision: 1.2 $
+Last change: $Date: 1997/09/30 10:40:32 $, $Revision: 1.3 $
 </ADDRESS>
 
 </BODY>
