@@ -7,8 +7,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.13 $
-# Last modified:       $Date: 1999/12/28 10:35:52 $
+# Version:             $Revision: 1.14 $
+# Last modified:       $Date: 2000/09/10 08:05:44 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.13 1999/12/28 10:35:52 bus Exp $
+# $Id: tel-utils.pm,v 1.14 2000/09/10 08:05:44 bus Exp $
 #
 
 use DBI;
@@ -124,11 +124,13 @@ sub convert_fqtn()
     # First look up AVON info
     debug("Querying database\n\tSearch avon: ");
     ($avon, $avon_name, $telno) = (&split_text("avon", $num, 1));
+    debug("$avon; $avon_name; $telno");
     if (!$avon_name) { $telno=$avon; $avon=""; }
 
     # Look up WKN info
     debug("\n\tWKN info: ");
     ($telno, $wkn, $rest) = (&split_text("wkn", $avon.$telno, length($avon)));
+    debug("$telno; $wkn; $rest");
     $telno=substr $telno, length($avon);
 
     # Strip +49 from avon
@@ -142,7 +144,16 @@ sub convert_fqtn()
   }
 
   debug("\n\t\tAVON : $avon ($avon_name)\n\t\tTelNo: $telno ($wkn)\n\t\tPost : $rest\n");
-  return($avon, $telno, $rest, $avon_name, $wkn);
+  %tel=(
+	avon => "$avon",
+	avon_name => "$avon_name",
+	prov => "01070",
+	prov_name => "Dirty Provider",
+	telno => "$telno",
+	wkn => "$wkn",
+	rest => "$rest"
+  );
+  return(%tel);
 }
 
 #

@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-08-29 09:44:19 GMT
-# Version:             $Revision: 1.13 $
-# Last modified:       $Date: 1999/12/28 10:35:52 $
+# Version:             $Revision: 1.14 $
+# Last modified:       $Date: 2000/09/10 08:05:41 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: avon.pl,v 1.13 1999/12/28 10:35:52 bus Exp $
+# $Id: avon.pl,v 1.14 2000/09/10 08:05:41 bus Exp $
 #
 
 use DBI;
@@ -67,6 +67,7 @@ EOF
 #
 # Fire up connection
 #
+
 debug("Opening connection...");
 $dbh=DBI->connect("dbi:Pg:dbname=$main::db_db;host=$main::db_host", "", "",
 	{RaiseError=>1, AutoCommit=>0}) || die "Connect failed: $DBI::errstr";
@@ -91,24 +92,24 @@ debug("ok\n");
 sub print_fqtn()
 {
   my ($num) = @_;
-  my ($avon, $avon_name, $telno, $wkn, $rest);
   my ($msg);
+  my (%tel);
 
-  ($avon, $telno, $rest, $avon_name, $wkn)=convert_fqtn($num);
+  %tel=convert_fqtn($num);
 
   # Strip +49 from avon
-  $avon=~s/^\+49/0/;
+  $tel{'avon'}=~s/^\+49/0/;
 
   # Add int. exit code
-  $avon=~s/^\+/00/;
+  $tel{'avon'}=~s/^\+/00/;
 
   # Construct HTML
   $msg="";
-  $msg.="($avon) " if ($avon);
-  $msg.=($telno?$telno:"(No number)");
-  $msg.=" - $rest" if ($rest);
+  $msg.="($tel{'avon'}) " if ($tel{'avon'});
+  $msg.=($tel{'telno'}?$tel{'telno'}:"(No number)");
+  $msg.=" - $tel{'rest'}" if ($tel{'rest'});
   $msg.=";";
-  $msg.=" $wkn" if ($wkn);
-  $msg.=" ($avon_name)" if ($avon_name);
+  $msg.=" $tel{'wkn'}" if ($tel{'wkn'});
+  $msg.=" ($tel{'avon_name'})" if ($tel{'avon_name'});
   return($msg);
 }

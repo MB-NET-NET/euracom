@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.16 $
-# Last modified:       $Date: 2000/01/03 07:52:07 $
+# Version:             $Revision: 1.17 $
+# Last modified:       $Date: 2000/09/10 08:05:43 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: charger.pl,v 1.16 2000/01/03 07:52:07 bus Exp $
+# $Id: charger.pl,v 1.17 2000/09/10 08:05:43 bus Exp $
 #
 
 use DBI;
@@ -222,28 +222,28 @@ sub eval_result()
 sub print_fqtn()
 {
   my ($num) = @_;
-  my ($avon, $avon_name, $telno, $wkn, $rest);
   my ($msg);
+  my (%tel);
 
-  ($avon, $telno, $rest, $avon_name, $wkn)=convert_fqtn($num);
+  %tel=convert_fqtn($num);
 
   # Strip +49 from avon
-  $avon=~s/^\+49/0/;
+  $tel{'avon'}=~s/^\+49/0/;
 
   # Add int. exit code
-  $avon=~s/^\+/00/;
+  $tel{'avon'}=~s/^\+/00/;
 
   # Construct HTML
   $msg="<B>";
-  if ($avon) { $msg.="$avon "; }
-  if ($telno) { $msg.="$telno"; } else { $msg.="???"; }
-  if ($rest) { $msg.="-$rest"; }
+  if ($tel{'avon'}) { $msg.="$tel{'avon'} "; }
+  if ($tel{'telno'}) { $msg.="$tel{'telno'}"; } else { $msg.="???"; }
+  if ($tel{'rest'}) { $msg.="-$tel{'rest'}"; }
   $msg.="</B>";
 
-  if (($avon_name) || ($wkn)) {
+  if (($tel{'avon_name'}) || ($tel{'wkn'})) {
     $msg.="<BR>";
-    if ($wkn) { $msg.="$wkn "; }
-    if ($avon_name) { $msg.="<I>($avon_name)</I>"; }
+    if ($tel{'wkn'}) { $msg.="$tel{'wkn'} "; }
+    if ($tel{'avon_name'}) { $msg.="<I>($tel{'avon_name'})</I>"; }
   }
   return($msg);
 }
