@@ -1,5 +1,5 @@
 -- generate-tables.sql -- Create necessary tables for Euracom (PostgreSQL)
--- $Id: generate_tables.sql,v 1.3 1998/03/14 12:37:08 bus Exp $
+-- $Id: generate_tables.sql,v 1.4 1998/05/22 07:07:33 bus Exp $
 
 --
 -- Create table containing AVON
@@ -42,8 +42,7 @@ CREATE TABLE euracom (
 	einheiten int2,		-- Number of units for this call
 	direction char,		-- 'I` for incoming, 'O' for outgoing calls
 	length int4,		-- Length of call in seconds (not supported yet)
-	factor float4,		-- Cost for 1 unit
-	pay float4,		-- Total cost (should be equal to einheiten*factor)
+	pay float4,		-- Total cost
 	currency char(4)	-- Name of currency.  Probably 'DEM' or 'EURO'
 );
 

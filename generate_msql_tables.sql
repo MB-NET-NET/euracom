@@ -1,5 +1,5 @@
 # generate_msql_tables.sql -- Create necessary tables for Euracom(msql)
-# $Id: generate_msql_tables.sql,v 1.1 1998/03/14 11:05:24 bus Exp $
+# $Id: generate_msql_tables.sql,v 1.2 1998/05/22 07:07:32 bus Exp $
 
 # Create table containing AVON
 
@@ -37,7 +37,6 @@ CREATE TABLE euracom (
 	einheiten int,	
 	direction char( 1 ),
 	length    int,
-	factor    real,
 	pay       money,
 	currency  char( 4 )
 )\g
