@@ -1,0 +1,89 @@
+dnl
+dnl Configuration input file for euracom
+dnl
+dnl Michael Bussmann <bus@fgan.de>
+dnl
+dnl $Id: configure.in,v 1.1 1999/01/08 11:22:18 bus Exp $
+dnl
+
+AC_REVISION($Revision: 1.1 $)
+AC_INIT(euracom.c)
+AC_CONFIG_HEADER(autoconf.h)
+AC_PREFIX_DEFAULT(/usr/local)
+
+dnl Set default variables
+
+dnl
+dnl Check for programs
+dnl
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PATH_PROG(FALSE, false, /usr/bin/false)
+AC_PATH_PROG(TRUE, true, /usr/bin/true)
+AC_PATH_PROG(RM, rm, $FALSE)
+
+dnl
+dnl Check for libraries
+dnl
+
+dnl
+dnl Check header files
+dnl
+
+dnl
+dnl Check for typedefs
+dnl
+
+dnl
+dnl Check structures
+dnl
+
+dnl Check compiler characteristics
+AC_C_CONST
+dnl AC_C_INLINE
+dnl AC_CHAR_UNSIGNED
+
+dnl
+dnl Check library functions
+dnl
+AC_CACHE_CHECK(if sys_errlist is already declared, ac_cv_needs_sys_errlist,
+  AC_TRY_COMPILE([
+    #include <stdio.h>
+], [
+    char *s = *(sys_errlist);
+],
+    ac_cv_needs_sys_errlist="yes",
+    ac_cv_needs_sys_errlist="no")
+)
+if test "$ac_cv_needs_sys_errlist" = "no" ; then
+  AC_DEFINE(NEED_SYS_ERRLIST)
+fi
+
+AC_REPLACE_FUNCS(strerror)
+AC_CHECK_FUNC(getopt_long,
+[],
+[ LIBOBJS="${LIBOBJS} getopt.o getopt1.o" ]
+)
+
+dnl
+dnl Check system services
+dnl
+
+dnl
+dnl Optional features
+dnl
+AC_MSG_CHECKING(if we're including all debugging code)
+AC_ARG_ENABLE(debugging,
+[ --enable-debugging       include debugging code],
+[ myres=$enableval ],
+[ myres=yes ])
+if test "$myres" = "yes"; then
+  AC_DEFINE(DEBUG)
+fi
+AC_MSG_RESULT($myres)
+
+dnl
+dnl Write output file
+dnl
+AC_OUTPUT(Makefile)

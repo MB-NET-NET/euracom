@@ -1,0 +1,29 @@
+/*
+ * $Id: autoconf.h.in,v 1.1 1999/01/08 11:22:18 bus Exp $
+ */
+
+/* Define to empty if the keyword does not work.  */
+#undef const
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef mode_t
+
+/* Define to `long' if <sys/types.h> doesn't define.  */
+#undef off_t
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef pid_t
+
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+#undef size_t
+
+/* Define as 1 if you have paths.h */
+#define HAVE_PATHS_H 0
+
+/* If set to 1, we have to declare sys_errlist as external */
+#define NEED_SYS_ERRLIST 0
+
+/* Define as 1 if you want debugging messages to be compiled into
+   the programs.  You DO want this, trust me */
+#define DEBUG 0
+
