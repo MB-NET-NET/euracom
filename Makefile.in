@@ -5,7 +5,7 @@
 #
 # Released unter the terms of the GPL version 2.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.11 2001/06/16 17:07:21 bus Exp $
+# $Id: Makefile.in,v 1.12 2001/06/16 17:12:33 bus Exp $
 #
 
 #
@@ -137,7 +137,7 @@ euracom-man.txt: euracom.8
 
 ChangeLog: CVS/Entries
 # Using NIS does have some disadvantages...
-	rcs2log -u 'bus	Michael Bussmann	bus@fgan.de' >$@
+	rcs2log -u 'bus	Michael Bussmann	bus@mb-net.net' >$@
 
 release: ChangeLog euracom-man.txt
 	@echo Generating release $(VERSION)...
