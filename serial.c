@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.20 $
- * Last modified:       $Date: 1999/01/08 11:40:28 $
+ * Version:             $Revision: 1.21 $
+ * Last modified:       $Date: 1999/01/09 13:05:09 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.20 1999/01/08 11:40:28 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.21 1999/01/09 13:05:09 bus Exp $";
 
 #include "config.h"
 
@@ -270,7 +270,7 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
     serial_close_device(sf);
     return(FALSE);
   }
-#if !defined (DONT_CHECK_CTS)
+#if !DONT_CHECK_CTS
   unless (flags & TIOCM_CTS) {
     log_msg(ERR_CRIT, "Euracom did not raise CTS. Check connection");
     serial_close_device(sf);

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.15 $
- * Last modified:       $Date: 1999/01/08 11:40:28 $
+ * Version:             $Revision: 1.16 $
+ * Last modified:       $Date: 1999/01/09 13:05:08 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,27 +24,6 @@
 
 #if !defined(_EURACOM_H)
 #define _EURACOM_H
-
-/*
- * select which terminal handling to use (currently only SysV variants)
- */
-#if defined(HAVE_TERMIOS)
-#include <termios.h>
-#define TTY_GETATTR(_FD_, _ARG_) tcgetattr((_FD_), (_ARG_))
-#define TTY_SETATTR(_FD_, _ARG_) tcsetattr((_FD_), TCSANOW, (_ARG_))
-#endif
-
-#if defined(HAVE_TERMIO)
-#include <termio.h>
-#include <sys/ioctl.h>
-#define TTY_GETATTR(_FD_, _ARG_) ioctl((_FD_), TCGETA, (_ARG_))
-#define TTY_SETATTR(_FD_, _ARG_) ioctl((_FD_), TCSETAW, (_ARG_))
-#endif
-
-#ifndef TTY_GETATTR
-#error MUST DEFINE ONE OF "HAVE_TERMIOS" or "HAVE_TERMIO"
-#endif
-
 
 struct SerialFile {
   int  fd;

@@ -5,10 +5,22 @@
 #
 # Released unter the terms of the GPL.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.2 1999/01/08 11:40:27 bus Exp $
+# $Id: Makefile.in,v 1.3 1999/01/09 13:05:07 bus Exp $
 #
 
 # !! PLEASE CHECK config.h AS WELL !!
+
+#
+# Compiler settings
+#
+CC              = @CC@
+INSTALL_BIN     = @INSTALL@
+LN_S            = @LN_S@
+AC_CFLAGS       = @CFLAGS@
+LDFLAGS         = @LDFLAGS@
+LIBS            = @LIBS@
+LIBOBJS         = @LIBOBJS@
+RM              = @RM@
 
 #
 # Program version number
@@ -21,9 +33,11 @@ VERSION = 1.3.0
 #
 # Where executables/manpage should be installed
 #
-DSTBASE = /usr/local
-BINDIR  = $(DSTBASE)/sbin
-MANDIR  = $(DSTBASE)/man/man8
+prefix          = @prefix@
+exec_prefix     = @exec_prefix@
+bindir          = @sbindir@
+sysconfdir      = @sysconfdir@
+mandir		= @mandir@
 
 #
 # Set this to the desired DB subsystem
@@ -64,12 +78,6 @@ ifeq ($(DATABASE), mysql)
 endif
 
 #
-# Standard compiler settings
-#
-CC=gcc
-CFLAGS=-m486 -pipe -Wall
-
-#
 # End of user serviceable parts.  From here on anything is my fault
 #
 
@@ -86,11 +94,6 @@ endif
 
 # Sets name of database interface file
 DATABASE_SUBSYS=$(DATABASE).c
-
-export CC
-export CPPFLAGS
-export LDFLAGS
-export CFLAGS
 
 all: euracom prefixmatch.so
 
@@ -117,11 +120,11 @@ ifeq ($(DATABASE), postgres)
 	install -o postgres -m 755 -d $(DATABASE_OBJ)
 	install -o postgres -m 755 prefixmatch.so $(DATABASE_OBJ)
 endif
-	install -o root -m 755 -d $(BINDIR)
-	install -o root -m 755 euracom $(BINDIR)
+	install -o root -m 755 -d $(bindir)
+	install -o root -m 755 euracom $(bindir)
 
-	install -o man -g man -m 755 -d $(MANDIR)
-	install -o man -g man -m 644 euracom.8 $(MANDIR)
+	install -o man -g man -m 755 -d $(mandir)/man8
+	install -o man -g man -m 644 euracom.8 $(mandir)/man8
 
 database:
 ifeq ($(DATABASE), postgres)
@@ -138,6 +141,7 @@ endif
 # Re-create ./configure if needed. Hmm, it's a chicken and egg problem...
 #
 configure: configure.in
+	-rm autoconf.h config.log config.cache config.status
 	autoconf
 
 clean:

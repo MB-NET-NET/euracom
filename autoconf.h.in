@@ -1,5 +1,5 @@
 /*
- * $Id: autoconf.h.in,v 1.1 1999/01/08 11:22:18 bus Exp $
+ * $Id: autoconf.h.in,v 1.2 1999/01/09 13:05:08 bus Exp $
  */
 
 /* Define to empty if the keyword does not work.  */
@@ -26,4 +26,11 @@
 /* Define as 1 if you want debugging messages to be compiled into
    the programs.  You DO want this, trust me */
 #define DEBUG 0
+
+/* Define as 1 if you want support for KIT DUMP. */
+#define KIT_DUMP_MODE 0
+
+/* Define this if euracom has problems detecting CTS */
+#define DONT_CHECK_CTS 0
+
 

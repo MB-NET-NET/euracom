@@ -3,15 +3,16 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@fgan.de>
 dnl
-dnl $Id: configure.in,v 1.1 1999/01/08 11:22:18 bus Exp $
+dnl $Id: configure.in,v 1.2 1999/01/09 13:05:08 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.1 $)
+AC_REVISION($Revision: 1.2 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(autoconf.h)
 AC_PREFIX_DEFAULT(/usr/local)
 
 dnl Set default variables
+dbdir="/opt/postgreSQL"
 
 dnl
 dnl Check for programs
@@ -24,8 +25,19 @@ AC_PATH_PROG(TRUE, true, /usr/bin/true)
 AC_PATH_PROG(RM, rm, $FALSE)
 
 dnl
+dnl What database?
+dnl
+AC_MSG_CHECKING(for PostgreSQL support)
+AC_ARG_WITH(postgres,
+[  --with-postgreSQL[=dir]	Use PostgreSQL ],
+[ dbdir=$withval ])
+AC_MSG_RESULT($dbdir)
+
+dnl
 dnl Check for libraries
 dnl
+AC_CHECK_LIB(pq, crypt)
+AC_CHECK_LIB(crypt, crypt)
 
 dnl
 dnl Check header files
@@ -80,6 +92,26 @@ AC_ARG_ENABLE(debugging,
 [ myres=yes ])
 if test "$myres" = "yes"; then
   AC_DEFINE(DEBUG)
+fi
+AC_MSG_RESULT($myres)
+
+AC_MSG_CHECKING(whether KIT DUMP mode should be enabled)
+AC_ARG_ENABLE(kit-dump-mode,
+[ --disable-kit-dump-mode	Disable support KIT DUMP mode],
+[ myres=$enableval ],
+[ myres=yes ])
+if test "$myres" = "yes"; then
+  AC_DEFINE(KIT_DUMP_MODE)
+fi
+AC_MSG_RESULT($myres)
+
+AC_MSG_CHECKING(if we should check for CTS)
+AC_ARG_ENABLE(cts-check,
+[ --disable-cts-check	Don't check for CTS],
+[ myres=$enableval ],
+[ myres=yes ])
+if test "$myres" = "no"; then
+  AC_DEFINE(DONT_CHECK_CTS)
 fi
 AC_MSG_RESULT($myres)
 
