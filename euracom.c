@@ -7,6 +7,8 @@
 #include <sys/errno.h>
 #include <signal.h>
 #include <termios.h>
+#include <string.h>
+#include <syslog.h>
 #include "log.h"
 #include "utils.h"
 #include "fileio.h"
@@ -16,78 +18,86 @@ typedef char TelNo[32];
 struct GebuehrInfo {
   enum TVerbindung art;
   int teilnehmer;
-  time_t datum;
+  time_t datum;	/* Datum/Zeit Verbindungsaufbau */
+  time_t doe;	/* Datum/Zeit Eintrag (approx. Verbindungsende) */
   TelNo nummer;
   int einheiten;
   float betrag;
 };
 
-#define DEFAULT_DEVICE	"/dev/cua0"
+#define DEFAULT_DEVICE		"/dev/cua0"
+#define GEBUEHR_FILE		"/var/log/euracom.gebuehr"
 
-int euracom_fd = 0;	/* RS232 port to Euracom */
+/* Globals */
+int euracom_fd = 0;			/* RS232 port to Euracom */
+char *gebuehr_filename = NULL;		/* Filename für Gebuehrendaten */
+
 
 
 /*------------------------------------------------------*/
-/* char *geb2str()                                      */
+/* BOOLEAN gebuehr_log()                                */
 /* */
-/* Wandelt GebuehrInfo struct in can. string um         */
+/* Schreibt Gebuehrinfo auf disk/syslog                 */
 /* */
 /* RetCode: Ptr to static string, NULL: Error           */
 /*------------------------------------------------------*/
-char *geb2str(struct GebuehrInfo *geb)
+BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
 {
-  static char res[1024];
+  char res[1024];
   char art;
 
+  /* Logfile öffnen */
+  if (gebuehr_filename) {
+    FILE *fp;
+
+    if (fp=fopen(gebuehr_filename, "a")) {
+      strcpy(res, "");
+      fprintf(fp, "%d;%lu;%lu;%d;%s;%d;%7.2f\n",
+	      geb->art,
+	      (unsigned long)geb->datum, (unsigned long)geb->doe,
+	      geb->teilnehmer,
+	      geb->nummer,
+	      geb->einheiten,
+	      geb->betrag);
+      fclose(fp);
+    } else {
+      log_msg(ERR_CRIT, "Could not open logfile: %s", strerror(errno));
+    }
+  }
+      
+  /* Syslog meldung */
+  strcpy(res, "");
   switch (geb->art) {
     case FEHLER:
       log_msg(ERR_WARNING, "Invalid geb->art");
-      return(NULL);
+      return(FALSE);
       break;
     case GEHEND:
-      art='G';
+      sprintf(res, "%d called %s. %d units (%lu s), %6.2f DM",
+	      geb->teilnehmer, geb->nummer,
+	      geb->einheiten,
+	      (unsigned long)((geb->doe)-(geb->datum)),
+	      geb->betrag);
       break;
     case KOMMEND:
-      art='K';
+      sprintf(res, "Incoming call from %s. No connection (%lu s)",
+	      geb->nummer,
+	      (unsigned long)((geb->doe)-(geb->datum)));
       break;
     case VERBINDUNG:
-      art='V';
+      sprintf(res, "Incoming call from %s to %d for %lu s",
+	      geb->nummer, geb->teilnehmer,
+	      (unsigned long)((geb->doe)-(geb->datum)));
       break;
     default:
       log_msg(ERR_WARNING, "CASE missing in geb->art");
-      art='G';
       break;
   }	/* SWITCH */
 
-  sprintf(res, "%2d;%c;%d;%s;%d;%6.3f",
-	  geb->teilnehmer,
-	  art,
-	  geb->datum,
-	  geb->nummer,
-	  geb->einheiten,
-	  geb->betrag);
-  
-  return(res);
+  syslog(LOG_NOTICE, "%s", res);
+  return(TRUE);
 }
 
-/*------------------------------------------------------*/
-/* struct GebuehrInfo *str2geb()                        */
-/* */
-/* Wandelt can. string in GebuehrInfo struct um         */
-/* */
-/* RetCode: Ptr to param 1, NULL: Error                 */
-/*------------------------------------------------------*/
-struct GebuehrInfo *str2geb(struct GebuehrInfo *geb, const char *str)
-{
-  geb->art=KOMMEND;
-  geb->teilnehmer=12;
-  geb->datum=1;
-  strcpy(geb->nummer, "123412");
-  geb->einheiten=0;
-  geb->betrag=0.0;
-
-  return(geb);
-}
 
 /*------------------------------------------------------*/
 /* struct GebuehrInfo *eura2geb()                       */
@@ -98,29 +108,84 @@ struct GebuehrInfo *str2geb(struct GebuehrInfo *geb, const char *str)
 /*------------------------------------------------------*/
 struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 {
-  geb->art=KOMMEND;
-  geb->teilnehmer=12;
-  geb->datum=1;
-  strcpy(geb->nummer, "123412");
-  geb->einheiten=0;
-  geb->betrag=0.0;
+  char *tok;
+  char *buf=strdup(str);
+  char art[3];
+  struct tm tm;
 
+  /* Art und Teilnehmer*/
+  if (!(tok=strtok(buf, "|"))) { return(NULL); }
+  sscanf(tok, "%s %d", art, &geb->teilnehmer);
+  switch (art[0]) {
+    case 'G':
+      geb->art=GEHEND;
+      break;
+    case 'V':
+      geb->art=VERBINDUNG;
+      break;
+    case 'K':
+      geb->art=KOMMEND;
+      break;
+    default:
+      geb->art=FEHLER;
+      log_msg(ERR_ERROR, "Field 1 invalid");
+      return(NULL);
+      break;
+  }
+
+  /* Datum/Zeit Verbindungsaufbau */
+  if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 2 invalid"); return(NULL); }
+  strptime(tok, " %d.%m.%y, %H:%M", &tm);
+  geb->datum=mktime(&tm);
+
+  /* Telefonnummer */
+  if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 3 invalid"); return(NULL); }
+  stripblank(tok);
+  strcpy(geb->nummer, tok);
+
+  if ((geb->art==KOMMEND) || (geb->art==VERBINDUNG)) {
+    geb->einheiten=0;
+    geb->betrag=0;
+  } else {
+    /* Einheiten */
+    if (!(tok=strtok(NULL, "|"))) {log_msg(ERR_ERROR, "Field 4 invalid");  return(NULL); }
+    geb->einheiten=atoi(tok);
+
+    /* Gebuehr */
+    if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 5 invalid"); return(NULL); }
+    stripblank(tok);
+    { char *cp;
+      if (cp=strchr(tok, ',')) {*cp='.';}
+      if (cp=strchr(tok, ' ')) {*cp='\0';}
+    }
+    sscanf(tok, "%f", &geb->betrag);
+  }
+
+  free(buf);
+  /* geb->doe wird *nicht* gesetzt! */
   return(geb);
 }
 
-
+/*------------------------------------------------------*/
+/* int init_euracom_port()                              */
+/* */
+/* Öffnet RS232 device, setzt RTS                       */
+/* */
+/* RetCode: fd, -1: Error                               */
+/*------------------------------------------------------*/
 int init_euracom_port(const char *device)
 {
   struct termios term;
   int fd;
   int flags;
 
-  log_msg(ERR_DEBUG, "Initializing Euracom RS232 port");
+  log_msg(ERR_DEBUG, "Initializing Euracom RS232 port (%s)", device);
 
   if ((fd=open(device, O_RDWR))<0) {
     log_msg(ERR_CRIT, "Error opening %s: %s", device, strerror(errno));
     return(-1);
   }
+
   if (tcgetattr(fd, &term) == -1 ) {
     log_msg(ERR_CRIT, "tcgetattr: %s", strerror(errno));
     return(-1);
@@ -137,18 +202,16 @@ int init_euracom_port(const char *device)
     return(-1);
   }
 
-  euracom_fd=fd;
-
   sleep(1);
-  ioctl(euracom_fd, TIOCMGET, &flags);
+  ioctl(fd, TIOCMGET, &flags);
   if (!(flags & TIOCM_RTS)) {
     log_msg(ERR_CRIT, "RTS not set");
-    close_euracom_port();
+    close_euracom_port(fd);
     return(-1);
   }
   if (!(flags & TIOCM_CTS)) {
     log_msg(ERR_CRIT, "Euracom did not raise CTS. Check connection");
-    close_euracom_port();
+    close_euracom_port(fd);
     return(-1);
   }
 
@@ -156,16 +219,23 @@ int init_euracom_port(const char *device)
 }
 
 
-int close_euracom_port()
+/*------------------------------------------------------*/
+/* int close_euracom_port()                             */
+/* */
+/* Schließt RS232 port, setzt RTS zurück                */
+/* */
+/* RetCode: 0: O.k, -1: Error                           */
+/*------------------------------------------------------*/
+int close_euracom_port(fd)
 {
   int flags = 0;
 
   log_msg(ERR_DEBUG, "Shutting down Euracom RS232 port");
 
-  ioctl(euracom_fd, TIOCMSET, &flags);
+  ioctl(fd, TIOCMSET, &flags);
 
   sleep(1);
-  ioctl(euracom_fd, TIOCMGET, &flags);
+  ioctl(fd, TIOCMGET, &flags);
   if ((flags & TIOCM_RTS)) {
     log_msg(ERR_CRIT, "RTS still set");
     return(-1);
@@ -175,9 +245,17 @@ int close_euracom_port()
     return(-1);
   }
 
-  close(euracom_fd);
+  close(fd);
 }
 
+
+/*------------------------------------------------------*/
+/* int shutdown_program()                               */
+/* */
+/* Beendet programm                                     */
+/* */
+/* RetCode: No return                                   */
+/*------------------------------------------------------*/
 int shutdown_program(int force)
 {
   close_euracom_port();
@@ -185,12 +263,26 @@ int shutdown_program(int force)
   exit(force);
 }
 
+/*------------------------------------------------------*/
+/* int hangup()                                         */
+/* */
+/* Signal handler für non-fatal signals                 */
+/* */
+/* RetCode: 0                                           */
+/*------------------------------------------------------*/
 int hangup(int sig)
 {
   log_msg(ERR_NOTICE, "Signal %d received", sig);
   return(0);
 }
 
+/*------------------------------------------------------*/
+/* int fatal()                                          */
+/* */
+/* Signal handler für fatal signals                     */
+/* */
+/* RetCode: 0                                           */
+/*------------------------------------------------------*/
 int fatal(int sig)
 {
   log_msg(ERR_FATAL, "Signal %d received. Giving up", sig);
@@ -198,6 +290,13 @@ int fatal(int sig)
   return(0);
 }
 
+/*------------------------------------------------------*/
+/* int terminate()                                      */
+/* */
+/* Signal handler für Programm-Beendigung               */
+/* */
+/* RetCode: 0                                           */
+/*------------------------------------------------------*/
 int terminate(int sig)
 {
   log_msg(ERR_INFO, "Signal %d received. Program terminating", sig);
@@ -205,26 +304,117 @@ int terminate(int sig)
   return(0);
 }
 
+/*------------------------------------------------------*/
+/* void usage()                                         */
+/* */
+/* Infos zur Programmbedienung                          */
+/*------------------------------------------------------*/
 void usage(const char *prg)
 {
-  printf("Usage: %s [-f] device\n", prg);
-  printf("\t-f file\tName of output file\n\n");
+  printf("Usage: %s [-gjp] device\n", prg);
+  printf("\t-g file\tGebührenfile\n");
+  printf("\t-j file\tJunkfile\n");
+  printf("\t-p file\tProtokollfile\n");
   exit(0);
 }
 
 
-int parse_euracom_data(const char *buf)
+/*------------------------------------------------------*/
+/* char *readln_rs232()                                 */
+/* */
+/* Daten liegen an fd an. Lesen bis 0A 0D 00 oder timeo */
+/* */
+/* RetCode: Ptr to static string, NULL: Error           */
+/*------------------------------------------------------*/
+char *readln_rs232(int fd)
 {
-  printf("I just got: %s\n", buf);
+  static char buf[1024];
+  char *cp=buf;
+  fd_set fds;
+  int retval;
+
+  FD_ZERO(&fds);
+  FD_SET(fd, &fds);
+  do {
+    struct timeval tv;
+    char inbuf;
+
+    tv.tv_sec=5; tv.tv_usec=0;
+    if ((retval=select(fd+1, &fds, NULL, NULL, &tv))>0) {
+      /* Data from Euracom Port */
+      if (read(fd, &inbuf, 1)!=1) {
+	log_msg(ERR_ERROR, "read() failed in readln_rs232: %s", strerror(errno));
+	break;
+      }
+      *cp=inbuf;
+      if (*cp=='\0') {
+	if ((*(cp-1)!='\r') || (*(cp-2)!='\n')) {
+	  log_msg(ERR_ERROR, "Incomplete line from Euracom");
+	}
+	*(cp-2)='\0';
+	break;
+      } else {
+	cp++;
+      }
+    }
+  } while (retval>0);
+
+  if (retval==0) {
+    log_msg(ERR_WARNING, "Timeout during RS232 I/O");
+    return(NULL);
+  } else if (retval<0) {
+    log_msg(ERR_ERROR, "select() failed: %s", strerror(errno));
+    return(NULL);
+  } else {
+    return(buf);
+  }
 }
 
+
+/*------------------------------------------------------*/
+/* int parse_euracom_data()                             */
+/* */
+/* Zeile von Euracom-Druckerport verarbeiten            */
+/* */
+/* RetCode: FALSE: Fehler, TRUE: O.k                    */
+/*------------------------------------------------------*/
+BOOLEAN parse_euracom_data(const char *buf)
+{
+  /* Check message type */
+  if (!strchr(buf, '|')) {
+    /* Junk daten */
+    syslog(LOG_INFO, "%s", buf);
+    return(TRUE);
+  } else {
+    struct GebuehrInfo gebuehr;
+    FILE *fp;
+
+    if (!eura2geb(&gebuehr, buf)) {
+      syslog(LOG_ERR, "Invalid charge data: %s", buf);
+      return(FALSE);
+    }
+    
+    /* Aktuelle Zeit einsetzen */
+    gebuehr.doe=time(NULL);
+
+    /* Logging */
+    gebuehr_log(&gebuehr);
+  }    
+}
+
+/*------------------------------------------------------*/
+/* int select_loop()                                    */
+/* */
+/* Auf Daten von RS232 warten                           */
+/* */
+/* RetCode: Fehler                                      */
+/*------------------------------------------------------*/
 int select_loop()
 {
   fd_set rfds;
   int max_fd=0;
   int retval;
-  char ebuf[1024], *eb=ebuf;
-
+ 
   FD_ZERO(&rfds);
   FD_SET(euracom_fd, &rfds);
 
@@ -239,18 +429,13 @@ int select_loop()
 
     if (retval>0) {
       if (FD_ISSET(euracom_fd, &rfds)) {
-	char buf;
-	size_t t;
+	char *buf;
 
 	/* Data from Euracom Port */
-	if (read(euracom_fd, &buf, 1)==1) {
-  	  *eb=buf;
-	  if (buf=='\0') { 
-	    parse_euracom_data(ebuf);
-	    eb=ebuf;
-	  } else {
-	    eb++;
-	  }
+	if (!(buf=readln_rs232(euracom_fd))) {
+	  log_msg(ERR_ERROR, "Euracom read failed. Ignoring line");
+	} else {
+	  parse_euracom_data(buf);
 	}
       }
     }	/* IF retval */
@@ -275,9 +460,10 @@ int main(argc, argv)
   init_log("Euracom", ERR_JUNK, USE_STDERR | TIMESTAMP, NULL);
 
   /* Parse command line options */
-  while ((opt = getopt(argc, argv, "f")) != EOF) {
+  while ((opt = getopt(argc, argv, "g:")) != EOF) {
     switch (opt) {
-      case 'f':
+      case 'g':
+	gebuehr_filename=strdup(optarg);
         break;
       default:
         usage(argv[0]);
@@ -293,11 +479,17 @@ int main(argc, argv)
     strcpy(devname, DEFAULT_DEVICE);
   }
 
+  /* Check logfiles */
+  if (!gebuehr_filename) { gebuehr_filename=strdup(GEBUEHR_FILE); }
+
   /* Initialize Euracom */
   if ((euracom_fd=init_euracom_port(devname))==-1) {
     log_msg(ERR_FATAL, "Error initializing serial interface");
     exit(1);
   }
+
+  /* Re-open syslog facility */
+  openlog("Euracom", 0, LOG_LOCAL0);
 
   /* Set up signal handlers */
   signal(SIGHUP,(void *)hangup);
