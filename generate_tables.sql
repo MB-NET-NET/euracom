@@ -1,5 +1,5 @@
--- generate-tables.sql -- Create necessary tables for Euracom
--- $Id: generate_tables.sql,v 1.2 1998/01/16 13:31:10 bus Exp $
+-- generate-tables.sql -- Create necessary tables for Euracom (PostgreSQL)
+-- $Id: generate_tables.sql,v 1.3 1998/03/14 12:37:08 bus Exp $
 
 --
 -- Create table containing AVON
