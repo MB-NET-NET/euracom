@@ -5,12 +5,12 @@
 #
 # charger.pl -- Gebührenauswertung via PostgreSQL
 #
-# Copyright (C) 1996-1998 by Michael Bussmann
+# Copyright (C) 1996-2000 by Michael Bussmann
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.14 $
-# Last modified:       $Date: 1999/06/03 12:20:33 $
+# Version:             $Revision: 1.15 $
+# Last modified:       $Date: 1999/12/28 10:35:22 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,10 +24,10 @@
 #**************************************************************************
 
 #
-# $Id: charger.pl,v 1.14 1999/06/03 12:20:33 bus Exp $
+# $Id: charger.pl,v 1.15 1999/12/28 10:35:22 bus Exp $
 #
 
-use Pg;
+use DBI;
 
 # Add directory this script resides in to include path
 if ($i=rindex($0, "/")) {
@@ -93,13 +93,9 @@ EOF
 # Fire up connection
 #
 debug("Opening connection...");
-$db = Pg::connectdb("host=$db_host dbname=$db_db");
-if ($db->status!=PGRES_CONNECTION_OK) {
-  $msg=$db->errorMessage;
-  die "Open DB failed: $msg";
-}
-$my_db=$db->db; $my_user=$db->user; $my_host=$db->host; $my_port=$db->port;
-debug("connected to table $my_db on $my_user\@$my_host:$my_port\n");
+$dbh=DBI->connect("dbi:Pg:dbname=$main::db_db;host=$main::db_host", "", "",
+        {RaiseError=>1, AutoCommit=>0}) || die "Connect failed: $DBI::errstr";
+debug("ok\n");
 
 #
 # Create filter expression and build internal list
@@ -151,16 +147,19 @@ SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),direction,pay,cu
 #
 # Print footer
 #
-$res=$db->exec("SELECT sum(pay) from euracom $filter_cmd") || die "SELECT sum";
-$val1=$res->getvalue(0,0);
-printf "<tr><td></td><td></td><td>%d Gespr&auml;che</td><td>%.3f DEM</td></tr>\n", $counter, $val1;
+($pay) = $dbh->selectrow_array("SELECT sum(pay) from euracom $filter_cmd") || die "SELECT sum: $DBI::errstr";
+printf "<tr><td></td><td></td><td>%d Gespr&auml;che</td><td>%.3f DEM</td></tr>\n", $counter, $pay;
 printf "<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td>%.3f DEM</td></tr>\n", $charge;
-printf "<tr><td></td><td></td><td>GESAMT:</td><td><B>%.2f DEM</B></td></tr>\n", $val1+$charge;
+printf "<tr><td></td><td></td><td>GESAMT:</td><td><B>%.2f DEM</B></td></tr>\n", $pay+$charge;
 print "</table></center><br><hr><address>";
 print "Michael Bussmann, Im Brook 8, 45721 Haltern</address></body></html>\n";
 
-debug("Closing connection\n");
-undef $db;
+#
+# Disconnect gracefully
+#
+debug("Closing connection...");
+$dbh->disconnect() || warn $DBI::errstr;
+debug("ok\n");
 
 #
 # eval_result()
