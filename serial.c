@@ -1,3 +1,7 @@
+/* $Id: serial.c,v 1.2 1996/10/26 09:32:40 bus Exp $
+   $File$
+*/
+
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -36,7 +40,7 @@
 #define LOCKPATH		"/var/lock"
 
 /* Globals */
-char lock[80] = LOCKPATH;
+static char lock[80] = LOCKPATH;
 
 
 /*------------------------------------------------------*/
