@@ -3,12 +3,12 @@
  *
  * config.h -- Local configuration
  *
- * Copyright (C) 1996-1997 by Michael Bussmann
+ * Copyright (C) 1996-1998 by Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
- * Created:             1997-10-04 14:48:04 GMT
- * Version:             $Revision: 1.1 $
- * Last modified:       $Date: 1997/10/04 16:51:00 $
+ * Created:             1997-10-04 16:51:00 GMT
+ * Version:             $Revision: 1.2 $
+ * Last modified:       $Date: 1998/01/16 13:32:48 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -66,7 +66,6 @@
 #define DEF_LOGFAC		LOG_LOCAL0
 
 
-
 /* --------------------------------------------------------------------------
  * V24/interface options
  * --------------------------------------------------------------------------
@@ -82,6 +81,11 @@
  * Where to write the lockfile
  */
 #define LOCKPATH		"/var/lock"
+
+/*
+ * Where to write PID file
+ */
+#define PIDFILE			"/var/run/euracom.pid"
 
 
 /* --------------------------------------------------------------------------
