@@ -3,10 +3,10 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@mb-net.net>
 dnl
-dnl $Id: configure.in,v 1.11 2002/05/10 07:05:54 bus Exp $
+dnl $Id: configure.in,v 1.12 2002/05/10 07:21:03 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.11 $)
+AC_REVISION($Revision: 1.12 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -183,7 +183,6 @@ AC_ARG_WITH(firmware,
        ;;
     4) AC_MSG_RESULT(firmware 4.x)
        AC_DEFINE_UNQUOTED(FIRMWARE_MAJOR, 3)
-       ;;
        ;;
     *) AC_ERROR(Only firmware releases 1 2 3 or 4 are supported)
        ;;

@@ -5,7 +5,7 @@
 #
 # Released unter the terms of the GPL version 2.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.12 2001/06/16 17:12:33 bus Exp $
+# $Id: Makefile.in,v 1.13 2002/05/10 07:21:03 bus Exp $
 #
 
 #
@@ -150,6 +150,6 @@ release: ChangeLog euracom-man.txt
 	@$(RM) -r /tmp/euracom-$(VERSION)
 	@cp euracom-man.txt release
 	@cp README.html release/euracom-README.html
-	@cd release && pgps -ba -u 0xAA320021 +clearsig=on euracom-$(VERSION).tar.gz -o euracom-$(VERSION).pgpsig
+	@cd release && gpg --armour --detach-sign -u 0xAA320021 -o euracom-$(VERSION).pgpsig euracom-$(VERSION).tar.gz
 	@echo "--- NEW RELEASE: $(VERSION) ---"
 	@ls -l release/
