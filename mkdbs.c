@@ -8,7 +8,7 @@
 
 #define DB_MODE		0644
 #define DB_BLOCK_SIZE	1024
-#define AVON_TXT_NAME	"/var/lib/euracom/avon"
+#define AVON_TXT_NAME	"/var/lib/euracom/avon.dat"
 #define WKN_TXT_NAME	"/var/lib/euracom/wkn.dat"
 
 /*------------------------------------------------------*/
