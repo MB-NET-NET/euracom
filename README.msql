@@ -1,0 +1,127 @@
+    addendum fuer mSQL
+   ===================
+
+anbei dem paket 'euracom' von Michael Bussman liegen folgende zusaetzliche files:
+ - euracom.c.msql
+ - generate_msql_tables.sql
+ - config.h.msql
+ - msql.c
+ - Makefile.msql
+ - README.msql
+
+mit diesen Dateien kann 'euracom' von Michael Bussmann (im folgenden MB genannt)  auch
+fuer das dbms miniSQL(mSQL) verwendet werden.
+
+
+QUICK installation guide
+------------------------
+
+folgendermassen vorgehen:
+
+ - Makefile       umbenennen in Makefile.pgsql
+ - Makefile.msql  umbenennen in Makefile
+ - euracom.c      umbenennen in euracom.c.pgsql
+ - euracom.c.msql umbenennen in euracom.c
+ - config.h       umbenennen in config.c.pgsql
+ - config.h.msql  umbenennen in config.h
+ - rest wie sonst
+
+
+
+
+
+infos fuer interessierte
+------------------------
+
+aenderungen/ergaenzungen mussten vorgenommen werden:
+
+1. Makefile
+
+keine erlaeuterung
+
+
+2. config.h
+
+definition der precompiler variablen MINISQL
+
+
+3. msql.c
+
+umschreiben der datei 'postgres.c', der einfachheit halber in einer eigenen
+kopie mit dem namen 'msql.c'. geaendert werden mussten lediglich die 
+bibliothek aufrufe.
+
+msql (version 2) muss im standard verzeichnis incl. der bibliotheken und include
+dateien installiert sein (/usr/local/Hughes /include bzw. /lib).
+
+4. generate_msql_tables.sql
+
+einmal ist SQL != SQL (hier: verschiedene datentypformate, was zu einer aenderung
+am datenmodell fuehrt, s. tabelle 'euracom') und ausserdem unterscheidet sich das
+format der steuerdatei. 
+
+die tabellen mit den default-werten wird angelegt mit
+
+ > /usr/local/Hughes/bin/msql isdn < generate_msql_tables.sql
+
+
+5. euracom.c
+
+aufgrund der sauberen programmierung von MB war es mit geringem aufwand moeglich
+das programm fuer msql anzupassen.
+
+so waren ergaenzungen/aenderungen in 'euracom.c' nur in einer einzigen funktion
+erforderlich, 'gebuehr_db_log'. diese funktion schreibt die ermittelten daten 
+in die datenbank.
+
+um das umbenennen (s. o.) zu minimieren, habe ich precompiler statements eingefuegt. so dass
+in abhaengigkeit, ob in der Datei 'config.h' die Variable 'MINISQL' definiert ist,
+das zu dem entsprechenden dbms passende programm erzeugt wird. 
+
+in 'config.h' die zeile 
+
+  #define MINISQL
+
+fuer PostgreSQL auskommentieren.
+
+dann brauch man nur noch das 'Makefile' umbenennen, fertig. 
+ 
+
+da war doch noch was?
+ach ja!
+
+6. README.msql
+
+dazu faellt mir im augenblick nichts ein.
+
+
+einen hab ich noch ... einen hab ich noch ...
+
+7. perl
+
+die in MB's programmpaket enthaltenen Perl-skripte habe ich nicht angepasst.
+die auswertung muss man sich also selber basteln.
+
+
+have fun
+
+ micha(hf)
+
+ (michael tepperis, email: michael.tepperis@fernuni-hagen.de)
+ [08.03.1998]
+
+ps: fuer die dbms mySQL und Adabas D unter Linux wird das Programm ebenfalls entsprechend angepasst.
+austesten werde ich es auch fuer DB2 und den SQL-Server der firma 'kleinweich'. hintergrund ist, dass
+ich hier an einer three-tier java web-datenbank-loesung aus einem kommunikations-server (linux: web-server
+und modem- und tk-rechner) und einem dbms-rechner (linux: Adabas D oder OS/2: DB2 [wann kommt DB2 fuer
+Linux?], ueber den rest red ich nicht, muss aber wg. markt und so sein) bastel.
+
+da kann man sich also die daten per internet-technologie im intra/inter/extranet ansehen :-)
+
+eine cgi loesung mit PHP liegt aber ebenfalls in kuerze vor. PHP bietet unter Linux unterstuetzung fuer
+PostgreSQl, MySQL, mSQL, Adabas D u. a., so auf anderen plattformen auch oracle und informix.
+
+DB2 wird im augenblick nicht unterstuetzt, unter Linux aus bekanntem grunde erst recht nicht, da
+PHP keine three tier loesung ermoeglicht.
+ 
+
