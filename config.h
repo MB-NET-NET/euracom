@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.4 $
- * Last modified:       $Date: 1998/01/18 10:58:14 $
+ * Version:             $Revision: 1.5 $
+ * Last modified:       $Date: 1998/01/23 12:39:54 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -85,7 +85,7 @@
 /*
  * Define this if euracom has problems detecting CTS
  */
-#define	DONT_CHECK_CTS
+#undef	DONT_CHECK_CTS
 
 
 /* --------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-$Date: 1998/01/17 13:33:53 $, $Revision: 1.3 $
+$Date: 1998/01/23 12:39:53 $, $Revision: 1.4 $
 
 |------------+--------+------------------------------------------------------
 | Datum/STag | Version| Wichtigste Änderungen
@@ -11,9 +11,16 @@ $Date: 1998/01/17 13:33:53 $, $Revision: 1.3 $
 |            |        | - Kosmetische Aenderungen am C-Code
 |------------+--------+-------------------------------------------------------
 | 1998-01-17 | 1.1.0  | Privaterelease an Volker
-| rel_1_1_0  |        | - Ueberarbeitetes Handling des V24 Interfaces
+| rel-1_1_0  |        | - Ueberarbeitetes Handling des V24 Interfaces
 |            |        | - Verbessertes debugging (logfile, syslog)
 |            |        | - Daemon mode (fork/setsid/detach), PID file
 |            |        | - root-mode: Lockfile/PIDfile/Device/Logfile Zugriff mit
 |            |        |   Root-Rechten, danach normaler user
+|------------+--------+-------------------------------------------------------
+| 1998-01-19 | 1.1.0  | Oeffentliche (intermediate) Version [README noch veraltet]
+| rel-1_1_0  |        | - man page hinzugefügt (Volker)
+|------------+--------+-------------------------------------------------------
+| 1998-01-23 | 1.1.1  | Oeffentliche Version
+| rel-1_1_1  |        | - README aktualisiert (verbessert? :-))
+|            |        | - Kleinere Aenderungen in libutils und im V24 Interface
 |------------+--------+-------------------------------------------------------

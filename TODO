@@ -1,6 +1,6 @@
 TODO-Liste:
 ===========
-$Date: 1998/01/18 11:00:44 $ $Revision: 1.4 $
+$Date: 1998/01/23 12:39:53 $ $Revision: 1.5 $
 
 +----
 | *	To be done
@@ -40,15 +40,14 @@ V	1998-01-17 Neues Feld 'length' (Gespraechsdauer) -> Fuer KIT mode
 Dokumentation:
 --------------
 V	1998-01-15 Man-page [Volker Schmidt <volker@illuminatus.mz.rhein-main.de>]
-
-*	1998-01-15 Verwendete Hardware
-*	1998-01-15 Welches Kabel
-*	1998-01-15 Anschluss an Druckerport (Konfig der Anlage)
-*	1998-01-15 Hinweis auf default syslog fac
-*	1998-01-15 make database
-*	1998-01-15 Hinweis RTS/CTS Problem
-*	1998-01-15 Directories/Permissions (/var/lock /var/run)
-*	1998-01-15 Hinweis auf TBL_FREE_CMD (ist default bei postgres 6.3)
+V	1998-01-15 Verwendete Hardware
+V	1998-01-15 Welches Kabel
+V	1998-01-15 Anschluss an Druckerport (Konfig der Anlage)
+V	1998-01-15 Hinweis auf default syslog fac
+V	1998-01-15 make database
+V	1998-01-15 Hinweis RTS/CTS Problem
+V	1998-01-15 Directories/Permissions (/var/lock /var/run)
+V	1998-01-15 Hinweis auf TBL_FREE_CMD (ist default bei postgres 6.3)
 
 -- 
-$Id: TODO,v 1.4 1998/01/18 11:00:44 bus Exp $
+$Id: TODO,v 1.5 1998/01/23 12:39:53 bus Exp $
