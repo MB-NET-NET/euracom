@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.24 $
- * Last modified:       $Date: 1998/02/14 08:48:23 $
+ * Version:             $Revision: 1.25 $
+ * Last modified:       $Date: 1998/02/14 10:59:36 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.24 1998/02/14 08:48:23 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.25 1998/02/14 10:59:36 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -262,10 +262,6 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   /* Default-Infos */
   strcpy(geb->waehrung, LOCAL_CURRENCY);
   geb->betrag_base=PRICE_PER_UNIT;
-
-  if (geb->betrag!=geb->einheiten*PRICE_PER_UNIT) {
-    log_msg(ERR_WARNING, "Charge inconsistency detected: Amount=%.2f, Units=%d, Price per unit=%.3f", geb->betrag, geb->einheiten, geb->betrag_base);
-  }
 
   /* geb->datum_sys wird *nicht* gesetzt! */
   return(geb);
