@@ -1,4 +1,4 @@
-/* $Id: charger.c,v 1.5 1996/11/23 11:50:59 bus Exp $ */
+/* $Id: charger.c,v 1.6 1996/12/17 09:14:23 bus Exp $ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -104,73 +104,92 @@ struct GebuehrInfo *file2geb(const char *stc, struct GebuehrInfo *geb)
   return(geb);
 }
 
+/* Converts telno into HTML formatted FQTN */
+void telno2html(const char *tel, char *buf)
+{
+  struct FQTN fqtn;
+  TelNo t2;
+
+  lookup_number(tel, &fqtn);
+  convert_telno(t2, &fqtn);
+
+  sprintf(buf,"<B>%s</B>", t2);
+
+  if ((strlen(fqtn.avon_name)) || (strlen(fqtn.wkn))) {
+    strcat(buf, "<BR>");
+    strcat(buf, fqtn.wkn); 
+    if (strlen(fqtn.avon_name)) {
+      strcat(buf,"<I> (");
+      strcat(buf, fqtn.avon_name); 
+      strcat(buf,")</I>");
+    }
+  }
+}
+
+void addtoline(char *buf, char *addto)
+{
+  strcat(buf, "<TD>"); strcat(buf, addto); strcat(buf,"</TD> ");
+}
+
 int print_line(const struct GebuehrInfo *geb)
 {
-  char buf[1024] = "", buf2[80];
+  char buf[1024] = "", buf2[128];
   struct tm *tm = localtime(&geb->datum);
 
   /* Anschluss */
-  sprintf(buf2, "%d & ", geb->teilnehmer);
-  strcat(buf, buf2);
+  if (geb->teilnehmer) {
+    sprintf(buf2, "%d", geb->teilnehmer);
+  } else {
+    sprintf(buf2,"-");
+  }
+  addtoline(buf, buf2);
 
   /* Datum */
-  strftime(buf2, 30, "%d.%m.%Y %H:%M & \0", tm);
-  strcat(buf, buf2);
+  strftime(buf2, 30, "%d.%m.%Y %H:%M\0", tm);
+  addtoline(buf, buf2);
 
   /* Je nach Art */
   switch (geb->art) {
     case KOMMEND:
       if (strcmp(geb->nummer, "???")==0) {
-        sprintf(buf2, "Vergeblicher Anruf & & " );
+        sprintf(buf2, "Vergeblicher Anruf");
+	addtoline(buf, buf2);
       } else {
-	sprintf(buf2, "Vergeblicher Anruf von %s & & ", geb->nummer);
+        char buf3[80];
+
+        telno2html(geb->nummer, buf3);
+	sprintf(buf2, "Vergeblicher Anruf von %s", buf3);
+        addtoline(buf, buf2);
       }
-      strcat(buf, buf2);
       break;
 
     case VERBINDUNG:
       if (strcmp(geb->nummer, "???")==0) {
-        sprintf(buf2, "Eingehender Anruf & &");
+        sprintf(buf2, "Eingehender Anruf");
+	addtoline(buf, buf2);
       } else {
-	sprintf(buf2, "Eingehender Anruf von %s & &", geb->nummer);
+        char buf3[80];
+
+        telno2html(geb->nummer, buf3);
+	sprintf(buf2, "Eingehender Anruf von %s", buf3);
+	addtoline(buf, buf2);
       }
-      strcat(buf, buf2);
       break; 
 
     case GEHEND:
-      {
-	struct FQTN fqtn;
-	TelNo telno;
+      telno2html(geb->nummer, buf2);
+      addtoline(buf, buf2);
 
-	lookup_number(geb->nummer, &fqtn);
-	convert_telno(telno, &fqtn);
-
-	/* First line */
-	sprintf(buf2, "%s & %d & %.2f DM", 
-	      telno,
-	      geb->einheiten,
-	      geb->betrag);
-	strcat(buf, buf2);
-
-	/* Need a second line? */
-	if (strlen(fqtn.avon_name) || strlen(fqtn.wkn)) {
-	  sprintf(buf2, "\\\\\n& & \\footnotesize{%s (%s)} & &",
-		  fqtn.wkn, fqtn.avon_name);
-	  strcat(buf, buf2);
-	}
-      }
+      sprintf(buf2,"%d", geb->einheiten); addtoline(buf, buf2);
+      sprintf(buf2, "%.2f DM", geb->betrag); addtoline(buf, buf2);
       break;
 
     default:
-      sprintf(buf2, "Fehler in Eingabedatei");
-      strcat(buf, buf2);
+      addtoline(buf, "Fehler in Eingabedatei");
       break;
   }
 
-  sprintf(buf2, "\\\\\n");
-  strcat(buf, buf2);
-
-  printf("%s", buf);
+  printf("<TR>%s</TR>\n", buf);
 
   return(0);
 }
@@ -214,13 +233,14 @@ BOOLEAN eval_chargefile(const char *name, struct Filter *filter)
     return(FALSE);
   }
 
-  printf("\\documentstyle[11pt,german,a4,isolatin1]{article}\n");
-  printf("\\pagestyle{empty}\n\\nofiles\n\\begin{document}\n");
-
-  printf("\\begin{tabular}{|c|l|l|r|r|}\n\\hline\n");
-  printf("\\small{Anschluß} & \\small{Datum} & \\small{Nummer} & \\small{Einheiten} & \\small{Betrag} \\\\\n");
-  printf("\\hline\n");
-
+  printf("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n"
+         "<html><head><title>Telefonrechnung</title></head>\n"
+         "<body>");
+  printf("<h1>Telefonrechnung f&uuml;r Anschlu&szlig; 123 </h1>\n");
+  printf("<center><table border=\"5\" cellspacing=\"2\" cellpadding=\"2\">\n"
+         "<tr><th>Anschlu&szlig;</th> <th>Datum</th> <th>Rufnummer</th>"
+         "<th>Einheiten</th> <th>Betrag</th> </tr>\n");
+ 
   while (cp=fgetline(fp, NULL)) {
     lineno++;
     if (!file2geb(cp, &geb)) {
@@ -238,13 +258,14 @@ BOOLEAN eval_chargefile(const char *name, struct Filter *filter)
 
   fclose(fp);
 
-  printf("\\hline\n");
-  printf(" &         & %d Gespräche & %d & %.2f DM \\\\\n",
+  printf("<tr><td></td> <td></td> <td>%d Gespr&auml;che</td> <td>%d</td> <td>%.2f DM</td></tr>\n",
 	 no_calls, total_e, total_g);
-  printf(" &         & Grundgebühr  &    & %.2f DM \\\\\n\\hline\n", base_charge);
-  printf(" & GESAMT: &              &    & %.2f DM \\\\\n",
+  printf("<tr><td></td> <td></td> <td>Grundgeb&uuml;hr</td> <td></td> <td>%.2f DM</td></tr>\n",
+    base_charge);
+  printf("<tr><td></td> <td></td> <td>GESAMT:</td> <td></td> <td><B>%.2f DM</B></td></tr>\n",
 	 total_g+base_charge);
-  printf("\\hline\n\\end{tabular}\n\\end{document}\n");
+  printf("</table></center><br><hr><address>Michael Bussmann, Im Brook 8, 45721 "
+         "Haltern</address></body></html>\n");
   return(TRUE);
 }
 
