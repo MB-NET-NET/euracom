@@ -3,22 +3,24 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@fgan.de>
 dnl
-dnl $Id: configure.in,v 1.4 1999/03/13 18:09:23 bus Exp $
+dnl $Id: configure.in,v 1.5 1999/03/19 09:28:05 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.4 $)
+AC_REVISION($Revision: 1.5 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(autoconf.h)
 AC_PREFIX_DEFAULT(/usr/local)
 
+dnl
 dnl Set default variables
+dnl
 pidfile="/var/run/euracom.pid"
 lockpath="/var/lock"
 shutdowntimeout=120
 recoverytimeout=900
 recoveryfile="/tmp/euracom.recovery"
 countrycode="49"
-areacode="2364"
+areacode=""
 localcurrency="DEM"
 databasename="isdn"
 
@@ -200,20 +202,29 @@ AC_DEFINE_UNQUOTED(RECOVERY_FILE, "${recoveryfile}")
 AC_MSG_CHECKING(for your country code)
 AC_ARG_WITH(country-code,
 [  --with-country-code=xx	Your international country code (49)],
-[  countrycode=$withval
-]
+[  countrycode=$withval ]
 )
 AC_MSG_RESULT(+$countrycode)
-AC_DEFINE_UNQUOTED(COUNTRYCODE, "+${countrycode}")
+if test "$countrycode" -ge "0";
+then
+  AC_DEFINE_UNQUOTED(COUNTRYCODE, "+${countrycode}")
+else
+  AC_ERROR(Invalid countycode (e.g. use 49 for germany))
+fi
 
 AC_MSG_CHECKING(for your area prefix code)
 AC_ARG_WITH(area-code,
-[  --with-area-code=xxx		Your area code (no leading 0) (2364)],
-[  areacode=$withval
-]
+[  --with-area-code=xxx		Your area code (no leading 0) (no default)],
+[  areacode=$withval ],
+[  areacode="" ]
 )
 AC_MSG_RESULT($areacode)
-AC_DEFINE_UNQUOTED(AREACODE, "+${countrycode}${areacode}")
+if test "$areacode" -ge "0";
+then
+  AC_DEFINE_UNQUOTED(AREACODE, "+${countrycode}${areacode}")
+else
+  AC_ERROR(you must specify an areacode (e.g. 2364))
+fi
 
 AC_MSG_CHECKING(for name of local currency)
 AC_ARG_WITH(currency-name,
