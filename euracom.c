@@ -3,12 +3,12 @@
  *
  * euracom.c -- Main programme
  *
- * Copyright (C) 1996-2001 Michael Bussmann
+ * Copyright (C) 1996-2002 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.42 $
- * Last modified:       $Date: 2001/06/16 17:10:38 $
+ * Version:             $Revision: 1.43 $
+ * Last modified:       $Date: 2002/05/10 07:04:29 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.42 2001/06/16 17:10:38 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.43 2002/05/10 07:04:29 bus Exp $";
 
 #include "config.h"
 

@@ -3,12 +3,12 @@
 #
 # tel-utils.pm -- Perl utilities
 #
-# Copyright (C) 1996-2001 Michael Bussmann
+# Copyright (C) 1996-2002 Michael Bussmann
 #
 # Authors:             Michael Bussmann <bus@mb-net.net>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.15 $
-# Last modified:       $Date: 2001/06/16 17:07:21 $
+# Version:             $Revision: 1.16 $
+# Last modified:       $Date: 2002/05/10 07:04:29 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.15 2001/06/16 17:07:21 bus Exp $
+# $Id: tel-utils.pm,v 1.16 2002/05/10 07:04:29 bus Exp $
 #
 
 use DBI;

@@ -3,12 +3,12 @@
  *
  * serial.c -- Low/Midlevel RS232 routines
  *
- * Copyright (C) 1996-2001 Michael Bussmann
+ * Copyright (C) 1996-2002 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.25 $
- * Last modified:       $Date: 2001/06/16 17:06:23 $
+ * Version:             $Revision: 1.26 $
+ * Last modified:       $Date: 2002/05/10 07:04:29 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.25 2001/06/16 17:06:23 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.26 2002/05/10 07:04:29 bus Exp $";
 
 #include "config.h"
 

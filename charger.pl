@@ -5,12 +5,12 @@
 #
 # charger.pl -- Gebührenauswertung via PostgreSQL
 #
-# Copyright (C) 1996-2001 Michael Bussmann
+# Copyright (C) 1996-2002 Michael Bussmann
 #
 # Authors:             Michael Bussmann <bus@mb-net.net>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.19 $
-# Last modified:       $Date: 2001/12/02 14:06:49 $
+# Version:             $Revision: 1.20 $
+# Last modified:       $Date: 2002/05/10 07:04:29 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: charger.pl,v 1.19 2001/12/02 14:06:49 bus Exp $
+# $Id: charger.pl,v 1.20 2002/05/10 07:04:29 bus Exp $
 #
 
 use DBI;

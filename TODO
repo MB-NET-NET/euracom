@@ -1,6 +1,6 @@
 TODO-Liste:
 ===========
-$Date: 2001/06/16 17:07:21 $ $Revision: 1.15 $
+$Date: 2002/05/10 07:04:29 $ $Revision: 1.16 $
 
 +----
 | *	To be done
@@ -28,7 +28,6 @@ D	1998-04-12 Neue Datenstruktur
 
 Auswertung:
 ---------------
-U	1998-03-14 [Perl Utilities] Umstieg auf DBI?? (andere DBMS)
 ?	1998-03-14 CGI, PHP scripts als contrib/ (Meldet sich jemand freiwillig?)
 ?	1998-03-14 [PostgreSQL] Benutzung von Indices von prefix_match (performance)
 D	1998-01-15 [PostgreSQL] prefix_match noch noetig? (substr geht nun)
@@ -40,4 +39,4 @@ D	1998-03-21 Announce: Adabas D support
 *	1998-02-01 Möglichkeit mehrere Einträge gleichen Prefixes in WKN aufzunehmen
 
 -- 
-$Id: TODO,v 1.15 2001/06/16 17:07:21 bus Exp $
+$Id: TODO,v 1.16 2002/05/10 07:04:29 bus Exp $

@@ -3,13 +3,13 @@
  *
  * msql.c -- msql (miniSQL) database subsystem
  *
- * Copyright (C) 1996-2001 Michael Bussmann
+ * Copyright (C) 1996-2002 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.8 $
- * Last modified:       $Date: 2001/06/16 17:07:21 $
+ * Version:             $Revision: 1.9 $
+ * Last modified:       $Date: 2002/05/10 07:04:29 $
  * Keywords:            ISDN, Euracom, Ackermann, mSQL
  *
  * based on 'postgres.c' applied with changes needed by msql
@@ -24,7 +24,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: msql.c,v 1.8 2001/06/16 17:07:21 bus Exp $";
+static char rcsid[] = "$Id: msql.c,v 1.9 2002/05/10 07:04:29 bus Exp $";
 
 #include "config.h"
 

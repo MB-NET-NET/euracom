@@ -3,12 +3,12 @@
  *
  * postgres.c -- PostgreSQL database subsystem
  *
- * Copyright (C) 1996-2001 Michael Bussmann
+ * Copyright (C) 1996-2002 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.21 $
- * Last modified:       $Date: 2001/06/16 17:07:21 $
+ * Version:             $Revision: 1.22 $
+ * Last modified:       $Date: 2002/05/10 07:04:29 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.21 2001/06/16 17:07:21 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.22 2002/05/10 07:04:29 bus Exp $";
 
 #include "config.h"
 
