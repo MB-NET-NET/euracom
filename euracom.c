@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.33 $
- * Last modified:       $Date: 1998/05/23 07:56:48 $
+ * Version:             $Revision: 1.34 $
+ * Last modified:       $Date: 1998/05/29 07:26:51 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.33 1998/05/23 07:56:48 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.34 1998/05/29 07:26:51 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -197,7 +197,6 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
     sscanf(argv[cnt], "%d.%d:%d", &h, &m, &s);
     if ((h<0) || (h>100) || (m<0) || (m>59) || (s<0) || (s>59)) {
       log_msg(ERR_WARNING, "Strange H.M:%S line \"%s\".  Ignoring...", argv[cnt]);
-      geb->length=0;
     } else {
       geb->length=((h*60)+m)*60+s;
     }
@@ -218,18 +217,15 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   cnt++;
 
   /* 4: Gebuehr */
+  geb->betrag=0;
   if (num>cnt) {
     char *cp;
 
     if ((cp=strchr(argv[cnt], ','))) { *cp='.';}
     if ((cp=strchr(argv[cnt], ' '))) { *cp='\0';}
     geb->betrag=(float)atof(argv[cnt]);
-  } else {
-    geb->betrag=0;
   }
-  cnt++;
 
-  /* Don't touch geb->datum_sys */
   safe_free(buf);
   return(geb);
 }

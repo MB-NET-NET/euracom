@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.13 $
- * Last modified:       $Date: 1998/05/22 07:12:33 $
+ * Version:             $Revision: 1.14 $
+ * Last modified:       $Date: 1998/05/29 07:26:52 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -61,6 +61,7 @@ struct SerialFile {
   char *protocol_filename;
   char *fd_device;
   struct termios term;
+  char *buffer;
 };
 
 enum TVerbindung { GEHEND=1, KOMMEND};
