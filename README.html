@@ -1,0 +1,192 @@
+<!doctype html public "-//IETF//DTD HTML//EN">
+
+<HTML>
+<HEAD>
+<TITLE>Gebührenauswertung für Euracom</TITLE>
+</HEAD>
+<BODY>
+
+<H1>Gebührenauswertung für Euracom 18x mittels PostgreSQL</H1>
+
+<H2>Vorwort</H2>
+<P>
+Eine Warnung vorweg: Die Benutzung der Programme erfordert etwas Erfahrung
+im Umgang mit PostgreSQL und Perl!  Ich habe die Software für meinen
+persönlichen Gebrauch geschrieben, daher gibt es außer diesem, in Windeseile
+gestricktem, Pseudo-Readme, keinerlei Dokumentation!  Auf der anderen Seite
+sollte für das Programm das die Daten von der Euracom liest und
+in die Datenbank einfügt auch keine große Bschreibung von Nöten sein!
+Intention war nämlich, eben diesen Teil so einfach und klein wie möglich
+zu halten.  Der ganze andere Kram, wie z.B. das Auslesen der Daten, die
+Gebührenauswertung, etc., wird ausschließlich ueber PostgreSQL
+bewerkstelligt.</P>
+
+<P>Wer sich aber auf das Abenteuer einlassen will, der kann sich die
+Software als tar.gz hier <A HREF="euracom.tar.gz">herunterladen</A>.
+Falls Probleme bei der Installation oder während des Betriebes auftreten,
+so werde ich gerne versuchen zu helfen.  Ebenso würde es mich natürlich
+interessieren, bei wem die Software tatsächlich im Einsatz ist.  Also,
+Bugreports, Lob, Tadel, Kommentare, etc nach <A HREF="mailto:bus@fgan.de">
+bus@fgan.de</A>.</P>
+
+<H2>Einführung</H2>
+<P>
+Das Programm liest die von der Tk-Anlage über die V24-Schnittstelle
+ausgegebenen Gebührendaten und schreibt die aufgearbeiteten Daten in
+eine PostgreSQL Datenbank.  Ebenso wird für jeden Datensatz auch eine
+Meldung via syslog() ausgegeben. Die Verbindung zur Datenbank, die sich auch
+auf einem anderen Rechner im Netz befinden kann, wird automatisch bei
+Bedarf aufgebaut und, falls eine gewisse Zeit keine Einträge mehr eingefügt
+wurden, auch wieder abgebaut.  Falls die Datenbank genau zu dem Zeitpunkt
+nicht erreichbar ist, wenn Daten eingefügt werden müssen, schreibt das
+Programm die einzufügenden Daten in eine Datei.  In regelmäßigen Abständen
+wird nun versucht, die Verbindung zum DBMS herzustellen.  Sobald dies
+gelungen ist, werden die fehlenden Datensätze eingefügt.</P>
+
+<H2>Zusätzliche Software</H2>
+<P> Folgende Software ist für die Benutzung von "euracom" erforderlich:</P>
+<UL>
+  <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder höher)
+  <LI> Perl (5.003 oder höher)
+  <LI> <A HREF="ftp://ftp.kciLink.com/pub/PostgresPerl-1.3.tar.gz">PostgresPerl</A> (1.3)
+</UL>
+
+<H2>Installation</H2>
+<P>
+Auf einem Linux-System sollte das ganze problemlos zu kompilieren sein.
+Lediglich im Makefile müssen einige Einstellung überprüft werden (z.B.
+wo die PostgreSQL include/libraries zu finden sind).</P>
+
+<P>Ich gehe im Folgenden davon aus, daß sowohl PostgreSQL, als auch das
+Perl-Interface zu PostgreSQL (nicht das, das bei der PostgreSQL-Distribution
+dabei ist!) bereits installiert und funktionstüchtig ist.</P>
+
+<H3>Einrichten der euracom Datenbank</H3>
+<P>
+Zuerst ist mittels "createdb isdn" eine neue Datenbank "isdn" anzulegen.
+In diese Datenbank wird nun eine Tabelle erzeugt, in der die Gebührendaten
+vom Programm abgelegt werden.</P>
+
+<PRE>
+CREATE TABLE euracom (
+  int_no int2,
+  remote_no text,
+  vst_date date,
+  vst_time time,
+  sys_date date,
+  sys_time time,
+  einheiten int2,
+  geb_art char,
+  factor float4,
+  pay float4,
+  currency varchar(4)
+);
+</PRE>
+
+<P>
+Dem Benutzer, unter dessen Kennung "euracom" ablaeuft, muß Zugriff auf die Tabelle
+erlaubt werden (falls der Benutzer  nicht identisch mit dem DB-Owner ist).
+</P>
+
+<PRE>
+GRANT INSERT ON euracom TO benutzer;
+</PRE>
+
+<P>
+Evtl. muß dieser Benutzer vorher mit "createuser" eingerichtet werden.
+</P>
+
+<H3>Start von "euracom"</H3>
+<P>
+Nach der Kompilation kann man das Programm "euracom" in das gewünschte
+Verzeichnis moven (z.b. /usr/local/bin).  Der folgende Code-Ausschnitt, den
+man in seine rc.local (oder entsprechendes Startupscript) uebernehmen kann,
+startet "/var/lib/euracom/euracom" als Benutzer "phone" und leitet debugging
+Ausgaben des Programmes nach "/var/log/euracom.log" um.
+</P>
+<PRE>
+  echo "Starting EURACOM accounting..."
+  su -f -c 'exec /var/lib/euracom/euracom /dev/ttyS2 >&/var/log/euracom.log &' phone 2>&1 1>/dev/null
+</PRE>
+
+<H2> Gebührenauswertung </H2>
+<H3> Benötigte Tabellen</H3>
+<P>
+Für die Gebührenauswertung sind 2 weitere Tabellen nötig, die sich ebenfalls
+in der DB "isdn" befinden müssen: </P>
+<PRE>
+CREATE TABLE avon (
+  nummer text,
+  name text
+);
+
+CREATE TABLE wkn (
+  nummer text,
+  name text
+);
+</PRE>
+
+<P>
+Die erste Tabelle enthält das Verzeichnis der Vorwahlen ("nummer" hat die Form
+"+49vorwahl-ohne-null", also, z.B. "+49228" für Bonn), die zweite kann vom
+Benutzer mit Nummern und Namen gefüllt werden, die in der Auswertung im
+Klartext erscheinen sollen, z.B. ('+492364108537', 'Michael Bussmann'). </P>
+
+<P>Der Benutzer, der die Gebührenauswertung vornimmt, benötigt 'SELECT' Zugriff
+auf diese beiden Tabellen! </P>
+
+<P>
+Als Eingabedaten für die "avon"-Tabelle empfehle ich die OKZ-Datei aus dem
+<EM>isdnlog</EM> Paket.</P>
+
+<H3>Beispielausgabe von "charger.pl"</H3>
+<PRE>
+bus@goliath [108] =>./charger.pl -v'24.09.1997'
+</PRE>
+<center><table border="5" cellspacing="2" cellpadding="2">
+<tr><th>Anschlu&szlig;</th><th>Datum</th> <th>Rufnummer</th><th>Einheiten</th><th>Betrag</th></tr>
+<TR><TD></TD><TD>24.09.1997 03:05</TD><TD>Vergeblicher Anruf von <B>0228 941234-0</B><BR>Mustereintrag; Zentrale <I>(Bonn)</I></TD><TD></TD><TD></TD></TR>
+<TR><TD>21</TD><TD>24.09.1997 11:53</TD><TD><B>02364 98765</B><BR>Testuser, Werner <I>(Haltern Westf)</I></TD><TD>13</TD><TD>1.56 DEM
+</TD></TR>
+<TR><TD>11</TD><TD>26.09.1997 08:59</TD><TD><B>0228 941234-361</B><BR>Mustereintrag; Durchwahl 2 <I>(Bonn)</I></TD><TD>6</TD><TD>0.72 DEM
+</TD></TR>
+<TR><TD>42</TD><TD>26.09.1997 09:04</TD><TD>Eingehender Anruf</TD><TD></TD><TD></TD></TR>
+<TR><TD>11</TD><TD>26.09.1997 09:09</TD><TD>Eingehender Anruf von <B>0228 941234-361</B><BR>Mustereintrag; Durchwahl 2 <I>(Bonn)</I></TD><TD></TD><TD></TD></TR>
+<tr><td></td><td></td><td>2 Gespr&auml;che</td><td>19</td><td>2.28 DEM</td></tr>
+<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td></td><td>18.00 DEM</td></tr>
+<tr><td></td><td></td><td>GESAMT:</td><td></td><td><B>20.28 DEM</B></td></tr>
+</table></center><br><hr><address>Michael Bussmann, Im Brook 8, 45721 Haltern</address>
+
+<H3>Kommandozeilenparameter von "charger.pl" und "avon.pl"</H3>
+<P>
+Sorry, zur Zeit noch "RTFS" :-)
+</P>
+
+<H3>"do_charger.sh"</H3>
+<P>
+do_charger ist das Programm, das bei mir jeden 1. des Monats per cron
+aufgerufen wird, um die monatliche Gebührenauswertung/Telefonrechnung
+zu erstellen.  Starten Sie es bitte <B>nicht</B>, ohne entsprechende
+Anpassungen an Ihre lokale Situation vorzunehmen!
+</P>
+
+<H2>Abschliessend...</H2>
+<P>
+Wie gesagt, dieser Text wurde nur so auf die Schnelle geschrieben.  Evtl.
+werde ich irgendwann mal eine "richtige" Dokumentation schreiben, aber nur,
+falls auch noch andere ausser mir das Programm nutzen :-)</P>
+
+<P>
+Viel Spass!
+</P>
+<BR>
+<HR>
+<BR>
+
+<ADDRESS> ruf098 WWW, Michael Bussmann,
+<A HREF="mailto:bus@www.fgan.de">bus@www.fgan.de</A> ,
+Last change: $Date: 1997/09/26 10:12:19 $, $Revision: 1.1 $
+</ADDRESS>
+
+</BODY>
+</HTML>
