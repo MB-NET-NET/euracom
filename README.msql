@@ -1,16 +1,27 @@
     addendum fuer mSQL
    ===================
 
-anbei dem paket 'euracom' von Michael Bussman liegen folgende zusaetzliche files:
- - euracom.c.msql
+[ Michaels Files/Aenderungen wurden in die Mainrelease aufgenommen.  Die
+notwendige Configurations- und Installationsarbeit sollte sich somit auf das
+Setzen von "DATABASE=msql" und das Anpassen der Datei/Verzeichnisnamen im
+Makefile reduzieren.
+
+Ich lege das File dennoch in unveraenderter Form, wenngleich um einige
+ergaenzende Kommentare in [] erweitert, bei, weil es sehr schoen das Prinzip
+erklaert, wie man 'euracom' an andere DBMS anpassen kann -- 1998-03-14 mb ]
+
+
+anbei dem paket 'euracom' von Michael Bussman liegen folgende zusaetzliche
+files:
+ - euracom.c.msql [in euracom.c aufgenommen -- mb]
  - generate_msql_tables.sql
- - config.h.msql
+ - config.h.msql [definition nun im Makefile]
  - msql.c
- - Makefile.msql
+ - Makefile.msql [in Makefile aufgenommen]
  - README.msql
 
-mit diesen Dateien kann 'euracom' von Michael Bussmann (im folgenden MB genannt)  auch
-fuer das dbms miniSQL(mSQL) verwendet werden.
+mit diesen Dateien kann 'euracom' von Michael Bussmann (im folgenden MB
+genannt) auch fuer das dbms miniSQL(mSQL) verwendet werden.
 
 
 QUICK installation guide
@@ -25,10 +36,7 @@ folgendermassen vorgehen:
  - config.h       umbenennen in config.c.pgsql
  - config.h.msql  umbenennen in config.h
  - rest wie sonst
-
-
-
-
+[entfaellt.  Setzen von DATABASE=msql sollte ausreichen]
 
 infos fuer interessierte
 ------------------------
@@ -110,18 +118,20 @@ have fun
  (michael tepperis, email: michael.tepperis@fernuni-hagen.de)
  [08.03.1998]
 
-ps: fuer die dbms mySQL und Adabas D unter Linux wird das Programm ebenfalls entsprechend angepasst.
-austesten werde ich es auch fuer DB2 und den SQL-Server der firma 'kleinweich'. hintergrund ist, dass
-ich hier an einer three-tier java web-datenbank-loesung aus einem kommunikations-server (linux: web-server
-und modem- und tk-rechner) und einem dbms-rechner (linux: Adabas D oder OS/2: DB2 [wann kommt DB2 fuer
-Linux?], ueber den rest red ich nicht, muss aber wg. markt und so sein) bastel.
+ps: fuer die dbms mySQL und Adabas D unter Linux wird das Programm ebenfalls
+entsprechend angepasst. austesten werde ich es auch fuer DB2 und den 
+SQL-Server der firma 'kleinweich'. hintergrund ist, dass ich hier an einer
+three-tier java web-datenbank-loesung aus einem kommunikations-server (linux:
+web-server und modem- und tk-rechner) und einem dbms-rechner (linux: Adabas D
+oder OS/2: DB2 [wann kommt DB2 fuer Linux?], ueber den rest red ich nicht, 
+muss aber wg. markt und so sein) bastel.
 
-da kann man sich also die daten per internet-technologie im intra/inter/extranet ansehen :-)
+da kann man sich also die daten per internet-technologie im 
+intra/inter/extranet ansehen :-)
 
-eine cgi loesung mit PHP liegt aber ebenfalls in kuerze vor. PHP bietet unter Linux unterstuetzung fuer
-PostgreSQl, MySQL, mSQL, Adabas D u. a., so auf anderen plattformen auch oracle und informix.
+eine cgi loesung mit PHP liegt aber ebenfalls in kuerze vor. PHP bietet unter
+Linux unterstuetzung fuer PostgreSQl, MySQL, mSQL, Adabas D u. a., so auf
+anderen plattformen auch oracle und informix.
 
-DB2 wird im augenblick nicht unterstuetzt, unter Linux aus bekanntem grunde erst recht nicht, da
-PHP keine three tier loesung ermoeglicht.
- 
-
+DB2 wird im augenblick nicht unterstuetzt, unter Linux aus bekanntem grunde 
+erst recht nicht, da PHP keine three tier loesung ermoeglicht.
