@@ -26,12 +26,17 @@ struct GebuehrInfo {
 
 #define DEFAULT_DEVICE		"/dev/cua0"
 #define GEBUEHR_FILE		"/var/log/euracom.gebuehr"
+#define PROTOCOL_FILE		"/var/log/euracom.protocol"
 #define DEF_LOGFAC		LOG_LOCAL0
+
+#define UNKNOWN_TEXT_EURA	"Rufnr.unbekannt"
+#define	UNKOWN_NO		"???"
 
 
 /* Globals */
 int euracom_fd = 0;			/* RS232 port to Euracom */
 char *gebuehr_filename = NULL;		/* Filename für Gebuehrendaten */
+char *proto_filename = NULL;		/* Filename für Euracom-backup file */
 
 extern char *readln_rs232();
 
@@ -113,7 +118,6 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   char *buf=strdup(str);
   char art[3];
   char teiln[25];
-  struct tm tm;
 
   /* Art und Teilnehmer*/
   if (!(tok=strtok(buf, "|"))) { return(NULL); }
@@ -138,14 +142,27 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   }
 
   /* Datum/Zeit Verbindungsaufbau */
-  if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 2 invalid"); return(NULL); }
-  strptime(tok, " %d.%m.%y, %H:%M", &tm);
-  geb->datum=mktime(&tm);
+  if ((tok=strtok(NULL, "|"))) {
+    struct tm tm;
+
+    stripblank(tok);
+    strptime(tok, "%d.%m.%y, %H:%M", &tm);
+    tm.tm_sec=tm.tm_yday=tm.tm_wday=0;
+    tm.tm_isdst=-1;
+    geb->datum=mktime(&tm);
+  } else {
+    log_msg(ERR_ERROR, "Field 2 invalid"); 
+    return(NULL); 
+  }
 
   /* Telefonnummer */
   if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 3 invalid"); return(NULL); }
   stripblank(tok);
-  strcpy(geb->nummer, tok);
+  if (strcasecmp(tok, UNKNOWN_TEXT_EURA)==0) {
+    strcpy(geb->nummer, UNKOWN_NO);
+  } else {
+    strcpy(geb->nummer, tok);
+  }
 
   if ((geb->art==KOMMEND) || (geb->art==VERBINDUNG)) {
     geb->einheiten=0;
@@ -233,8 +250,9 @@ int terminate(int sig)
 /*------------------------------------------------------*/
 void usage(const char *prg)
 {
-  printf("Usage: %s [-g] device\n", prg);
+  printf("Usage: %s [-gp] [device]\n", prg);
   printf("\t-g file\tGebührenfile\n");
+  printf("\t-p file\tProtokollfile\n");
   exit(0);
 }
 
@@ -248,8 +266,8 @@ void usage(const char *prg)
 /*------------------------------------------------------*/
 BOOLEAN parse_euracom_data(const char *buf)
 {
-  {
-    FILE *fp = fopen("/var/log/euracom.protocol", "a");
+  if (proto_filename) {
+    FILE *fp = fopen(proto_filename, "a");
     
     if (fp) { 
       fprintf(fp, "%s\n", buf); 
@@ -341,10 +359,13 @@ int main(argc, argv)
   init_log("Euracom", ERR_JUNK, USE_STDERR | TIMESTAMP, NULL);
 
   /* Parse command line options */
-  while ((opt = getopt(argc, argv, "g:")) != EOF) {
+  while ((opt = getopt(argc, argv, "g:p:")) != EOF) {
     switch (opt) {
       case 'g':
 	gebuehr_filename=strdup(optarg);
+        break;
+      case 'p':
+	proto_filename=strdup(optarg);
         break;
       default:
         usage(argv[0]);
@@ -362,6 +383,7 @@ int main(argc, argv)
 
   /* Check logfiles */
   if (!gebuehr_filename) { gebuehr_filename=strdup(GEBUEHR_FILE); }
+  if (!proto_filename)	{ proto_filename=strdup(PROTOCOL_FILE); }
 
   /* Initialize Euracom */
   if ((euracom_fd=init_euracom_port(devname))==-1) {
