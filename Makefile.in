@@ -5,7 +5,7 @@
 #
 # Released unter the terms of the GPL version 2.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.6 1999/03/13 18:09:22 bus Exp $
+# $Id: Makefile.in,v 1.7 1999/03/13 18:12:33 bus Exp $
 #
 
 #
@@ -23,7 +23,7 @@ RM              = @RM@
 #
 # Program version number
 #
-VERSION = 1.3.1
+VERSION := $(shell cat .version)
 
 #
 # Where executables/manpage should be installed
