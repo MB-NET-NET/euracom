@@ -1,14 +1,14 @@
 /***************************************************************************
  * euracom -- Euracom 18x Gebührenerfassung
  *
- * postgres.c -- PostgreSQL interface
+ * postgres.c -- PostgreSQL database subsystem
  *
  * Copyright (C) 1996-1997 by Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.4 $
- * Last modified:       $Date: 1997/09/26 10:06:07 $
+ * Version:             $Revision: 1.5 $
+ * Last modified:       $Date: 1997/10/04 16:51:01 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,9 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.4 1997/09/26 10:06:07 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.5 1997/10/04 16:51:01 bus Exp $";
+
+#include "config.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -30,23 +32,21 @@ static char rcsid[] = "$Id: postgres.c,v 1.4 1997/09/26 10:06:07 bus Exp $";
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <string.h>
+#include <stdlib.h>
 #include <libpq-fe.h>
-#include "euracom.h"
+
 #include "log.h"
 #include "utils.h"
 #include "fileio.h"
 
-#define DEF_DB          "isdn"
+#include "euracom.h"
 
-#define RECOVERY_FILE   "/tmp/euracom.recovery"
-
-/* Timeouts in s */
-#define SHUTDOWN_TIMEOUT 120	/* Drop connection after 2 minutes idle time */
-#define RECOVERY_TIMEOUT 900	/* Retry after 15 mins */
-
+/* Private data */
 static char *pg_host = NULL;
 static char *pg_port = NULL;
-static char *pg_db   = NULL;
+static char *pg_db = NULL;
+static unsigned int shutdown_timeout = SHUTDOWN_TIMEOUT;
+static unsigned int recovery_timeout = RECOVERY_TIMEOUT;
 
 static time_t last_db_write = 0;
 static time_t last_recovery = 0;
@@ -54,33 +54,79 @@ static time_t last_recovery = 0;
 static PGconn *db_handle = NULL;
 static enum DB_State { DB_OPEN, DB_CLOSED, RECOVERY} db_state = DB_CLOSED;
 
-static unsigned int shutdown_timeout = SHUTDOWN_TIMEOUT;
-static unsigned int recovery_timeout = RECOVERY_TIMEOUT;
+/*
+  Function prototypes
+*/
+void database_set_host(const char *str);
+void database_set_port(const char *str);
+void database_set_db(const char *str);
+void database_set_shutdown_timeout(int i);
+void database_set_recovery_timeout(int i);
 
+BOOLEAN database_initialize(void);
+BOOLEAN database_log(const char *cp);
+BOOLEAN database_shutdown(void);
+void database_check_state();
 
-BOOLEAN database_change_state(enum DB_State);
-BOOLEAN database_perform_recovery();
-BOOLEAN database_pg_connect();
-BOOLEAN database_pg_shutdown();
-BOOLEAN database_write_recovery(const char *stc);
-BOOLEAN database_pg_execute();
+static BOOLEAN database_change_state();
+static BOOLEAN database_perform_recovery();
+static BOOLEAN database_pg_connect();
+static BOOLEAN database_pg_execute(const char *stc, BOOLEAN do_recovery);
+static BOOLEAN database_write_recovery(const char *stc);
+
+/* Code */
+
+/* Some initialization routines */
+void database_set_host(const char *str)
+{
+  log_msg(ERR_JUNK, "database: Setting host to %s", str);
+  if (pg_host) { free(pg_host); }
+  pg_host=strdup(str);
+}
+
+void database_set_port(const char *str)
+{
+  log_msg(ERR_JUNK, "database: Setting port to %s", str);
+  if (pg_port) { free(pg_port); }
+  pg_port=strdup(str);
+}
+
+void database_set_db(const char *str)
+{
+  log_msg(ERR_JUNK, "database: Setting database to %s", str);
+  if (pg_db) { free(pg_db); }
+  pg_db=strdup(str);
+}
+
+void database_set_shutdown_timeout(int i)
+{
+  log_msg(ERR_JUNK, "database: Setting shutdown timeout to %s s", i);
+  shutdown_timeout=i;
+}
+
+void database_set_recovery_timeout(int i)
+{
+  log_msg(ERR_JUNK, "database: Setting recovery timeout to %s s", i);
+  shutdown_timeout=i;
+}
 
 /*
    Initializes database variables
 
    Does not establish a connection
 */
-BOOLEAN database_initialize(const char *host, const char *port, const char *db)
+BOOLEAN database_initialize()
 {
-  log_msg(ERR_DEBUG, "Initializing database subsystem");
-  if (host) { pg_host=strdup(host); }
-  if (port) { pg_port=strdup(port); }
-  pg_db=strdup(db?db:DEF_DB);
+  log_msg(ERR_INFO, "Initializing database subsystem...");
 
+  /* No reason to check internal variables */
+  /* ...*/
+
+  /* Initial state of statemachine */
   db_state=DB_CLOSED;
 
-  log_msg(ERR_JUNK, "Drop connection to DB after %ds idle time", shutdown_timeout);
-  log_msg(ERR_JUNK, "Retry to establish connection after %ds", recovery_timeout);
+  log_msg(ERR_JUNK, "Will disconnect from DB after %ds idle time", shutdown_timeout);
+  log_msg(ERR_JUNK, "Will retry to establish connection after %ds", recovery_timeout);
   return(TRUE);
 }
 
@@ -89,7 +135,7 @@ BOOLEAN database_initialize(const char *host, const char *port, const char *db)
 */
 BOOLEAN database_shutdown()
 {
-  log_msg(ERR_DEBUG, "Shutting down database subsystem");
+  log_msg(ERR_INFO, "Shutting down database subsystem");
   
   /* Release backend */
   database_change_state(DB_CLOSED);
@@ -143,7 +189,8 @@ BOOLEAN database_change_state(enum DB_State new_state)
 {
   BOOLEAN ok = FALSE;
   
-  if (db_state==new_state) return;
+  if (db_state==new_state) return(TRUE);
+
   switch(db_state) {
     case DB_OPEN:
       switch (new_state) {
@@ -253,7 +300,7 @@ BOOLEAN database_perform_recovery()
     }
 
     log_msg(ERR_INFO, "Starting recovering from file %s", cp);
-    while (zeile=fgetline(fp, NULL)) {
+    while ((zeile=fgetline(fp, NULL))) {
       unless (database_pg_execute(zeile, TRUE)) {
         reco_failed=TRUE;
 	database_change_state(RECOVERY);

@@ -49,53 +49,53 @@ gelungen ist, werden die fehlenden Datensätze eingefügt.</P>
   <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder höher, es wird
        wohl auch mit älteren Versionen funktionieren)
   <LI> Perl (5.003 oder höher)
-  <LI> <A HREF="mailto:e.mergl@bawue.de>Edmund Mergl's</A> <EM>pgsql_perl5</EM> (1.6)
+  <LI> <A HREF="mailto:e.mergl@bawue.de">Edmund Mergl's</A> <EM>pgsql_perl5</EM> (1.6)
        -- ist in den aktuellen PostgreSQL distributionen enthalten.
 </UL>
 
 <H2>Installation</H2>
 <P>
-Auf einem Linux-System sollte das ganze problemlos zu kompilieren sein.
-Lediglich im Makefile müssen einige Einstellung überprüft werden (z.B.
-wo die PostgreSQL include/libraries zu finden sind).</P>
+Bevor man auch nur den Versuch macht, das Programm mittels 'make' zu
+kompilieren, sollte man einen Blick in 'Makefile' und in 'config.h'
+werfen.  In ersterer Datei wäre als wichtige Einstellung 'PGBASE' zu erwähnen;
+diese Variable muß auf das Basisverzeichnis von PostgreSQL zeigen (z.B.
+<CODE>/usr/local/postgres</CODE>).  <CODE>CC</CODE> und <CODE>CFLAGS</CODE>
+können nach Bedarf abgewandelt werden.</P>
 
-<P>Ich gehe im Folgenden davon aus, daß sowohl PostgreSQL, als auch das
-Perl5-Interface zu PostgreSQL bereits installiert und funktionstüchtig ist.</P>
+<P>
+<B>Wesentlich</B> wichtiger ist <CODE>config.h</CODE>!  Insbesondere
+<CODE>AREACODE</CODE>, <CODE>DEFAULT_DEVICE</CODE> müssen auf Ihre
+lokale Situation angepasst werden. (Oder sagen wir bessen, wenn <EM>
+keine</EM> Anpassung von Nöten ist, dann sind wir Nachbarn :-) ).  Es kann
+mit Sicherheit nichts Schaden, wenn man sich alle Direktiven der Reihe mal
+vornimmt.
+</P>
+
+<P>
+Die Portierung auf andere Unices müsste auch relativ einfach von Statten 
+gehen, sofern das System <EM>TERMIO</EM> oder <EM>TERMIOS</EM> unterstützt.
+Sollte jemand Erfolg (oder Misserfolg) bei einer Portierung haben, so bitte
+ich um eine kurze Nachricht, um das README (und evtl. die Sourcen) 
+entsprechend zu updaten
+</P>
 
 <H3>Einrichten der euracom Datenbank</H3>
 <P>
 Zuerst ist mittels "createdb isdn" eine neue Datenbank "isdn" anzulegen.
-In diese Datenbank wird nun eine Tabelle erzeugt, in der die Gebührendaten
+In diese Datenbank wird später eine Tabelle erzeugt, in der die Gebührendaten
 vom Programm abgelegt werden.</P>
 
-<PRE>
-CREATE TABLE euracom (
-  int_no int2,
-  remote_no text,
-  vst_date date,
-  vst_time time,
-  sys_date date,
-  sys_time time,
-  einheiten int2,
-  geb_art char,
-  factor float4,
-  pay float4,
-  currency varchar(4)
-);
-</PRE>
-
-<P>
-Dem Benutzer, unter dessen Kennung "euracom" ablaeuft, muß Zugriff auf die Tabelle
-erlaubt werden (falls der Benutzer  nicht identisch mit dem DB-Owner ist).
+<P>Mit <CODE>make database</CODE> werden alle benötigten Tabellen erzeugt,
+wobei für die reine Gebührenerfassung nur die Tabelle <EM>euracom</EM>
+von Bedeutung ist.  Dem Benutzer, unter dessen Kennung "euracom" ablaeuft,
+muß (INSERT) Zugriff auf die Tabelle erlaubt werden (falls der Benutzer
+nicht identisch mit dem DBA ist).  Evtl. muß dieser Benutzer vorher mit
+"createuser" eingerichtet werden.
 </P>
 
 <PRE>
 GRANT INSERT ON euracom TO benutzer;
 </PRE>
-
-<P>
-Evtl. muß dieser Benutzer vorher mit "createuser" eingerichtet werden.
-</P>
 
 <H3>Start von "euracom"</H3>
 <P>
@@ -109,6 +109,11 @@ Ausgaben des Programmes nach "/var/log/euracom.log" um.
   echo "Starting EURACOM accounting..."
   su -f -c 'exec /var/lib/euracom/euracom /dev/ttyS2 >&/var/log/euracom.log &' phone 2>&1 1>/dev/null
 </PRE>
+
+<P>
+Besonders zu Anfang sollte mit <CODE>-p file</CODE> noch ein Protokoll in file
+erzeugt werden.  In dieses File werden sämtliche Meldungen, die von der V24-
+Schnittstelle kommen mitprotokolliert.</P>
 
 <H2> Gebührenauswertung </H2>
 <H3> Benötigte Tabellen</H3>
@@ -205,7 +210,7 @@ Viel Spass!
 
 <ADDRESS> ruf098 WWW, Michael Bussmann,
 <A HREF="mailto:bus@www.fgan.de">bus@www.fgan.de</A> ,
-Last change: $Date: 1997/09/30 10:40:32 $, $Revision: 1.3 $
+Last change: $Date: 1997/10/04 16:51:00 $, $Revision: 1.4 $
 </ADDRESS>
 
 </BODY>

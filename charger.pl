@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.6 $
-# Last modified:       $Date: 1997/09/30 10:40:33 $
+# Version:             $Revision: 1.7 $
+# Last modified:       $Date: 1997/10/04 16:51:00 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -120,6 +120,7 @@ do {
 
 } while ($num);
 
+$db->exec("CLOSE cx") || die "CLOSE: $db->errorMessage\n";
 $db->exec("END") || die "END: $db->errorMessage\n";
 close(TMPFILE);
 &debug("o.k.\n");
