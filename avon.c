@@ -11,7 +11,10 @@ int main()
 
   init_log("avon", ERR_JUNK, USE_STDERR, NULL);
 
-  openDB("./avondb", "./wkndb");
+  if (!openDB(AVON_DB_NAME, WKN_DB_NAME)) {
+    log_msg(ERR_FATAL, "Error opening database files");
+    return(1);
+  }
   while (cp=fgetline(stdin, NULL)) {
     lookup_number(cp, &fqtn);
     convert_telno(telno, &fqtn);
