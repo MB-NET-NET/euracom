@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.3 $
- * Last modified:       $Date: 1998/01/17 13:27:38 $
+ * Version:             $Revision: 1.4 $
+ * Last modified:       $Date: 1998/01/18 10:58:14 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -81,6 +81,17 @@
  * Where to write the lockfile
  */
 #define LOCKPATH		"/var/lock"
+
+/*
+ * Define this if euracom has problems detecting CTS
+ */
+#define	DONT_CHECK_CTS
+
+
+/* --------------------------------------------------------------------------
+ * Daemon options
+ * --------------------------------------------------------------------------
+ */
 
 /*
  * Where to write PID file

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.20 $
- * Last modified:       $Date: 1998/01/18 09:42:54 $
+ * Version:             $Revision: 1.21 $
+ * Last modified:       $Date: 1998/01/18 10:58:15 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.20 1998/01/18 09:42:54 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.21 1998/01/18 10:58:15 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -508,7 +508,9 @@ void usage(const char *prg)
          "  -u, --run-as-user=#uid | name\tRun as user uid (or username, resp.)\n" \
          "\n  Misc:\n" \
          "  -h, --help                   \tYou currently look at it\n");
-
+#if defined (DONT_CHECK_CTS)
+  printf("\nCTS check has been disabled\n");
+#endif
   exit(0);
 }
 
