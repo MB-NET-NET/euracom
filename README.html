@@ -14,11 +14,11 @@ Eine Warnung vorweg: Die Benutzung der Programme erfordert etwas Erfahrung
 im Umgang mit PostgreSQL und Perl!  Ich habe die Software für meinen
 persönlichen Gebrauch geschrieben, daher gibt es außer diesem, in Windeseile
 gestricktem, Pseudo-Readme, keinerlei Dokumentation!  Auf der anderen Seite
-sollte für das Programm das die Daten von der Euracom liest und
-in die Datenbank einfügt auch keine große Bschreibung von Nöten sein!
+sollte für das Programm, das die Daten von der Euracom liest und
+in die Datenbank einfügt auch keine große Beschreibung von Nöten sein!
 Intention war nämlich, eben diesen Teil so einfach und klein wie möglich
 zu halten.  Der ganze andere Kram, wie z.B. das Auslesen der Daten, die
-Gebührenauswertung, etc., wird ausschließlich ueber PostgreSQL
+Gebührenauswertung, etc., wird ausschließlich über PostgreSQL
 bewerkstelligt.</P>
 
 <P>Wer sich aber auf das Abenteuer einlassen will, der kann sich die
@@ -39,9 +39,9 @@ auf einem anderen Rechner im Netz befinden kann, wird automatisch bei
 Bedarf aufgebaut und, falls eine gewisse Zeit keine Einträge mehr eingefügt
 wurden, auch wieder abgebaut.  Falls die Datenbank genau zu dem Zeitpunkt
 nicht erreichbar ist, wenn Daten eingefügt werden müssen, schreibt das
-Programm die einzufügenden Daten in eine Datei.  In regelmäßigen Abständen
-wird nun versucht, die Verbindung zum DBMS herzustellen.  Sobald dies
-gelungen ist, werden die fehlenden Datensätze eingefügt.</P>
+Programm die Daten in eine Datei.  In regelmäßigen Abständen wird nun 
+versucht, die Verbindung zum DBMS herzustellen.  Sobald dies gelungen ist,
+werden die fehlenden Datensätze in die Tabelle geschrieben.</P>
 
 <H2>Zusätzliche Software</H2>
 <P> Folgende Software ist für die Benutzung von "euracom" erforderlich:</P>
@@ -63,18 +63,18 @@ diese Variable muß auf das Basisverzeichnis von PostgreSQL zeigen (z.B.
 können nach Bedarf abgewandelt werden.</P>
 
 <P>
-<B>Wesentlich</B> wichtiger ist <CODE>config.h</CODE>!  Insbesondere
+Wesentlich wichtiger ist <CODE>config.h</CODE>!  Insbesondere 
 <CODE>AREACODE</CODE>, <CODE>DEFAULT_DEVICE</CODE> müssen auf Ihre
-lokale Situation angepasst werden. (Oder sagen wir bessen, wenn <EM>
+lokale Situation angepaßt werden. (Oder sagen wir besser, wenn <EM>
 keine</EM> Anpassung von Nöten ist, dann sind wir Nachbarn :-) ).  Es kann
-mit Sicherheit nichts Schaden, wenn man sich alle Direktiven der Reihe mal
+mit Sicherheit nichts schaden, wenn man sich alle Direktiven der Reihe mal
 vornimmt.
 </P>
 
 <P>
-Die Portierung auf andere Unices müsste auch relativ einfach von Statten 
+Die Portierung auf andere Unices müßte auch relativ einfach von Statten 
 gehen, sofern das System <EM>TERMIO</EM> oder <EM>TERMIOS</EM> unterstützt.
-Sollte jemand Erfolg (oder Misserfolg) bei einer Portierung haben, so bitte
+Sollte jemand Erfolg (oder Mißerfolg) bei einer Portierung haben, so bitte
 ich um eine kurze Nachricht, um das README (und evtl. die Sourcen) 
 entsprechend zu updaten
 </P>
@@ -87,7 +87,7 @@ vom Programm abgelegt werden.</P>
 
 <P>Mit <CODE>make database</CODE> werden alle benötigten Tabellen erzeugt,
 wobei für die reine Gebührenerfassung nur die Tabelle <EM>euracom</EM>
-von Bedeutung ist.  Dem Benutzer, unter dessen Kennung "euracom" ablaeuft,
+von Bedeutung ist.  Dem Benutzer, unter dessen Kennung "euracom" abläuft,
 muß (INSERT) Zugriff auf die Tabelle erlaubt werden (falls der Benutzer
 nicht identisch mit dem DBA ist).  Evtl. muß dieser Benutzer vorher mit
 "createuser" eingerichtet werden.
@@ -97,11 +97,12 @@ nicht identisch mit dem DBA ist).  Evtl. muß dieser Benutzer vorher mit
 GRANT INSERT ON euracom TO benutzer;
 </PRE>
 
+
 <H3>Start von "euracom"</H3>
 <P>
 Nach der Kompilation kann man das Programm "euracom" in das gewünschte
 Verzeichnis moven (z.b. /usr/local/bin).  Der folgende Code-Ausschnitt, den
-man in seine rc.local (oder entsprechendes Startupscript) uebernehmen kann,
+man in seine rc.local (oder entsprechendes Startupscript) übernehmen kann,
 startet "/var/lib/euracom/euracom" als Benutzer "phone" und leitet debugging
 Ausgaben des Programmes nach "/var/log/euracom.log" um.
 </P>
@@ -114,6 +115,10 @@ Ausgaben des Programmes nach "/var/log/euracom.log" um.
 Besonders zu Anfang sollte mit <CODE>-p file</CODE> noch ein Protokoll in file
 erzeugt werden.  In dieses File werden sämtliche Meldungen, die von der V24-
 Schnittstelle kommen mitprotokolliert.</P>
+
+<P>Für weitere Kommandozeilen-Optionen rufen Sie einfach euracom mit dem
+Switch <CODE>--help</CODE> auf.</P>
+
 
 <H2> Gebührenauswertung </H2>
 <H3> Benötigte Tabellen</H3>
@@ -195,14 +200,14 @@ zu erstellen.  Starten Sie es bitte <B>nicht</B>, ohne entsprechende
 Anpassungen an Ihre lokale Situation vorzunehmen!
 </P>
 
-<H2>Abschliessend...</H2>
+<H2>Abschließend...</H2>
 <P>
 Wie gesagt, dieser Text wurde nur so auf die Schnelle geschrieben.  Evtl.
 werde ich irgendwann mal eine "richtige" Dokumentation schreiben, aber nur,
-falls auch noch andere ausser mir das Programm nutzen :-)</P>
+falls auch noch andere außer mir das Programm nutzen :-)</P>
 
 <P>
-Viel Spass!
+Viel Spaß!
 </P>
 <BR>
 <HR>
@@ -210,7 +215,7 @@ Viel Spass!
 
 <ADDRESS> ruf098 WWW, Michael Bussmann,
 <A HREF="mailto:bus@www.fgan.de">bus@www.fgan.de</A> ,
-Last change: $Date: 1997/10/04 16:51:00 $, $Revision: 1.4 $
+Last change: $Date: 1997/10/05 09:40:05 $, $Revision: 1.5 $
 </ADDRESS>
 
 </BODY>
