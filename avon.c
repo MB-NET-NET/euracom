@@ -10,8 +10,6 @@ int main()
   TelNo telno;
 
   init_log("avon", ERR_JUNK, USE_STDERR, NULL);
-  check_createDB("./avon.dat", "./avondb");
-  check_createDB("./wkn.dat", "./wkndb");
 
   openDB("./avondb", "./wkndb");
   while (cp=fgetline(stdin, NULL)) {

@@ -97,7 +97,7 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
       TelNo telno;
 
       convert_telno(telno, &fqtn);
-      sprintf(res, "%d called %s. %d units = %6.2f DM (%u s)",
+      sprintf(res, "%d called %s. %d units = %.2f DM (%u s)",
 	      geb->teilnehmer, telno,
 	      geb->einheiten,
 	      geb->betrag,
@@ -154,17 +154,20 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
 /*------------------------------------------------------*/
 struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 {
-  char *tok;
+  char *tok, *cp;
   char *buf=strdup(str);
-  char art[3];
   char teiln[25];
 
   /* Art und Teilnehmer*/
-  if (!(tok=strtok(buf, "|"))) { return(NULL); }
-  geb->teilnehmer=0;
-  sscanf(tok, "%s %s", art, teiln);
-  geb->teilnehmer=atoi(teiln);
-  switch (art[0]) {
+  if (!(tok=strtok(buf, "|"))) { 
+    log_msg(ERR_ERROR, "Error extracting first token");
+    return(NULL);
+  }
+  if (!(cp=strpbrk(tok, "GVK"))) { 
+    log_msg(ERR_ERROR, "Field 1 does not contain any char of G,V,K");
+    return(NULL);
+   }
+  switch (*cp++) {
     case 'G':
       geb->art=GEHEND;
       break;
@@ -176,10 +179,11 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
       break;
     default:
       geb->art=FEHLER;
-      log_msg(ERR_ERROR, "Field 1 invalid");
+      log_msg(ERR_CRIT, "Field 1 descriptor missing. Can't happen");
       return(NULL);
       break;
   }
+  geb->teilnehmer=atoi(cp);
 
   /* Datum/Zeit Verbindungsaufbau */
   if ((tok=strtok(NULL, "|"))) {
@@ -251,10 +255,7 @@ int shutdown_program(int force)
 /*------------------------------------------------------*/
 int hangup(int sig)
 {
-  log_msg(ERR_NOTICE, "SIGHUP received. Building databases");
   signal(sig, (void *)hangup);
-  check_createDB(AVON_TXT_NAME, AVON_DB_NAME);
-  check_createDB(WKN_TXT_NAME, WKN_DB_NAME);
   return(0);
 }
 

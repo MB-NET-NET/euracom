@@ -1,5 +1,5 @@
 /* Euracom.h
-   $Id: euracom.h,v 1.2 1996/11/02 15:20:21 bus Exp $
+   $Id: euracom.h,v 1.3 1996/11/05 17:51:24 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/euracom.h,v $
 */
 
@@ -43,8 +43,5 @@ struct FQTN {
 /* Default database names */
 #define AVON_DB_NAME	"/var/lib/euracom/avon.gdbm"
 #define WKN_DB_NAME	"/var/lib/euracom/wkn.gdbm"
-
-#define AVON_TXT_NAME	"/etc/isdnlog/avon"
-#define WKN_TXT_NAME	"/var/lib/euracom/wkn.dat"
 
 #endif

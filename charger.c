@@ -1,4 +1,4 @@
-/* $Id: charger.c,v 1.2 1996/11/02 15:18:18 bus Exp $ */
+/* $Id: charger.c,v 1.3 1996/11/05 17:51:24 bus Exp $ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -291,10 +291,6 @@ int main(argc, argv)
 
   /* Check logfiles */
   if (!gebuehr_filename) { gebuehr_filename=strdup(GEBUEHR_FILE); }
-
-  /* Check for DB files */
-  check_createDB(AVON_TXT_NAME, AVON_DB_NAME);
-  check_createDB(WKN_TXT_NAME, WKN_DB_NAME);
 
   /* Open database files */
   if (!openDB(AVON_DB_NAME, WKN_DB_NAME)) {
