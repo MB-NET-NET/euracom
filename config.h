@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.6 $
- * Last modified:       $Date: 1998/02/04 09:22:57 $
+ * Version:             $Revision: 1.7 $
+ * Last modified:       $Date: 1998/02/14 08:57:18 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -119,17 +119,5 @@
  */
 #define SHUTDOWN_TIMEOUT	120    /* Drop connection after 2 minutes idle time */
 #define RECOVERY_TIMEOUT	900    /* Retry after 15 mins */
-
-
-/* --------------------------------------------------------------------------
- * Euracom settings.  You will most probably not need to change these!
- * --------------------------------------------------------------------------
- */
-
-/*
- * String Euracom sends as telephone number when remote number could not be
- * determined
- */
-#define UNKNOWN_TEXT_EURA	"Rufnr.unbekannt"
 
 #endif
