@@ -52,7 +52,7 @@ while (<GEBFILE>) {
   };
 
   # Add OKZ
-  $nummer=~s/^[123456789](\d+)/02364$1/;
+  $nummer=~s/^([123456789])(\d+)/02364$1$2/;
 
   # Add intl code
   $nummer=~s/^0(\d+)/+49$1/;
