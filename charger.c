@@ -1,4 +1,4 @@
-/* $Id: charger.c,v 1.6 1996/12/17 09:14:23 bus Exp $ */
+/* $Id: charger.c,v 1.7 1996/12/22 11:00:20 bus Exp $ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -34,12 +34,12 @@ float base_charge = 18.0;
 void usage(const char *prg)
 {
   printf("Usage: %s [-g]\n", prg);
-  printf("\t-g file\tGebührenfile\n");
-  printf("\t-t no\tOnly print internal # matching no\n");
-  printf("\t-v time-from\tSets start-time\n");
-  printf("\t-b time-to\tSets end-time\n");
-  printf("\t-m Charge\tSets base charge (DM)\n");
-
+  printf("\t-a art\tDisplay only class 'art' calls\n"
+         "\t-b date\tDisplay calls until date (sec)\n"
+	 "\t-g file\tSet chargeinfo file\n"
+	 "\t-m DM\tSet base charge amount\n"
+	 "\t-t no\tDisplay only calls from/to ID no\n"
+	 "\t-v date\tDisplay calls since date (sec)\n\n");
   exit(0);
 }
 
