@@ -3,10 +3,10 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@mb-net.net>
 dnl
-dnl $Id: configure.in,v 1.10 2002/05/10 07:04:04 bus Exp $
+dnl $Id: configure.in,v 1.11 2002/05/10 07:05:54 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.10 $)
+AC_REVISION($Revision: 1.11 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -169,7 +169,7 @@ AC_MSG_RESULT($myres)
 
 AC_MSG_CHECKING(firmware release)
 AC_ARG_WITH(firmware,
-[  --with-firmware={1,2,3}	compile for euracom f/w 1.x, 2.x or 3.x],
+[  --with-firmware={1,2,3,4}	compile for euracom f/w 1.x, 2.x or 3.x,4.x],
 [ 
   case "$withval" in
     1) AC_MSG_RESULT(firmware 1.x)
@@ -181,13 +181,17 @@ AC_ARG_WITH(firmware,
     3) AC_MSG_RESULT(firmware 3.x)
        AC_DEFINE_UNQUOTED(FIRMWARE_MAJOR, 3)
        ;;
-    *) AC_ERROR(Only firmware releases 1 2 or 3 are supported)
+    4) AC_MSG_RESULT(firmware 4.x)
+       AC_DEFINE_UNQUOTED(FIRMWARE_MAJOR, 3)
+       ;;
+       ;;
+    *) AC_ERROR(Only firmware releases 1 2 3 or 4 are supported)
        ;;
   esac
 ],
 [ 
-  AC_MSG_RESULT(firmware 3.x)
-  AC_MSG_WARN(No firmware revision specified.  Assuming f/w major 3)
+  AC_MSG_RESULT(firmware 4.x)
+  AC_MSG_WARN(No firmware revision specified.  Assuming f/w major 4)
   AC_DEFINE_UNQUOTED(FIRMWARE_MAJOR, 3)
 ]
 )

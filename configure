@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.9 
+# From configure.in Revision: 1.10 
 # Guess values for system-dependent variables and create Makefiles.
 # Generated automatically using autoconf version 2.13 
 # Copyright (C) 1992, 93, 94, 95, 96 Free Software Foundation, Inc.
@@ -28,7 +28,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-alex                   testflag"
 ac_help="$ac_help
-  --with-firmware={1,2,3}	compile for euracom f/w 1.x, 2.x or 3.x"
+  --with-firmware={1,2,3,4}	compile for euracom f/w 1.x, 2.x or 3.x,4.x"
 ac_help="$ac_help
   --with-pidfile=full-path	Location of PID file (/var/run/euracom.pid)"
 ac_help="$ac_help
@@ -1477,14 +1477,21 @@ EOF
 EOF
 
        ;;
-    *) { echo "configure: error: Only firmware releases 1 2 or 3 are supported" 1>&2; exit 1; }
+    4) echo "$ac_t""firmware 4.x" 1>&6
+       cat >> confdefs.h <<EOF
+#define FIRMWARE_MAJOR 3
+EOF
+
+       ;;
+       ;;
+    *) { echo "configure: error: Only firmware releases 1 2 3 or 4 are supported" 1>&2; exit 1; }
        ;;
   esac
 
 else
    
-  echo "$ac_t""firmware 3.x" 1>&6
-  echo "configure: warning: No firmware revision specified.  Assuming f/w major 3" 1>&2
+  echo "$ac_t""firmware 4.x" 1>&6
+  echo "configure: warning: No firmware revision specified.  Assuming f/w major 4" 1>&2
   cat >> confdefs.h <<EOF
 #define FIRMWARE_MAJOR 3
 EOF
@@ -1495,7 +1502,7 @@ fi
 
 
 echo $ac_n "checking location of PID file""... $ac_c" 1>&6
-echo "configure:1499: checking location of PID file" >&5
+echo "configure:1506: checking location of PID file" >&5
 # Check whether --with-pidfile or --without-pidfile was given.
 if test "${with_pidfile+set}" = set; then
   withval="$with_pidfile"
@@ -1512,7 +1519,7 @@ EOF
 
 
 echo $ac_n "checking location of lock file""... $ac_c" 1>&6
-echo "configure:1516: checking location of lock file" >&5
+echo "configure:1523: checking location of lock file" >&5
 # Check whether --with-lockpath or --without-lockpath was given.
 if test "${with_lockpath+set}" = set; then
   withval="$with_lockpath"
@@ -1529,7 +1536,7 @@ EOF
 
 
 echo $ac_n "checking for default shutdown timeout""... $ac_c" 1>&6
-echo "configure:1533: checking for default shutdown timeout" >&5
+echo "configure:1540: checking for default shutdown timeout" >&5
 # Check whether --with-shutdown-timeout or --without-shutdown-timeout was given.
 if test "${with_shutdown_timeout+set}" = set; then
   withval="$with_shutdown_timeout"
@@ -1545,7 +1552,7 @@ EOF
 
 
 echo $ac_n "checking for default recovery timeout""... $ac_c" 1>&6
-echo "configure:1549: checking for default recovery timeout" >&5
+echo "configure:1556: checking for default recovery timeout" >&5
 # Check whether --with-recovery-timeout or --without-recovery-timeout was given.
 if test "${with_recovery_timeout+set}" = set; then
   withval="$with_recovery_timeout"
@@ -1561,7 +1568,7 @@ EOF
 
 
 echo $ac_n "checking for recovery file""... $ac_c" 1>&6
-echo "configure:1565: checking for recovery file" >&5
+echo "configure:1572: checking for recovery file" >&5
 # Check whether --with-recovery-file or --without-recovery-file was given.
 if test "${with_recovery_file+set}" = set; then
   withval="$with_recovery_file"
@@ -1577,7 +1584,7 @@ EOF
 
 
 echo $ac_n "checking for your country code""... $ac_c" 1>&6
-echo "configure:1581: checking for your country code" >&5
+echo "configure:1588: checking for your country code" >&5
 # Check whether --with-country-code or --without-country-code was given.
 if test "${with_country_code+set}" = set; then
   withval="$with_country_code"
@@ -1597,7 +1604,7 @@ else
 fi
 
 echo $ac_n "checking for your area prefix code""... $ac_c" 1>&6
-echo "configure:1601: checking for your area prefix code" >&5
+echo "configure:1608: checking for your area prefix code" >&5
 # Check whether --with-area-code or --without-area-code was given.
 if test "${with_area_code+set}" = set; then
   withval="$with_area_code"
@@ -1617,7 +1624,7 @@ fi
 echo "$ac_t""$areacode" 1>&6
 
 echo $ac_n "checking for name of local currency""... $ac_c" 1>&6
-echo "configure:1621: checking for name of local currency" >&5
+echo "configure:1628: checking for name of local currency" >&5
 # Check whether --with-currency-name or --without-currency-name was given.
 if test "${with_currency_name+set}" = set; then
   withval="$with_currency_name"
@@ -1633,7 +1640,7 @@ EOF
 
 
 echo $ac_n "checking for database name""... $ac_c" 1>&6
-echo "configure:1637: checking for database name" >&5
+echo "configure:1644: checking for database name" >&5
 # Check whether --with-database-name or --without-database-name was given.
 if test "${with_database_name+set}" = set; then
   withval="$with_database_name"
