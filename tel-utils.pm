@@ -7,8 +7,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.7 $
-# Last modified:       $Date: 1998/01/18 09:36:22 $
+# Version:             $Revision: 1.8 $
+# Last modified:       $Date: 1998/01/31 11:18:09 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -23,7 +23,7 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.7 1998/01/18 09:36:22 bus Exp $
+# $Id: tel-utils.pm,v 1.8 1998/01/31 11:18:09 bus Exp $
 #
 
 use Pg;
@@ -197,7 +197,7 @@ sub convert_fqtn()
 sub debug()
 {
   if ($main::debugp) {
-    print @_;
+    print STDERR @_;
   }
 }
 
