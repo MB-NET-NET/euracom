@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.39 $
- * Last modified:       $Date: 1999/03/14 09:29:43 $
+ * Version:             $Revision: 1.40 $
+ * Last modified:       $Date: 2000/12/17 17:14:23 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.39 1999/03/14 09:29:43 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.40 2000/12/17 17:14:23 bus Exp $";
 
 #include "config.h"
 
@@ -434,7 +434,7 @@ int select_loop()
 void usage(const char *prg)
 {
   printf("Usage: %s [options] device\n", prg);
-  printf("\n  Database subsystem option:\n"\
+  puts("\n  Database subsystem option:\n"\
          "  -H, --db-host=host           \tSets database host\n" \
          "  -D, --db-name=name           \tDatabase name to connect to\n" \
          "  -P, --db-port=port           \tSets database port number\n" \
@@ -448,9 +448,9 @@ void usage(const char *prg)
          "  -f, --no-daemon              \tDon't detach from tty and run in background\n" \
          "  -u, --run-as-user=#uid | name\tRun as user uid (or username, resp.)\n" \
          "\n  Misc:\n" \
-         "  -h, --help                   \tYou currently look at it\n");
+         "  -h, --help                   \tYou currently look at it");
 #if DONT_CHECK_CTS
-  printf("\nCTS check has been disabled\n");
+  puts("\nCTS check has been disabled");
 #endif
 }
 
