@@ -30,7 +30,7 @@ struct GebuehrInfo {
 #define DEF_LOGFAC		LOG_LOCAL0
 
 #define UNKNOWN_TEXT_EURA	"Rufnr.unbekannt"
-#define	UNKOWN_NO		"???"
+#define	UNKNOWN_NO		"???"
 
 
 /* Globals */
@@ -39,6 +39,20 @@ char *gebuehr_filename = NULL;		/* Filename für Gebuehrendaten */
 char *proto_filename = NULL;		/* Filename für Euracom-backup file */
 
 extern char *readln_rs232();
+
+
+/*------------------------------------------------------*/
+/* unsigned int guess_duration()                        */
+/* */
+/* RetCode: Estimated duration in secs                  */
+/*------------------------------------------------------*/
+unsigned int guess_duration(const struct GebuehrInfo *geb)
+{
+  unsigned int sec = (unsigned int)((geb->doe)-(geb->datum));
+
+  return(sec);
+}
+
 
 /*------------------------------------------------------*/
 /* BOOLEAN gebuehr_log()                                */
@@ -79,21 +93,32 @@ BOOLEAN gebuehr_log(const struct GebuehrInfo *geb)
       return(FALSE);
       break;
     case GEHEND:
-      sprintf(res, "%d called %s. %d units (%lu s), %6.2f DM",
+      sprintf(res, "%d called %s. %d units = %6.2f DM (%u s)",
 	      geb->teilnehmer, geb->nummer,
 	      geb->einheiten,
-	      (unsigned long)((geb->doe)-(geb->datum)),
-	      geb->betrag);
+	      geb->betrag,
+	      guess_duration(geb));
       break;
     case KOMMEND:
-      sprintf(res, "Incoming call from %s. No connection (%lu s)",
+      if (strcmp(geb->nummer, UNKNOWN_NO)==0) {
+        sprintf(res, "Incoming call but no connection (%u s)",
+	      guess_duration(geb));
+      } else {
+        sprintf(res, "Incoming call from %s. No connection (%u s)",
 	      geb->nummer,
-	      (unsigned long)((geb->doe)-(geb->datum)));
+	      guess_duration(geb));
+      }
       break;
     case VERBINDUNG:
-      sprintf(res, "Incoming call from %s to %d for %lu s",
+      if (strcmp(geb->nummer, UNKNOWN_NO)==0) {
+      	sprintf(res, "Incoming call for %d (%u s)",
+      		geb->teilnehmer,
+      		guess_duration(geb));
+      } else {
+      	sprintf(res, "Incoming call from %s for %d (%u s)",
 	      geb->nummer, geb->teilnehmer,
-	      (unsigned long)((geb->doe)-(geb->datum)));
+	      guess_duration(geb));
+      }
       break;
     default:
       log_msg(ERR_WARNING, "CASE missing in geb->art");
@@ -159,7 +184,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   if (!(tok=strtok(NULL, "|"))) { log_msg(ERR_ERROR, "Field 3 invalid"); return(NULL); }
   stripblank(tok);
   if (strcasecmp(tok, UNKNOWN_TEXT_EURA)==0) {
-    strcpy(geb->nummer, UNKOWN_NO);
+    strcpy(geb->nummer, UNKNOWN_NO);
   } else {
     strcpy(geb->nummer, tok);
   }
