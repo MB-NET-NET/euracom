@@ -2,63 +2,63 @@
 
 <HTML>
 <HEAD>
-<TITLE>Gebührenauswertung für Euracom</TITLE>
+<TITLE>Geb&uuml;hrenauswertung f&uuml;r Euracom</TITLE>
 </HEAD>
 <BODY>
 
-<H1>Gebührenauswertung für Euracom 18x mittels PostgreSQL</H1>
+<H1>Geb&uuml;hrenauswertung f&uuml;r Euracom 18x mittels PostgreSQL</H1>
 
-<H2>Einführung</H2>
+<H2>Einf&uuml;hrung</H2>
 <P>
-Das Programm liest die von der Tk-Anlage über die V24-Schnittstelle
-ausgegebenen Gebührendaten und schreibt die aufgearbeiteten Daten in eine
-PostgreSQL Datenbank.  Ebenso wird für jeden Datensatz auch eine Meldung via
+Das Programm liest die von der Tk-Anlage &uuml;ber die V24-Schnittstelle
+ausgegebenen Geb&uuml;hrendaten und schreibt die aufgearbeiteten Daten in eine
+PostgreSQL Datenbank.  Ebenso wird f&uuml;r jeden Datensatz auch eine Meldung via
 syslog() ausgegeben. Die Verbindung zur Datenbank, die sich auch auf einem
 anderen Rechner im Netz befinden kann, wird automatisch bei Bedarf aufgebaut
-und, falls eine gewisse Zeit keine Einträge mehr eingefügt wurden, auch wieder
-abgebaut.  Sollte die Datenbank genau zu dem Zeitpunkt wenn Daten eingefügt
-werden müssen, nicht erreichbar sein, schreibt das Programm die Daten in eine
-Datei.  In regelmäßigen Abständen wird versucht, die Verbindung zum DBMS
-herzustellen.  Sobald dies gelungen ist, werden die fehlenden Datensätze in
+und, falls eine gewisse Zeit keine Eintr&auml;ge mehr eingef&uuml;gt wurden, auch wieder
+abgebaut.  Sollte die Datenbank genau zu dem Zeitpunkt wenn Daten eingef&uuml;gt
+werden m&uuml;ssen, nicht erreichbar sein, schreibt das Programm die Daten in eine
+Datei.  In regelm&auml;&szlig;igen Abst&auml;nden wird versucht, die Verbindung zum DBMS
+herzustellen.  Sobald dies gelungen ist, werden die fehlenden Datens&auml;tze in
 die Tabelle geschrieben.
 </P>
 
 <H2>Systemvoraussetzungen</H2>
 <H3>Hardware</H3>
 <P>
-Das Programm liest die Gebühreninformationen, die am Druckerausgang einer
+Das Programm liest die Geb&uuml;hreninformationen, die am Druckerausgang einer
 <A HREF="http://www.ackermann.de/">Ackermann</A> Euracom 18{0,1,2} Tk-Anlange
 ausgegeben werden.  Nachbauten der Anlage (z.B. QUANTE IS-{0,1,2}) werden
-ebenfalls unterstützt.  Es können alle Firmware-Releases bis einschließlich
+ebenfalls unterst&uuml;tzt.  Es k&ouml;nnen alle Firmware-Releases bis einschlie&szlig;lich
 1.11B eingesetzt werden (vermutlich auch die 2.x-Release, dies wurde
 allerdings noch nicht getestet).
 </P>
 <P>
-Der Druckerport der Anlage (bei F/W &lt;= 1.11B ist das defaultmäßig der Port
-V24-2) muß mit einem freien RS232 Port des Rechners verbunden werden.
+Der Druckerport der Anlage (bei F/W &lt;= 1.11B ist das defaultm&auml;&szlig;ig der Port
+V24-2) mu&szlig; mit einem freien RS232 Port des Rechners verbunden werden.
 Benutzen Sie ein Verbindungskabel bei dem die Leitungen RX, TX, DTR, DSR, RTS,
 CTS und GND <B>1:1</B> durchgeschaltet sind (<B>kein</B> Null-Modem Kabel!).
-Wenn Sie auf der sicheren Seite seien möchten, verwenden Sie ein 9-poliges 1:1
-Kabel.  Falls Ihr Rechner noch einen 25 polige DSub Anschluß hat, so benötigen
+Wenn Sie auf der sicheren Seite seien m&ouml;chten, verwenden Sie ein 9-poliges 1:1
+Kabel.  Falls Ihr Rechner noch einen 25 polige DSub Anschlu&szlig; hat, so ben&ouml;tigen
 Sie ein anderes Verdrahtungsschema.  Ich verweise da auf das Kapitel
-<I>PC/Drucker an den RS232-C Anschlüssen installieren (4.8)</I> im Handbuch
-der Euracom-Anlage.  Für den Eingang auf Seiten des PC reicht ein Port mit
+<I>PC/Drucker an den RS232-C Anschl&uuml;ssen installieren (4.8)</I> im Handbuch
+der Euracom-Anlage.  F&uuml;r den Eingang auf Seiten des PC reicht ein Port mit
 82450, 8250 oder 16450 UART vollkommen aus.  Auf der anderen Seite, wenn
-natürlich ein 16550A oder eine intelligente serielle Interfacekarte vorhanden
+nat&uuml;rlich ein 16550A oder eine intelligente serielle Interfacekarte vorhanden
 ist -- umso besser.  (Beachten Sie dazu bitte den Punkt 
 <A HREF="#bugs">Bugs</A>).
 </P>
 
 <H3>Software</H3>
 <P>
-Zusätzlich zu diesem Programm benötigen Sie noch folgende Software (alle
-Produkte sind frei im Netz verfügbar):
+Zus&auml;tzlich zu diesem Programm ben&ouml;tigen Sie noch folgende Software (alle
+Produkte sind frei im Netz verf&uuml;gbar):
 </P>
 <UL>
-  <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder höher, es wird
-       wohl auch mit älteren Versionen funktionieren)  Beachten Sie bitte
+  <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder h&ouml;her, es wird
+       wohl auch mit &auml;lteren Versionen funktionieren)  Beachten Sie bitte
        ebenfalls den Punkt <A HREF="#bugs">Bugs</A>.
-  <LI> <A HREF="http://www.perl.org/">Perl</A> (5.003 oder höher)
+  <LI> <A HREF="http://www.perl.org/">Perl</A> (5.003 oder h&ouml;her)
   <LI> <A HREF="mailto:e.mergl@bawue.de">Edmund Mergl's</A> <EM>pgsql_perl5</EM> (1.6)
        -- ist in den aktuellen PostgreSQL Distributionen enthalten.
 </UL>
@@ -70,45 +70,45 @@ Nach dem Entpacken der Sourcen werden Sie bitte einen Blick in die Datei
 <CODE>config.h</CODE>!  Am wichtigsten ist die korrekte Definition des
 Symbols <CODE>AREACODE</CODE>.  Es kann mit Sicherheit nichts schaden, wenn
 Sie sich alle Direktiven der Reihe nach vornehmen und auf ihre (lokale)
-Korrektheit in überprüfen.
+Korrektheit in &uuml;berpr&uuml;fen.
 </P>
 <P>
-Ist das erledigt, können Sie sich <CODE>Makefile</CODE> vornehmen.  Als
-wichtigen Punkt hier wäre <CODE>PGBASE</CODE> zu nennen.  <CODE>PGBASE</CODE>
-muß auf das Basis-Directory ihrer PostgreSQL-Installation zeigen.  Die anderen
-Punkte können nach eigenem Ermessen bei Bedarf geändert werden, ich denke
-jedoch, daß die Default-Werte ganz brauchbar sind.
+Ist das erledigt, k&ouml;nnen Sie sich <CODE>Makefile</CODE> vornehmen.  Als
+wichtigen Punkt hier w&auml;re <CODE>PGBASE</CODE> zu nennen.  <CODE>PGBASE</CODE>
+mu&szlig; auf das Basis-Directory ihrer PostgreSQL-Installation zeigen.  Die anderen
+Punkte k&ouml;nnen nach eigenem Ermessen bei Bedarf ge&auml;ndert werden, ich denke
+jedoch, da&szlig; die Default-Werte ganz brauchbar sind.
 </P>
 <P>
-Danach sollte ein <CODE>make</CODE> alle benötigten Programme erzeugen.  Auf
-einem Linux/GNU System wird die Kompilierung mit großer Wahrscheinlichkeit 
-ohne Probleme ablaufen, bei anderen Unices kann es sein, daß einige
+Danach sollte ein <CODE>make</CODE> alle ben&ouml;tigten Programme erzeugen.  Auf
+einem Linux/GNU System wird die Kompilierung mit gro&szlig;er Wahrscheinlichkeit 
+ohne Probleme ablaufen, bei anderen Unices kann es sein, da&szlig; einige
 Include-Files nicht vorhanden sind, oder andere (kleinere)
-Kompatibilitätsprobleme auftreten.  In so einem Fall bitte ich um eine
-<A HREF="mailto:bus@fgan.de">Mail an mich</A>, so daß ich die Möglichkeit
+Kompatibilit&auml;tsprobleme auftreten.  In so einem Fall bitte ich um eine
+<A HREF="mailto:bus@fgan.de">Mail an mich</A>, so da&szlig; ich die M&ouml;glichkeit
 habe, die Programme portabler zu gestalten.
 </P>
 
 <H3>Einrichten der Datenbank</H3>
 <P>
-Meldete <CODE>make</CODE> keine Probleme bei der Kompilation, so können wir
-nun den nächsten Punkt angehen, der Erstellung der Datenbank, in der das
-Programm die Gebühreninformationen schreiben wird.
+Meldete <CODE>make</CODE> keine Probleme bei der Kompilation, so k&ouml;nnen wir
+nun den n&auml;chsten Punkt angehen, der Erstellung der Datenbank, in der das
+Programm die Geb&uuml;hreninformationen schreiben wird.
 </P>
 <P>
 Zuerst ist mittels <CODE>createdb isdn</CODE> eine neue Datenbank Namens
-<I>isdn</I> anzulegen.  Theoretisch ist natürlich auch ein anderer Name
-möglich, aber besonders auf Linux-Systemen, die <I>isdn4linux</I> verwenden,
+<I>isdn</I> anzulegen.  Theoretisch ist nat&uuml;rlich auch ein anderer Name
+m&ouml;glich, aber besonders auf Linux-Systemen, die <I>isdn4linux</I> verwenden,
 bietet sich <I>isdn</I> besonders an, da auch das Programm <I>isdnlog</I>
-defaultmäßig diesen Namen als Datenbank verwendet (wenn man isdnlog mit
-PostgreSQL-Unterstützung kompiliert hat).
+defaultm&auml;&szlig;ig diesen Namen als Datenbank verwendet (wenn man isdnlog mit
+PostgreSQL-Unterst&uuml;tzung kompiliert hat).
 </P>
 <P>
-Mit <CODE>make database</CODE> werden alle benötigten Tabellen erzeugt,
-wobei für die reine Gebührenerfassung nur die Tabelle <EM>euracom</EM>
-von Bedeutung ist.  Dem Benutzer, unter dessen Kennung "euracom" abläuft,
-muß (INSERT) Zugriff auf die Tabelle erlaubt werden (falls der Benutzer
-nicht identisch mit dem DBA ist).  Evtl. muß dieser Benutzer vorher mit
+Mit <CODE>make database</CODE> werden alle ben&ouml;tigten Tabellen erzeugt,
+wobei f&uuml;r die reine Geb&uuml;hrenerfassung nur die Tabelle <EM>euracom</EM>
+von Bedeutung ist.  Dem Benutzer, unter dessen Kennung "euracom" abl&auml;uft,
+mu&szlig; (INSERT) Zugriff auf die Tabelle erlaubt werden (falls der Benutzer
+nicht identisch mit dem DBA ist).  Evtl. mu&szlig; dieser Benutzer vorher mit
 <CODE>createuser &lt;username&gt;</CODE> eingerichtet werden.
 </P>
 
@@ -118,38 +118,38 @@ GRANT INSERT ON euracom TO Benutzer;
 
 <H3>Installation</H3>
 <P>
-Für diesen Schritt werden Sie in den meisten Fällen root-Rechte benötigen.
-Ein <CODE>make install</CODE> nimmt Ihnen lästige Arbeit ab, indem es alle
-benötigten Files an die richtige Stelle kopiert.  Defaultmäßig wird das
+F&uuml;r diesen Schritt werden Sie in den meisten F&auml;llen root-Rechte ben&ouml;tigen.
+Ein <CODE>make install</CODE> nimmt Ihnen l&auml;stige Arbeit ab, indem es alle
+ben&ouml;tigten Files an die richtige Stelle kopiert.  Defaultm&auml;&szlig;ig wird das
 Hauptprogramm <CODE>euracom</CODE> nach <CODE>/usr/local/sbin</CODE>, die
-Manual-Page nach <CODE>/usr/local/man/man8</CODE> und das shared object für
+Manual-Page nach <CODE>/usr/local/man/man8</CODE> und das shared object f&uuml;r
 PostgreSQL nach <CODE>PGBASE/obj</CODE> kopiert.
 </P>
 <P>
-Falls Sie <CODE>euracom</CODE> nicht als root starten wollen oder können (die
+Falls Sie <CODE>euracom</CODE> nicht als root starten wollen oder k&ouml;nnen (die
 Option <CODE>--run-as-user</CODE> ist davon <B>nicht</B> betroffen), dann
-müssen Sie darauf achten, daß sie Schreib- und Lesezugriff auf die
+m&uuml;ssen Sie darauf achten, da&szlig; sie Schreib- und Lesezugriff auf die
 Verzeichnisse haben, die in <CODE>config.h</CODE> unter <CODE>PIDFILE</CODE>
-und <CODE>LOCKPATH</CODE> aufgeführt sind.  Natürlich brauchen Sie ebenfalls
+und <CODE>LOCKPATH</CODE> aufgef&uuml;hrt sind.  Nat&uuml;rlich brauchen Sie ebenfalls
 RW-permission auf das serielle Device.
 </P>
 <P>Wenn in der <CODE>config.h</CODE> das Makro <CODE>DEF_LOGFAC</CODE> nicht
-geändert wurde, schreibt euracom syslog-Ausgaben in die syslog Facility
+ge&auml;ndert wurde, schreibt euracom syslog-Ausgaben in die syslog Facility
 <EM>local0</EM>.  Es ist sinnvoll, in der <CODE>/etc/syslog.conf</CODE> einen
-Eintrag zu machen, daß alle local0 Messages separat geloggt werden sollen, was
+Eintrag zu machen, da&szlig; alle local0 Messages separat geloggt werden sollen, was
 durch folgenden Eintrag bewerkstelligt wird:
 </P>
 <PRE>
 local0.*	/var/log/telephone.log
 </PRE>
 
-<H4>Gebührenausdruck der Anlage vorbereiten</H4>
+<H4>Geb&uuml;hrenausdruck der Anlage vorbereiten</H4>
 <P>
 Verbinden Sie nun den Druckerausgang der Tk-Anlage mit einem freien V24-Port
-Ihres Rechners und aktivieren Sie die Gebührendruckfunktion der Anlage.  Die
-folgende Befehlsfolge, die sie an jedem Master-fähigen Telefon der Anlage
-eingeben können aktiviert die Gebührenauswertung für <I>jeden</I> internen
-Anschluß (mit Anzeige der <I>kompletten</I> Rufnummer), und erfaßt auch
+Ihres Rechners und aktivieren Sie die Geb&uuml;hrendruckfunktion der Anlage.  Die
+folgende Befehlsfolge, die sie an jedem Master-f&auml;higen Telefon der Anlage
+eingeben k&ouml;nnen aktiviert die Geb&uuml;hrenauswertung f&uuml;r <I>jeden</I> internen
+Anschlu&szlig; (mit Anzeige der <I>kompletten</I> Rufnummer), und erfa&szlig;t auch
 kommende Verbindungen (mit und ohne Verbindung):
 </P>
 
@@ -169,44 +169,44 @@ Das sollte es eigentlich gewesen sein!
 Starten Sie das Programm mit <CODE>euracom [-options]
 device</CODE>. <CODE>device</CODE> ist hier die verwendete serielle
 Schnittstelle.  Das Programm versucht als erstes das Device zu locken, um
-Kollisionen mit anderen Programmes auszuschließen.  Sollte ein anderer
-Prozeß diesen Port bereits benutzen (und kennzeichnet dies durch die
+Kollisionen mit anderen Programmes auszuschlie&szlig;en.  Sollte ein anderer
+Proze&szlig; diesen Port bereits benutzen (und kennzeichnet dies durch die
 Verwendung eines Locks), so bricht <CODE>euracom</CODE> mit einer
 Fehlermeldung ab.  Das gleiche gilt, wenn bereits ein <CODE>euracom</CODE>
-Prozeß aktiv ist.
+Proze&szlig; aktiv ist.
 </P>
 <P>
-Alle Fehler während der Initialisierung werden via syslog() geloggt (Ausnahme
+Alle Fehler w&auml;hrend der Initialisierung werden via syslog() geloggt (Ausnahme
 sind Fehler in den Kommandozeilenparametern, die auf STDERR ausgegeben
 werden). Sobald die Meldung "Euracom vx.x.x listening on /dev/xxx" erscheint"
-ist das Programm bereit, eingehende Gebührendaten zu empfangen und zu
+ist das Programm bereit, eingehende Geb&uuml;hrendaten zu empfangen und zu
 verarbeiten.  Wenn Sie so weit gar nicht kommen, hilft vielleicht ein Blick in
 die <A HREF="#bugs">Bugs</A>-Section.
 </P>
 <P>
-Um Fehlern besser auf die Spur zu kommen, können sie das Programm mit der
+Um Fehlern besser auf die Spur zu kommen, k&ouml;nnen sie das Programm mit der
 Option <CODE>--no-daemon</CODE> starten.  Damit bleibt das Programm im
 Vordergrund und gibt alle Ausgaben auf STDERR aus.  Ebenfalls hilfreich ist
 die Option <CODE>--debug</CODE> (optional mit Angabe des debugging-Levels),
 welche erweiterte Logging-Informationen ausgibt.  Falls Sie erweiterte
-Debugging-Ausgaben haben möchten, das Programm aber weiterhin als daemon (also
+Debugging-Ausgaben haben m&ouml;chten, das Programm aber weiterhin als daemon (also
 im Background) abgearbeitet werden soll, ist die Angabe eines Logging Files
 mit <CODE>--log-file=file</CODE> zwingend erforderlich.
 </P>
-<P>Für weitere Kommandozeilen-Optionen rufen Sie einfach euracom mit dem
+<P>F&uuml;r weitere Kommandozeilen-Optionen rufen Sie einfach euracom mit dem
 Switch <CODE>--help</CODE> auf.  Ansonsten verweise ich hier auf die
 mitgelieferte Manual page von 
 <A HREF="mailto:volker@illuminatus.mz.rhein-main.de">Volker Schmidt</A>.
 </P>
 <P>
 Am sinnvollsten ist es, wenn Sie das Programm <CODE>euracom</CODE> automatisch
-beim Hochfahren des Systems starten.  Ein Beispiel für eine Startup-Prozedur,
-die dies bewerkstelligt ist z.B.:
+beim Hochfahren des Systems starten.  Ein Beispiel f&uuml;r eine SYSV-like
+Startup-Prozedur, die dies bewerkstelligt ist z.B.:
 </P>
 <PRE>
 #!/bin/sh
 
-PATH=/usr/local/sbin:/bin
+PATH=/usr/local/sbin:/bin:/usr/bin
 
 case "$1" in
     start)
@@ -229,59 +229,58 @@ esac
 exit 0
 </PRE>
 
-
-<H2>Gebührenauswertung</H2>
+<H2>Geb&uuml;hrenauswertung</H2>
 <P>
-Im Prinzip können wir jetzt aufhören.  Etwas Optimismus vorausgesetzt, läuft
-bei Ihnen jetzt ein Programm, daß die Verbindungsdaten aller ein- und
-ausgehenden Gespräche, die über die Anlage geführt, mitprotokolliert, via
-syslog() ausgibt und dauerhaft in eine Datenbank schreibt.  Mit rudimentären
-SQL92 Kenntnissen können Sie sich z.B. eine Liste der zuletzt geführten
-Gespräche ausgeben lassen, Monats-, Wochen- oder Tagessummen der
-Gesprächsgebühren berechnen lassen, etc. pp.  Mit dem mitgelieferten
+Im Prinzip k&ouml;nnen wir jetzt aufh&ouml;ren.  Etwas Optimismus vorausgesetzt, l&auml;uft
+bei Ihnen jetzt ein Programm, da&szlig; die Verbindungsdaten aller ein- und
+ausgehenden Gespr&auml;che, die &uuml;ber die Anlage gef&uuml;hrt, mitprotokolliert, via
+syslog() ausgibt und dauerhaft in eine Datenbank schreibt.  Mit rudiment&auml;ren
+SQL92 Kenntnissen k&ouml;nnen Sie sich z.B. eine Liste der zuletzt gef&uuml;hrten
+Gespr&auml;che ausgeben lassen, Monats-, Wochen- oder Tagessummen der
+Gespr&auml;chsgeb&uuml;hren berechnen lassen, etc. pp.  Mit dem mitgelieferten
 Perl-Skript <CODE>charger.pl</CODE> geht man noch einen kleinen Schritt
-weiter.  Man erhält einen Einzelverbindungsnachweis für einen, vom Benutzer
-festgelegten Zeitraum, in dem Zeitpunkt des Gespräches, Zielnummer,
-verbrauchte Einheiten und Gebühren, sowie die Summe der Einheiten und Gebühren
-aufgeführt sind.  Optional wird noch der Ortsnetzname der Nummer, sowie der
+weiter.  Man erh&auml;lt einen Einzelverbindungsnachweis f&uuml;r einen, vom Benutzer
+festgelegten Zeitraum, in dem Zeitpunkt des Gespr&auml;ches, Zielnummer,
+verbrauchte Einheiten und Geb&uuml;hren, sowie die Summe der Einheiten und Geb&uuml;hren
+aufgef&uuml;hrt sind.  Optional wird noch der Ortsnetzname der Nummer, sowie der
 Inhaber der Nummer ausgegeben, falls diese Werte in der Datenbank vorhanden
 sind.
 </P>
 
-<H3>Benötigte Tabellen</H3>
+<H3>Ben&ouml;tigte Tabellen</H3>
 <P>
-Für die Gebührenauswertung sind 2 weitere Tabellen nötig, die sich ebenfalls
-in der DB "isdn" befinden müssen.  Beide Tabellen sind bereits durch
-<CODE>make database</CODE> erzeugt und mit Beispielwerten gefüllt worden.
+F&uuml;r die Geb&uuml;hrenauswertung sind 2 weitere Tabellen n&ouml;tig, die sich ebenfalls
+in der DB "isdn" befinden m&uuml;ssen.  Beide Tabellen sind bereits durch
+<CODE>make database</CODE> erzeugt und mit Beispielwerten gef&uuml;llt worden.
 </P>
 
 <P>
-Die Tabelle <EM>avon</EM> enthält das Verzeichnis der Vorwahlen (Attribut
-"nummer" hat die Form "+49vorwahl-ohne-null", also, z.B. "+49228" für Bonn),
+Die Tabelle <EM>avon</EM> enth&auml;lt das Verzeichnis der Vorwahlen (Attribut
+"nummer" hat die Form "+49vorwahl-ohne-null", also, z.B. "+49228" f&uuml;r Bonn),
 die zweite Tabelle <EM>wkn</EM> kann vom Benutzer mit Telefonnummern (in
 internationaler Schreibweise (in diesem Fall allerdings ohne irgendwelche
 Trennzeichen), also die Felder
 </P>
 
 <OL>
-<LI>Ländervorwahl (+49 für Deutschland)
+<LI>L&auml;ndervorwahl (+49 f&uuml;r Deutschland)
 <LI>Vorwahl (ohne 0)
 <LI>Teilnehmernummer (oder Anlagen Basisnummer)
 <LI>optional: Durchwahl
 </OL>
 
-<P>Der Benutzer, der die Gebührenauswertung vornimmt, benötigt 'SELECT' Zugriff
+<P>Der Benutzer, der die Geb&uuml;hrenauswertung vornimmt, ben&ouml;tigt 'SELECT' Zugriff
 auf alle Tabellen (avon, wkn und euracom)!</P>
 
 <P>
-Als Eingabedaten für die "avon"-Tabelle empfehle ich die OKZ-Datei aus dem
+Als Eingabedaten f&uuml;r die "avon"-Tabelle empfehle ich die OKZ-Datei aus dem
 <EM>isdnlog</EM> Paket.</P>
 
 <H3>User-defined functions</H3>
 <P>
-Für die Auswertung ist es erforderlich, PostgreSQL um 2 Funktionen zu erweitern,
-nämlich <EM>prefix_match(text,text)</EM> und <EM>length(text)</EM>.  Dazu
-müssen Sie folgende PostgreSQL statements absetzen:
+F&uuml;r die Auswertung ist es erforderlich, PostgreSQL um 2 Funktionen zu erweitern,
+n&auml;mlich <EM>prefix_match(text,text)</EM> und <EM>length(text)</EM>.  Dazu
+m&uuml;ssen Sie folgende PostgreSQL statements absetzen:
 </P>
 
 <PRE>
@@ -297,22 +296,22 @@ CREATE FUNCTION length (text)
 </PRE>
 
 <P>
-Wenn im Makefile <CODE>PGBASE</CODE> angepaßt wurde, so müssen Sie natürlich
+Wenn im Makefile <CODE>PGBASE</CODE> angepa&szlig;t wurde, so m&uuml;ssen Sie nat&uuml;rlich
 <CODE>/opt/postgreSQL/obj/prefixmatch.so</CODE> durch den korrekten Pfad von
 <CODE>prefixmatch.so</CODE> ersetzen.
 </P>
 
 <H3>Aufruf von charger.pl</H3>
 <P>
-Für eine komplette Übersicht sämtlicher unterstützter Kommandozeilen-Parameter
+F&uuml;r eine komplette &Uuml;bersicht s&auml;mtlicher unterst&uuml;tzter Kommandozeilen-Parameter
 starten Sie <CODE>charger.pl</CODE> mit dem Switch <CODE>-h</CODE>.  Aber Sie
-werden das Programm ohnehin noch anpassen müssen, denn ich bezweifele, daß Sie
-in Ihrer Kostenabrechnung gerne meinen Namen in der Fußzeile haben möchten...
+werden das Programm ohnehin noch anpassen m&uuml;ssen, denn ich bezweifele, da&szlig; Sie
+in Ihrer Kostenabrechnung gerne meinen Namen in der Fu&szlig;zeile haben m&ouml;chten...
 </P>
 <P>
 Die Zeit/Datumsangaben, die den Optionen <CODE>-v</CODE> und <CODE>-b</CODE>
-als Argument mit übergeben werden, können in jedem Format vorliegen, welches
-PostgreSQL unterstützt.
+als Argument mit &uuml;bergeben werden, k&ouml;nnen in jedem Format vorliegen, welches
+PostgreSQL unterst&uuml;tzt.
 </P>
 
 <H4>Beispielausgabe von "charger.pl"</H4>
@@ -337,20 +336,20 @@ bus@goliath [108] =>./charger.pl -v'24.09.1997'
 <H4>"do_charger.sh"</H4>
 <P>
 <CODE>do_charger</CODE> ist das Programm, das bei mir jeden 1. des Monats per
-cron aufgerufen wird, um die monatliche Gebührenauswertung/Telefonrechnung
+cron aufgerufen wird, um die monatliche Geb&uuml;hrenauswertung/Telefonrechnung
 zu erstellen.  Starten Sie es bitte <B>nicht</B>, ohne entsprechende
 Anpassungen an Ihre lokale Situation vorzunehmen!
 </P>
 
 <H4>avon.pl</H4>
 <P>
-Dieses kleine Progrämmchen dient dazu, eine Telefonnummer (in internationaler
+Dieses kleine Progr&auml;mmchen dient dazu, eine Telefonnummer (in internationaler
 Schreibweise (wieder ohne Trennzeichen)) in einen formatierten String
 umzuwandeln, der die Nummer in Ortsnetz, Basisnummer + Durchwahl unterteilt und
-Ortsnetzname und Anschlußinhaber auflistet.  Dies setzt natürlich voraus, daß
-die Tabellen avon und wkn entsprechend gefüllt sind.
+Ortsnetzname und Anschlu&szlig;inhaber auflistet.  Dies setzt nat&uuml;rlich voraus, da&szlig;
+die Tabellen avon und wkn entsprechend gef&uuml;llt sind.
 </P>
-<P>Auch hier erhalten Sie eine komplette Übersicht der
+<P>Auch hier erhalten Sie eine komplette &Uuml;bersicht der
 Kommandozeilen-Parameter durch Angabe der Option <CODE>-h</CODE>.
 </P>
 <P>Nach dem Start erwartet das Programm auf STDIN eine Telefonnummer und gibt
@@ -358,21 +357,22 @@ dann auf STDOUT den aufgearbeiteten String aus.  Die Eingabe EOF (^D) beendet
 das Programm.
 </P>
 
-<H3>Spaß mit SQL</H3>
+<H3>Spa&szlig; mit SQL</H3>
 <P>
-Auch wenn man mit <CODE>charger.pl</CODE> eine mehr oder minder schön
+Auch wenn man mit <CODE>charger.pl</CODE> eine mehr oder minder sch&ouml;n
 aufgearbeitete Verbindungsliste in HTML bekommt, ist es doch zuweilen
-einfacher und schneller ein paar SQL statements direkt abzusetzen, z.B. wenn
-man mal eben so auf die Schnelle eine Übersicht der bis dato angelaufenen
+einfacher und schneller ein paar SQL-Statements direkt abzusetzen, z.B. wenn
+man mal eben so auf die Schnelle eine &Uuml;bersicht der bis dato angelaufenen
 Kosten braucht.  Hier also mal ein paar (na gut, im Moment nur ein) Beispiele
-für solche Statements:
+f&uuml;r solche Statements:
 </P>
 <DL>
-<DT>Monatsgesamtsummen (für Oktober 1997) pro Teilnehmer:
+<DT>Monatsgesamtsummen (f&uuml;r Januar 1998) pro Teilnehmer:
 <DD>SELECT int_no,sum(einheiten) AS einheiten_summe,sum(pay) AS
 gesamt_summe,count(*) AS anzahl<BR>
   FROM euracom<BR>
-  WHERE sys_date>='1.10.1997 0:0' AND sys_date<'1.11.1997 0:0' AND int_no!=0
+  WHERE sys_date BETWEEN '1998-01-01 00:00:00' AND '1998-01-31 23:59:59'<BR>
+  AND int_no!=0<BR>
   AND pay>0<BR>
   GROUP BY int_no;
 </DL>
@@ -380,8 +380,8 @@ gesamt_summe,count(*) AS anzahl<BR>
 <A NAME="bugs"></A>
 <H2>Bekannte Bugs</H2>
 <P>
-Natürlich <EM>bekannte</EM> Bugs; wenn hier <EM>unbekannte</EM> Bugs ständen,
-wären Sie wohl bald gefixt.  Nein, dann wären es keine unbekannten Bugs
+Nat&uuml;rlich <EM>bekannte</EM> Bugs; wenn hier <EM>unbekannte</EM> Bugs st&auml;nden,
+w&auml;ren Sie wohl bald gefixt.  Nein, dann w&auml;ren es keine unbekannten Bugs
 mehr...<BR>
 Wie auch immer, bevor ich mich hier verrenne: Mir liegen zur Zeit folgende
 Bugreports vor:
@@ -390,7 +390,7 @@ Bugreports vor:
 <LI>
   <DL><DT>Euracom meldet beim Hochfahren: <CODE>Euracom did not raise CTS. Check
 	  connection</CODE>
-      <DD>Dies deutet in den meisten Fällen auf einen Fehler im
+      <DD>Dies deutet in den meisten F&auml;llen auf einen Fehler im
 	  Verbindungskabel
 	  hin. <B>ABER:</B> bei gewissen V24-Karten (die <EM>Cyclades</EM> ist so
 	  ein Fall) scheint das Programm Schwierigkeiten zu haben CTS zu erkennen.
@@ -398,8 +398,8 @@ Bugreports vor:
 	  in <CODE>config.h</CODE> das Makro <CODE>DONT_CHECK_CTS</CODE>.
   </DL>
 
-<LI><DL><DT>Bei der Gebührenauswertung mittels <CODE>charger.pl</CODE>
-            verbraucht der <CODE>postgres</CODE>-Prozeß sehr viel
+<LI><DL><DT>Bei der Geb&uuml;hrenauswertung mittels <CODE>charger.pl</CODE>
+            verbraucht der <CODE>postgres</CODE>-Proze&szlig; sehr viel
             Speicherplatz.
         <DD>Compilieren Sie PostgreSQL mit der Pre-Processor Option
             <CODE>-DTBL_FREE_CMD_MEMORY</CODE>. (Ab PostgreSQL 6.3 ist dies
@@ -408,25 +408,25 @@ Bugreports vor:
 </UL>
 
 <P>
-Wenn Sie irgendwelche Bugs, Verbesserungsvorschläge, Kritik haben (oder mir
-einfach nur sagen wollen, daß Sie das Programm benutzen), zögern Sie nicht und
+Wenn Sie irgendwelche Bugs, Verbesserungsvorschl&auml;ge, Kritik haben (oder mir
+einfach nur sagen wollen, da&szlig; Sie das Programm benutzen), z&ouml;gern Sie nicht und
 schreiben mir.  Die Adresse finden Sie im Abschnitt
 <A HREF="#contact">Kontaktadresse</A>.  Falls Sie Bugs entdecken, ist es
 sinnvoll, mir ebenfalls die Logs zukommen zu lassen.  Starten Sie dazu das
 Programm mit <CODE>--debug</CODE> (und evtl. <CODE>--log-file=file</CODE> bzw.
 <CODE>--no-daemon</CODE>).  Bei coredumps bitte ich von der Zusendung des core
-files abzusehen :-), dafür könnte sich der Stack-Trace als zweckmäßiger
+files abzusehen :-), daf&uuml;r k&ouml;nnte sich der Stack-Trace als zweckm&auml;&szlig;iger
 erweisen.
 </P>
 
 <A NAME="#contact"></A>
 <H2>Kontaktadresse</H2>
 <P>
-Falls Probleme bei der Installation oder während des Betriebes auftreten,
-so werde ich gerne versuchen zu helfen.  Ebenso würde es mich natürlich
-interessieren, bei wem die Software tatsächlich im Einsatz ist.  Also,
+Falls Probleme bei der Installation oder w&auml;hrend des Betriebes auftreten,
+so werde ich gerne versuchen zu helfen.  Ebenso w&uuml;rde es mich nat&uuml;rlich
+interessieren, bei wem die Software tats&auml;chlich im Einsatz ist.  Also,
 Bugreports, Lob, Tadel, Kommentare, etc. nach <A HREF="mailto:bus@fgan.de">
-bus@fgan.de</A>.  Weitere Kontaktmöglichkeiten finden Sie
+bus@fgan.de</A>.  Weitere Kontaktm&ouml;glichkeiten finden Sie
 <A HREF="http://www.fgan.de/~bus/contact.html">hier</A>.
 </P>
 <BR>
@@ -435,7 +435,7 @@ bus@fgan.de</A>.  Weitere Kontaktmöglichkeiten finden Sie
 
 <ADDRESS> ruf098 WWW, <A HREF="http://www.fgan.de/~bus/">Michael Bussmann</A>,
 <A HREF="mailto:bus@fgan.de">&lt;bus@fgan.de&gt;</A> ,
-Last change: $Date: 1998/01/31 11:17:56 $, $Revision: 1.9 $
+Last change: $Date: 1998/02/04 09:27:07 $, $Revision: 1.10 $
 </ADDRESS>
 
 </BODY>
