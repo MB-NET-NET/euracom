@@ -1,7 +1,7 @@
 /*********************************************************************/
 /* utils.h - Generic utilities                                       */
 /*                                                                   */
-/* Copyright (C) 1996-1996 MB Computrex           Released under GPL */
+/* Copyright (C) 1996-2001 MB Computrex           Released under GPL */
 /*********************************************************************/
 
 #if !defined(__UTILS_H)
@@ -23,6 +23,7 @@ extern	BOOLEAN	copy_file(const char *, const char *);
 extern	int detach();
 extern	int stripblank();
 extern	char *strcatf(char *dst, const char *fmt, ...);
+extern	char *my_strncpy(char *dst, const char *src, size_t n);
 extern	BOOLEAN str_isdigit(char *str);
 extern	void safe_free(void *);
 extern	void *safe_malloc(size_t len);

@@ -1,15 +1,15 @@
 /*********************************************************************/
 /* utils.c - Generic utilities                                       */
 /*                                                                   */
-/* Copyright (C) 1996-1996 MB Computrex           Released under GPL */
+/* Copyright (C) 1996-2001 MB Computrex           Released under GPL */
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: utils.c,v 1.4 2000/12/17 17:15:16 bus Exp $
+ * Version:	$Id: utils.c,v 1.5 2001/06/16 17:04:51 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/utils.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: utils.c,v 1.4 2000/12/17 17:15:16 bus Exp $";
+static char rcsid[] = "$Id: utils.c,v 1.5 2001/06/16 17:04:51 bus Exp $";
 
 #include "config.h"
 
@@ -329,6 +329,22 @@ char *strcatf(char *dst, const char *fmt, ...)
   va_end(ap);
 
   return(strcat(dst, buf));
+}
+
+/*--------------------------------------------------------------------------
+ * char *my_strncpy()
+ *
+ * A version of strncpy that \0 terminates the string
+ *
+ * Inputs: Destination-string, source string, max bytes
+ * RetCode: Ptr to destination string
+ *
+ * FIXME: Inherits the mis-feature of null-padding the string (see strncpy)
+ *------------------------------------------------------------------------*/
+char *my_strncpy(char *dst, const char *src, size_t n)
+{
+  strncpy(dst, src, n); dst[n]='\0';
+  return(dst);
 }
 
 /*--------------------------------------------------------------------------
