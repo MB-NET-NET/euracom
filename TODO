@@ -1,5 +1,6 @@
-TODO:
-=====
+TODO-Liste:
+===========
+$Date: 1998/01/16 10:27:41 $ $Revision: 1.2 $
 
 +----
 | *	To be done
@@ -13,12 +14,12 @@ TODO:
 
 Euracom:
 --------
-*	Signal-hander fruehzeitig einbinden
+P	Signal-hander fruehzeitig einbinden
 *	RTS Problem
 P	Daemon mode
 P	Foreground mode
 P	SUID mode
-*	PID file
+P	PID file
 *	KIT1000 support
 *	Test Kompatibilitaet mit F/W 2.x
 
@@ -33,6 +34,7 @@ U	Div. warnings von getopt und tel-utils
 PostgreSQL:
 -----------
 D	prefix_match noch noetig? (substr geht nun)
+?	Neues Feld 'length' (Gespraechsdauer) -> Fuer KIT mode
 
 
 Dokumentation:
@@ -47,3 +49,6 @@ P	Man-page [Volker Schmidt <volker@illuminatus.mz.rhein-main.de>]
 *	Hinweis RTS/CTS Problem
 *	Directories/Permissions (/var/lock /var/run)
 *	Hinweis auf TBL_FREE_CMD (ist default bei postgres 6.3)
+
+-- 
+$Id: TODO,v 1.2 1998/01/16 10:27:41 bus Exp $
