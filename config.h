@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.7 $
- * Last modified:       $Date: 1998/02/14 08:57:18 $
+ * Version:             $Revision: 1.8 $
+ * Last modified:       $Date: 1998/03/14 12:35:04 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -67,6 +67,13 @@
 
 
 /* --------------------------------------------------------------------------
+ * Euracom settings
+ * --------------------------------------------------------------------------
+ */
+#define FIRMWARE_MAJOR	1
+
+
+/* --------------------------------------------------------------------------
  * V24/interface options
  * --------------------------------------------------------------------------
  */
@@ -100,7 +107,7 @@
 
 
 /* --------------------------------------------------------------------------
- * PostgreSQL database options
+ * Database options
  * --------------------------------------------------------------------------
  */
 
