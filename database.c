@@ -1,5 +1,5 @@
 /* Database.c - Routines for phone-number lookups
-   $Id: database.c,v 1.4 1996/11/05 18:25:01 bus Exp $
+   $Id: database.c,v 1.5 1996/11/16 10:53:34 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/Attic/database.c,v $
 */
 
@@ -130,6 +130,12 @@ void lookup_number(TelNo num, struct FQTN *fqtn)
   }
 }
 
+/*------------------------------------------------------*/
+/* void convert_telno()                                 */
+/* */
+/* Converts FQTN struct into short human readable form  */
+/* of TelNo: avon telno-ext                             */
+/*------------------------------------------------------*/
 void convert_telno(TelNo telno, struct FQTN *fqtn)
 {
   strcpy(telno, "");

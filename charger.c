@@ -1,4 +1,4 @@
-/* $Id: charger.c,v 1.3 1996/11/05 17:51:24 bus Exp $ */
+/* $Id: charger.c,v 1.4 1996/11/16 10:53:34 bus Exp $ */
 
 #include <unistd.h>
 #include <getopt.h>
@@ -24,6 +24,7 @@ struct Filter {
   enum TVerbindung art;
 };
 
+float base_charge = 18.0;
 
 /*------------------------------------------------------*/
 /* void usage()                                         */
@@ -34,6 +35,11 @@ void usage(const char *prg)
 {
   printf("Usage: %s [-g]\n", prg);
   printf("\t-g file\tGebührenfile\n");
+  printf("\t-t no\tOnly print internal # matching no\n");
+  printf("\t-v time-from\tSets start-time\n");
+  printf("\t-b time-to\tSets end-time\n");
+  printf("\t-m Charge\tSets base charge (DM)\n");
+
   exit(0);
 }
 
@@ -139,11 +145,14 @@ int print_line(const struct GebuehrInfo *geb)
 	lookup_number(geb->nummer, &fqtn);
 	convert_telno(telno, &fqtn);
 
+	/* First line */
 	sprintf(buf2, "%s & %d & %.2f DM", 
 	      telno,
 	      geb->einheiten,
 	      geb->betrag);
 	strcat(buf, buf2);
+
+	/* Need a second line? */
 	if (strlen(fqtn.avon_name) || strlen(fqtn.wkn)) {
 	  sprintf(buf2, "\\\\\n& & \\footnotesize{%s (%s)} & &",
 		  fqtn.wkn, fqtn.avon_name);
@@ -232,9 +241,9 @@ BOOLEAN eval_chargefile(const char *name, struct Filter *filter)
   printf("\\hline\n");
   printf(" &         & %d Gespräche & %d & %.2f DM \\\\\n",
 	 no_calls, total_e, total_g);
-  printf(" &         & Grundgebühr  &    & 18.00 DM \\\\\n\\hline\n");
+  printf(" &         & Grundgebühr  &    & %.2f DM \\\\\n\\hline\n", base_charge);
   printf(" & GESAMT: &              &    & %.2f DM \\\\\n",
-	 total_g+18.0);
+	 total_g+base_charge);
   printf("\\hline\n\\end{tabular}\n\\end{document}\n");
   return(TRUE);
 }
@@ -259,7 +268,7 @@ int main(argc, argv)
   init_log("charger", ERR_JUNK, USE_STDERR, NULL);
 
   /* Parse command line options */
-  while ((opt = getopt(argc, argv, "g:t:v:b:a:")) != EOF) {
+  while ((opt = getopt(argc, argv, "m:g:t:v:b:a:")) != EOF) {
     switch (opt) {
       case 'a':
 	log_msg(ERR_DEBUG, "Filter \"art\" set to %s", optarg);
@@ -272,6 +281,9 @@ int main(argc, argv)
       case 'g':
 	gebuehr_filename=strdup(optarg);
         break;
+      case 'm:
+      	base_charge=(float)atof(optarg);
+      	break;
       case 't':
 	filter.teilnehmer[filter.teilnehmer_num++]=atoi(optarg);
 	log_msg(ERR_DEBUG, "Filter \"teilnehmer\" (%d) set to %d", 
