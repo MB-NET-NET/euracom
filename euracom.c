@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.16 $
- * Last modified:       $Date: 1997/10/04 16:51:00 $
+ * Version:             $Revision: 1.17 $
+ * Last modified:       $Date: 1997/10/09 13:49:04 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.16 1997/10/04 16:51:00 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.17 1997/10/09 13:49:04 bus Exp $";
 
 #include "config.h"
 
@@ -508,7 +508,7 @@ int main(argc, argv)
   }
 
   /* Open syslog facility */
-  openlog("Euracom", 0, DEF_LOGFAC);
+  openlog("euracom", 0, DEF_LOGFAC);
 
   /* Set up signal handlers */
   signal(SIGHUP,(void *)hangup);

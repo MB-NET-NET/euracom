@@ -200,6 +200,16 @@ zu erstellen.  Starten Sie es bitte <B>nicht</B>, ohne entsprechende
 Anpassungen an Ihre lokale Situation vorzunehmen!
 </P>
 
+<H3>SQL Fun</H3>
+<P>
+Hier mal ein paar SQL Statements:
+</P>
+<DL>
+<DT>Monatsgesamtsummen (für Oktober 1997) pro Teilnehmer:
+<DD>SELECT int_no,sum(einheiten) AS einheiten_summe,sum(pay) as gesamt_summe,count(*) as anzahl FROM euracom WHERE
+sys_date>='1.10.1997' AND sys_date<'1.11.1997' AND int_no!=0 AND pay>0 GROUP BY int_no;
+</DL>
+
 <H2>Abschließend...</H2>
 <P>
 Wie gesagt, dieser Text wurde nur so auf die Schnelle geschrieben.  Evtl.
@@ -215,7 +225,7 @@ Viel Spaß!
 
 <ADDRESS> ruf098 WWW, Michael Bussmann,
 <A HREF="mailto:bus@www.fgan.de">bus@www.fgan.de</A> ,
-Last change: $Date: 1997/10/05 09:40:05 $, $Revision: 1.5 $
+Last change: $Date: 1997/10/09 13:49:03 $, $Revision: 1.6 $
 </ADDRESS>
 
 </BODY>
