@@ -7,8 +7,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-25 11:25:24 GMT
-# Version:             $Revision: 1.12 $
-# Last modified:       $Date: 1999/12/27 18:23:48 $
+# Version:             $Revision: 1.13 $
+# Last modified:       $Date: 1999/12/28 10:35:52 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
 #**************************************************************************
 
 #
-# $Id: tel-utils.pm,v 1.12 1999/12/27 18:23:48 bus Exp $
+# $Id: tel-utils.pm,v 1.13 1999/12/28 10:35:52 bus Exp $
 #
 
 use DBI;
@@ -38,31 +38,22 @@ sub SQLselect()
   my ($cmd, $callback) = @_;
   my ($res);
   my ($sth);
-  my ($num, $i, $j, $tuples);
+  my ($i);
   my (@data);
 
   debug("SQLselect: Executing $cmd using callback $callback\n");
-  prepexec("BEGIN");
-  $sth=prepexec("DECLARE cx CURSOR FOR $cmd");
+  $sth=prepexec("$cmd") || die "$cmd: $DBI::errstr";
 
-  $num=0;
-  do {
-    debug("Fetching next 50...");
-    $sth=prepexec("FETCH FORWARD 50 IN cx");
-    $tuples=$sth->{NUM_OF_FIELDS};
-    $i=0;
-    debug("Got $tuples records\n");
-    while (@data=$sth->fetchrow_array) {
-      &$callback(@data);
-      $i++;
-    }
-    $num+=$i;
-  } until ($tuples!=50);
+  $i=0;
+  while (@data=$sth->fetchrow_array) {
+    &$callback(@data);
+    $i++;
+  }
+  die $sth->errstr if $sth->err;
+  $sth->finish;
 
-  prepexec("CLOSE cx");
-  prepexec("END");
-  debug("Total $num records retrieved\n");
-  return($num);
+  debug("Total $i records retrieved\n");
+  return($i);
 }
 
 #
@@ -75,8 +66,8 @@ sub split_text()
 {
   my ($table, $input) = @_;
   my (@data, @row);
-  my ($num);
-  my ($key, $value, $residual, $resi_best);
+  my ($residual, $resi_best);
+  my ($sth);
 
 #
 # Use external prefix_match function
@@ -89,33 +80,26 @@ sub split_text()
 #  $cmd="SELECT nummer,name FROM $table WHERE nummer=substr('$input', 1, length(nummer))";
 
   $sth=prepexec($cmd) || warn "$cmd failed: $DBI::errstr";
-  $num=0;
   while (@row = $sth->fetchrow_array) {
-    $num++;
     push @data, [ (@row) ];
   }
   die $sth->errstr if $sth->err;
-
   $sth->finish;
-  return($input, 0,0 ) if (@data==0);
+
+  # Shortcuts
+  return($input, 0, 0 ) if (@data==0);
   return($data[0][0], $data[0][1], substr($input, length($data[0][0]))) if (@data==1);
 
   # Sort array by length of field 0 (nummer)
   @data = sort { length(${$a}[0]) <=> length(${$b}[0]) } @data;
 
-  # Key is number with smallest length
-  $key=$data[0][0];
-
-  # Use best-match as value
-  $value=$data[$num-1][1];
-
   # Print nice residual
-  $residual=substr($input, length($key));
-  if ($resi_best=substr($input, length($data[$num-1][0]))) {
+  $residual=substr($input, length($data[0][0]));
+  if ($resi_best=substr($input, length($data[-1][0]))) {
     $residual=substr($residual,0, length($residual)-length($resi_best))."/".$resi_best;
   }
 
-  return($key, $value, $residual);
+  return($data[0][0], $data[-1][1], $residual);
 }
 
 #
