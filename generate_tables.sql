@@ -1,3 +1,6 @@
+-- generate-tables.sql -- Create necessary tables for Euracom
+-- $Id: generate_tables.sql,v 1.2 1998/01/16 13:31:10 bus Exp $
+
 --
 -- Create table containing AVON
 --
@@ -36,9 +39,18 @@ CREATE TABLE euracom (
 				-- could be wrong due to a firmware bug (1.11)
 	sys_date datetime,	-- Date/Time when entry gets inserted by the
 				-- program.  Make sure your clock is good.
-	einheiten int2,
+	einheiten int2,		-- Number of units for this call
 	direction char,		-- 'I` for incoming, 'O' for outgoing calls
+	length int4,		-- Length of call in seconds (not supported yet)
 	factor float4,		-- Cost for 1 unit
 	pay float4,		-- Total cost (should be equal to einheiten*factor)
 	currency char(4)	-- Name of currency.  Probably 'DEM' or 'EURO'
 );
+
+--
+-- Please notice there is no need to define an index on
+-- avon or wkn, because prefix_match won't use an index
+-- 
+-- An index for vst_date or sys_date on table euracom might
+-- be useful, though
+--
