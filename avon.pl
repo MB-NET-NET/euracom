@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-08-29 09:44:19 GMT
-# Version:             $Revision: 1.8 $
-# Last modified:       $Date: 1998/01/16 13:32:06 $
+# Version:             $Revision: 1.9 $
+# Last modified:       $Date: 1998/02/16 09:51:32 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -25,10 +25,15 @@
 #**************************************************************************
 
 #
-# $Id: avon.pl,v 1.8 1998/01/16 13:32:06 bus Exp $
+# $Id: avon.pl,v 1.9 1998/02/16 09:51:32 bus Exp $
 #
 
 use Pg;
+
+# Add directory this script resides in to include path
+if ($i=rindex($0, "/")) {
+  push(@INC,substr($0,0,$i));
+}
 
 require 'getopts.pl';
 require 'tel-utils.pm';
