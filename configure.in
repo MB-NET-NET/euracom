@@ -3,10 +3,10 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@mb-net.net>
 dnl
-dnl $Id: configure.in,v 1.9 2001/12/02 14:06:49 bus Exp $
+dnl $Id: configure.in,v 1.10 2002/05/10 07:04:04 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.9 $)
+AC_REVISION($Revision: 1.10 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -255,16 +255,14 @@ fi
 AC_MSG_CHECKING(for your area prefix code)
 AC_ARG_WITH(area-code,
 [  --with-area-code=xxx		Your area code (no leading 0) (no default)],
-[  areacode=$withval ],
-[  areacode="" ]
+[  areacode=$withval
+   AC_DEFINE_UNQUOTED(AREACODE, "+${countrycode}${areacode}")
+],
+[  areacode=""
+  AC_ERROR(you must specify an areacode (e.g. 2364))
+]
 )
 AC_MSG_RESULT($areacode)
-if test "$areacode" -ge "0";
-then
-  AC_DEFINE_UNQUOTED(AREACODE, "+${countrycode}${areacode}")
-else
-  AC_ERROR(you must specify an areacode (e.g. 2364))
-fi
 
 AC_MSG_CHECKING(for name of local currency)
 AC_ARG_WITH(currency-name,

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.8 
+# From configure.in Revision: 1.9 
 # Guess values for system-dependent variables and create Makefiles.
 # Generated automatically using autoconf version 2.13 
 # Copyright (C) 1992, 93, 94, 95, 96 Free Software Foundation, Inc.
@@ -1601,25 +1601,23 @@ echo "configure:1601: checking for your area prefix code" >&5
 # Check whether --with-area-code or --without-area-code was given.
 if test "${with_area_code+set}" = set; then
   withval="$with_area_code"
-    areacode=$withval 
+    areacode=$withval
+   cat >> confdefs.h <<EOF
+#define AREACODE "+${countrycode}${areacode}"
+EOF
+
+
 else
-    areacode="" 
+    areacode=""
+  { echo "configure: error: you must specify an areacode (e.g. 2364)" 1>&2; exit 1; }
+
 
 fi
 
 echo "$ac_t""$areacode" 1>&6
-if test "$areacode" -ge "0";
-then
-  cat >> confdefs.h <<EOF
-#define AREACODE "+${countrycode}${areacode}"
-EOF
-
-else
-  { echo "configure: error: you must specify an areacode (e.g. 2364)" 1>&2; exit 1; }
-fi
 
 echo $ac_n "checking for name of local currency""... $ac_c" 1>&6
-echo "configure:1623: checking for name of local currency" >&5
+echo "configure:1621: checking for name of local currency" >&5
 # Check whether --with-currency-name or --without-currency-name was given.
 if test "${with_currency_name+set}" = set; then
   withval="$with_currency_name"
@@ -1635,7 +1633,7 @@ EOF
 
 
 echo $ac_n "checking for database name""... $ac_c" 1>&6
-echo "configure:1639: checking for database name" >&5
+echo "configure:1637: checking for database name" >&5
 # Check whether --with-database-name or --without-database-name was given.
 if test "${with_database_name+set}" = set; then
   withval="$with_database_name"
