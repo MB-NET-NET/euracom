@@ -18,7 +18,7 @@
 .\"   -h, --help                    You currently look at it
 .\" 
 .\" .TH EURACOM 8 "bus's Telephone Tools" "bus" \" -*- nroff -*-
-.TH EURACOM 8 1998-01-18 "bus's Telephone Tools" "GNU"
+.TH EURACOM 8 1998-03-14 "bus's Telephone Tools" "GNU"
 .SH NAME
 euracom \- handle incoming charging information
 .SH SYNOPSIS
@@ -44,7 +44,7 @@ Quante IS-{1,2,3}.
 takes the charge advises from the serial printer output of the
 PBX and enters them into a SQL-database.
 .PP
-At the moment only PostgreSQL databases are supported.
+At the moment PostgreSQL and miniSQL databases are supported.
 .SS OPTIONS
 .TP
 .I "\-h, \-\-help"
@@ -123,9 +123,6 @@ server.
 .SH FILES
 .I /usr/local/sbin/euracom
 .br
-or
-.br
-.I /home/euracom/bin/euracom
 .SH BUGS
 Surely plenty of 'em. This is piece of cake is in an early
 state.
@@ -134,6 +131,8 @@ Michael Bussmann <bus@fgan.de>, (source code, blurb & ideas)
 .br
 Volker Schmidt <volker@Illuminatus.MZ.Rhein-Main.DE>, (this
 man-page, more annoying idea, bug-reports, general craziness)
+.br
+Michael Tepperis <michael.tepperis@fernuni-hagen.de>, (miniSQL support)
 .SH "SEE ALSO"
 Linux Serial Port Programming mini-HOWTO
 .br
