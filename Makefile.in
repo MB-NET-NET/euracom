@@ -105,8 +105,8 @@ endif
 	$(INSTALL_BIN) -o root -m 755 -d $(bindir)
 	$(INSTALL_BIN) -o root -m 755 euracom $(bindir)
 
-	$(INSTALL_BIN) -o man -g man -m 755 -d $(mandir)/man8
-	$(INSTALL_BIN) -o man -g man -m 644 euracom.8 $(mandir)/man8
+	-$(INSTALL_BIN) -o man -g man -m 755 -d $(mandir)/man8
+	-$(INSTALL_BIN) -o man -g man -m 644 euracom.8 $(mandir)/man8
 
 database:
 ifeq ($(DATABASE), postgres)
