@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.23 $
- * Last modified:       $Date: 1998/02/04 16:16:32 $
+ * Version:             $Revision: 1.24 $
+ * Last modified:       $Date: 1998/02/14 08:48:23 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.23 1998/02/04 16:16:32 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.24 1998/02/14 08:48:23 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -152,7 +152,7 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
   strftime(date_fmt, sizeof(date_fmt), "%Y-%m-%d %H:%M:%S", gmtime(&geb->datum_sys));
   strcatf(statement, ",'%s +00')", date_fmt);
 
-  return (database_log(statement));
+  return(database_log(statement));
 }
 
 
@@ -171,82 +171,90 @@ void conv_phone(char *dst, char *src)
 }
 
 
-/*------------------------------------------------------*/
-/* struct GebuehrInfo *eura2geb()                       */
-/* */
-/* Wandelt String von Euracom in GebuehrInfo struct um  */
-/* */
-/* RetCode: Ptr to param 1, NULL: Error                 */
-/*------------------------------------------------------*/
+/*--------------------------------------------------------------------------
+ * struct GebuehrInfo *eura2geb()
+ *
+ * Converts string (from euracom) into struct GebuehrInfo
+ *
+ * Inputs: String
+ * RetCode: Ptr to struct (param 1); NULL: Error
+ *------------------------------------------------------------------------*/
 struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 {
-  char *tok, *cp;
-  char *buf=strdup(str);
+  char *buf=strdup(str);	/* Make a copy */
+  char *cp;
+  char *argv[6];		/* Arguments */
+  struct tm tm;
+  int num=0;
 
-  /* Art und Teilnehmer*/
-  unless (tok=strtok(buf, "|")) { 
-    log_msg(ERR_ERROR, "Error extracting first token");
+  /* Split string into argv array, set num */
+  if ((argv[0]=strtok(buf, "|"))) {
+    while ((argv[++num]=strtok(NULL, "|")));
+  }
+    
+  if ((num<3) || (num>5)) {
+    log_msg(ERR_ERROR, "Got %d fields in input line", num);
+    free(buf);
     return(NULL);
   }
-  unless (cp=strpbrk(tok, "GVK")) { 
-    log_msg(ERR_ERROR, "Field 1 does not contain any char of G,V,K");
-    return(NULL);
-  }
 
+  /* 0: Art und Teilnehmer*/
+  cp=argv[0]; stripblank(cp);
   switch (*cp++) {
     case 'G':
       geb->art=GEHEND;
+      if (num==4) { log_debug(1, "Call seems to be free of charge."); }
       break;
     case 'V':
     case 'K':
+      if (num!=3) { log_msg(ERR_WARNING, "Invalid # of elements (%d) in %s", num, str); }
       geb->art=KOMMEND;
       break;
     default:
-      log_msg(ERR_CRIT, "Field 1 descriptor missing. Can't happen");
+      log_msg(ERR_ERROR, "Field 1 does not contain any class descriptor");
+      free(buf);
       return(NULL);
       break;
   }
   geb->teilnehmer=atoi(cp);
 
-  /* Datum/Zeit Verbindungsaufbau */
-  if ((tok=strtok(NULL, "|"))) {
-    struct tm tm;
-
-    stripblank(tok);
-    memset(&tm, 0, sizeof(tm));
-    strptime(tok, "%d.%m.%y, %H:%M", &tm);
-    tm.tm_isdst=-1;
-    geb->datum_vst=mktime(&tm);	/* into UTC */
-  } else {
-    log_msg(ERR_ERROR, "Field 2 invalid"); 
-    return(NULL); 
+  /* 1: Datum/Zeit Verbindungsaufbau */
+  cp=argv[1]; stripblank(cp);
+  memset(&tm, 0, sizeof(tm));
+  strptime(cp, "%d.%m.%y, %H:%M", &tm);
+  tm.tm_isdst=-1;
+  geb->datum_vst=mktime(&tm);	/* into UTC */
+  if (geb->datum_vst==(time_t)-1) {
+    log_msg(ERR_WARNING, "Invalid time spec \"%s\". Using system time instead", cp);
+    geb->datum_vst=time(NULL);
   }
 
-  /* Telefonnummer */
-  unless (tok=strtok(NULL, "|")) { log_msg(ERR_ERROR, "Field 3 invalid"); return(NULL); }
-  stripblank(tok);
-  if (strcasecmp(tok, UNKNOWN_TEXT_EURA)==0) {
+  /* 2: Telephone-# */
+  cp=argv[2]; stripblank(cp);
+  if (str_isdigit(cp)) {
+    conv_phone(geb->nummer, cp);
+  } else {
     strcpy(geb->nummer, "");    /* Null string */
-  } else {
-    conv_phone(geb->nummer, tok);
   }
 
-  if (geb->art==KOMMEND) {
-    geb->einheiten=0;
-    geb->betrag=0;
+  /* 3: Einheiten */
+  if (num>3) {
+    cp=argv[3]; stripblank(cp);
+    geb->einheiten=atoi(cp);
   } else {
-    /* Einheiten */
-    unless (tok=strtok(NULL, "|")) {log_msg(ERR_ERROR, "Field 4 invalid");  return(NULL); }
-    geb->einheiten=atoi(tok);
+    geb->einheiten=0;
+  }
 
-    /* Gebuehr */
-    unless (tok=strtok(NULL, "|")) { log_msg(ERR_ERROR, "Field 5 invalid"); return(NULL); }
-    stripblank(tok);
-    { char *cp;
-      if ((cp=strchr(tok, ','))) {*cp='.';}
-      if ((cp=strchr(tok, ' '))) {*cp='\0';}
-    }
-    sscanf(tok, "%f", &geb->betrag);
+  /* 4: Gebuehr */
+  if (num>4) {
+    char *cp2;
+
+    cp=argv[4]; stripblank(cp);
+    if ((cp2=strchr(cp, ','))) {*cp2='.';}
+    if ((cp2=strchr(cp, ' '))) {*cp2='\0';}
+    geb->betrag=(float)atof(cp);
+  } else {
+    geb->betrag=0;
   }
 
   free(buf);
@@ -254,6 +262,10 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   /* Default-Infos */
   strcpy(geb->waehrung, LOCAL_CURRENCY);
   geb->betrag_base=PRICE_PER_UNIT;
+
+  if (geb->betrag!=geb->einheiten*PRICE_PER_UNIT) {
+    log_msg(ERR_WARNING, "Charge inconsistency detected: Amount=%.2f, Units=%d, Price per unit=%.3f", geb->betrag, geb->einheiten, geb->betrag_base);
+  }
 
   /* geb->datum_sys wird *nicht* gesetzt! */
   return(geb);
@@ -401,7 +413,6 @@ BOOLEAN parse_euracom_data(const char *buf)
   unless (strchr(buf, '|')) {
     /* Send informational messages directly to syslog() */
     syslog(LOG_INFO, "%s", buf);
-    return(TRUE);
   } else {
     struct GebuehrInfo gebuehr;
 
@@ -430,22 +441,16 @@ BOOLEAN parse_euracom_data(const char *buf)
 int select_loop()
 {
   fd_set rfds;
-  int max_fd=0;
   int euracom_fd = serial_query_fd(euracom_port);
   int retval;
  
-  FD_ZERO(&rfds);
-  FD_SET(euracom_fd, &rfds);
-  if (euracom_fd>max_fd) { max_fd=euracom_fd; }
-
-  max_fd++;
   do {
     struct timeval tv;
  
     FD_ZERO(&rfds);
     FD_SET(euracom_fd, &rfds);
     tv.tv_sec=10; tv.tv_usec=0;
-    retval=select(FD_SETSIZE, &rfds, NULL, NULL, &tv);
+    retval=select(euracom_fd+1, &rfds, NULL, NULL, &tv);
 
     if (retval==0) {    /* Timeout */
       database_check_state();
@@ -512,15 +517,12 @@ void usage(const char *prg)
  *          2: Error during initialization
  *          3: Fatal errors
  *------------------------------------------------------------------------*/
-int main(argc, argv)
-  int argc;
-  char **argv;
+int main(int argc, char **argv)
 {
   int opt;
-  int option_index = 0;
   BOOLEAN no_daemon = FALSE;
 
-  struct option long_options[] = {
+  static const struct option long_options[] = {
     {"db-host", 1, NULL, 'H'},
     {"db-port", 1, NULL, 'P'},
     {"db-name", 1, NULL, 'D'},
@@ -554,7 +556,7 @@ int main(argc, argv)
   }
 
   /* Parse command line options */
-  while ((opt=getopt_long_only(argc, argv, "fhH:P:D:R:S:l:p:u:d::", long_options, &option_index))!=EOF) {
+  while ((opt=getopt_long_only(argc, argv, "fhH:P:D:R:S:l:p:u:d::", long_options, NULL))!=EOF) {
     switch (opt) {
       /* Database subsystem */
       case 'H':
@@ -575,14 +577,10 @@ int main(argc, argv)
 
       /* Logging subsystem */
       case 'l':
-	logger_set_logfile(optarg);
+        logger_set_logfile(optarg);
         break;
       case 'd':
-        if (optarg) {
-          logger_set_level(atoi(optarg));
-        } else {
-          logger_set_level(5);	/* Should be enough to confuse most users */
-        }
+        logger_set_level(optarg?atoi(optarg):5);
         break;
 
       /* Serial subsystem */
@@ -600,15 +598,10 @@ int main(argc, argv)
           if (geteuid()!=0) { 
             log_msg(ERR_WARNING, "Change of UID will not work unless the program is started by root");
           } else {
-            struct passwd *pwd = NULL;
-
-	    /* If argument starts with # it's a numerical id */
-            if (optarg[0]=='#') {
-              pwd=getpwuid(atoi(&optarg[1]));
-            } else {
-              pwd=getpwnam(optarg);
-            }
-            unless (pwd) {
+            struct passwd *pwd;
+            
+            /* If argument starts with # it's a numerical id */
+            unless ((pwd=((optarg[0]=='#')?getpwuid(atoi(&optarg[1])):getpwnam(optarg)))) {
               log_msg(ERR_ERROR, "UID or username %s not found.", optarg);
               exit(1);
             }
