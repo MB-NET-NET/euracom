@@ -3,12 +3,12 @@
  *
  * euracom.c -- Main programme
  *
- * Copyright (C) 1996-1997 by Michael Bussmann
+ * Copyright (C) 1996-1998 by Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.18 $
- * Last modified:       $Date: 1998/01/08 12:32:17 $
+ * Version:             $Revision: 1.19 $
+ * Last modified:       $Date: 1998/01/17 13:31:03 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,9 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.18 1998/01/08 12:32:17 bus Exp $";
-
-#include "config.h"
+static char rcsid[] = "$Id: euracom.c,v 1.19 1998/01/17 13:31:03 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -38,11 +36,12 @@ static char rcsid[] = "$Id: euracom.c,v 1.18 1998/01/08 12:32:17 bus Exp $";
 #include <string.h>
 #include <syslog.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <pwd.h>
 
 #include "log.h"
 #include "utils.h"
 #include "fileio.h"
+#include "privilege.h"
 
 #include "euracom.h"
 
@@ -53,7 +52,7 @@ typedef char TelNo[33];
 struct GebuehrInfo {
   int    teilnehmer;    /* Interner Teilnehmer */
   TelNo  nummer;        /* Remote # */
-  time_t datum_vst;     /* Datum/Zeit Verbindungsaufbau (von VSt) */
+  time_t datum_vst;     /* Datum/Zeit Verbindungsaufbau (von OVSt bzw. Euracom) */
   time_t datum_sys;     /* Datum/Zeit Eintrag (approx. Verbindungsende) */
   int    einheiten;     /* Anzahl verbrauchter Einheiten */
   enum TVerbindung art;
@@ -61,6 +60,9 @@ struct GebuehrInfo {
   float  betrag;        /* Gesamtbetrag */
   char   waehrung[4];   /* Währungsbezeichnung */
 };
+
+static char pid_file[] = PIDFILE;
+static struct SerialFile *euracom_port;
 
 /*------------------------------------------------------*/
 /* BOOLEAN gebuehr_sys_log()                            */
@@ -271,6 +273,66 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   return(geb);
 }
 
+/*--------------------------------------------------------------------------
+ * BOOLEAN daemon_remove_pid_file()
+ *
+ * Removes PID file
+ *
+ * Inputs: -
+ * RetCode: TRUE: O.k; FALSE: Error
+ *------------------------------------------------------------------------*/
+BOOLEAN daemon_remove_pid_file()
+{
+  log_debug(1, "Removing PID file %s", pid_file);
+  return(delete_file(pid_file));
+}
+
+/*--------------------------------------------------------------------------
+ * BOOLEAN daemon_create_pid_file()
+ *
+ * Creates PID file
+ *
+ * Inputs: -
+ * RetCode: TRUE: O.k; FALSE: Error
+ *------------------------------------------------------------------------*/
+BOOLEAN daemon_create_pid_file()
+{
+  BOOLEAN may_create = TRUE;
+  FILE *fp;
+
+  log_debug(1, "Checking PID file status (%s)", pid_file);
+
+  /* Is there already a PID file? */
+  if ((fp=fopen(pid_file, "r"))) {
+    pid_t pid;
+
+    fscanf(fp, "%d", &pid);
+    if (kill(pid, 0)) {
+      log_msg(ERR_WARNING, "Stale PID file found in %s (pid %d)", pid_file, pid);
+    } else {
+      log_msg(ERR_CRIT, "Another Euracom process seems to be active (pid %d)", pid);
+      may_create=FALSE;
+    }	/* IF kill */
+    fclose(fp);
+  }
+
+  if (may_create) {
+    FILE *fp;
+
+    /* Create PID file */
+    if ((fp=fopen(pid_file, "w"))) {
+      pid_t pid = getpid();
+
+      log_debug(1, "Creating PID file %s (%d)", pid_file, pid);
+      fprintf(fp, "%d\n", pid);
+      fclose(fp);
+      return(TRUE);
+    } else {
+      log_msg(ERR_CRIT, "Cannot create %s: %s", pid_file, strerror(errno));
+    }
+  }
+  return(FALSE);
+}
 
 /*------------------------------------------------------*/
 /* int shutdown_program()                               */
@@ -281,10 +343,21 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 /*------------------------------------------------------*/
 int shutdown_program(int force)
 {
-  serial_shutdown();
-  database_shutdown();
-  close_log();
-  exit(force);
+  if (privilege_active()) {
+    privilege_enter_priv();
+  }
+  serial_close_device(euracom_port);	/* Close port */
+  serial_deallocate_file(euracom_port);	/* Free structure */
+
+  database_shutdown();			/* Disconnect gracefully */
+  daemon_remove_pid_file();		/* Remove PID file */
+
+  logger_shutdown();			/* Close log file/syslog */
+
+  if (privilege_active()) {
+    privilege_drop_priv();
+  }
+  exit(force);				/* Have a nice day */
 }
 
 /*------------------------------------------------------*/
@@ -296,7 +369,8 @@ int shutdown_program(int force)
 /*------------------------------------------------------*/
 int hangup(int sig)
 {
-  signal(sig, (void *)hangup);
+  signal(sig, (void *)hangup);	/* Restart signal handler */
+  log_msg(ERR_INFO, "Signal %d received. Ignoring", sig);
   return(0);
 }
 
@@ -310,8 +384,8 @@ int hangup(int sig)
 int fatal(int sig)
 {
   log_msg(ERR_FATAL, "Signal %d received. Giving up", sig);
-  shutdown_program(1);
-  return(0);
+  shutdown_program(3);
+  return(0);    /* Make compiler happy */
 }
 
 /*------------------------------------------------------*/
@@ -323,31 +397,10 @@ int fatal(int sig)
 /*------------------------------------------------------*/
 int terminate(int sig)
 {
-  log_msg(ERR_INFO, "Signal %d received. Program terminating", sig);
+  log_msg(ERR_NOTICE, "Signal %d received. Program terminating", sig);
   shutdown_program(0);
   return(0);
 }
-
-/*------------------------------------------------------*/
-/* void usage()                                         */
-/* */
-/* Infos zur Programmbedienung                          */
-/*------------------------------------------------------*/
-void usage(const char *prg)
-{
-  printf("Usage: %s [options] device\n", prg);
-  printf("\t-H, --db-host = host           \tSets database host\n" \
-         "\t-P, --db-port = port           \tSets database port number\n" \
-         "\t-N, --db-name = name           \tDatabase to connect\n" \
-         "\t-R, --db-recovery-timeout = sec\tTime to stay in recovery mode\n" \
-         "\t-S, --db-shutdown-timeout = sec\tDisconnect after sec idle seconds\n" \
-         "\t-p, --protocol-file = file     \tEnable logging all rs232 messages\n" \
-         "\t-v, --verbose [= level]        \tSets verbosity level\n" \
-         "\t-h, --help                     \tYou currently look at it\n");
-
-  exit(0);
-}
-
 
 /*------------------------------------------------------*/
 /* int parse_euracom_data()                             */
@@ -392,13 +445,11 @@ int select_loop()
 {
   fd_set rfds;
   int max_fd=0;
-  int euracom_fd = serial_query_fd();
+  int euracom_fd = serial_query_fd(euracom_port);
   int retval;
  
   FD_ZERO(&rfds);
   FD_SET(euracom_fd, &rfds);
-
-  assert(euracom_fd!=0);
   if (euracom_fd>max_fd) { max_fd=euracom_fd; }
 
   max_fd++;
@@ -417,7 +468,7 @@ int select_loop()
         char *buf;
 
         /* Data from Euracom Port */
-        unless (buf=readln_rs232(euracom_fd)) {
+        unless (buf=readln_rs232(euracom_port)) {
           log_msg(ERR_ERROR, "Euracom read failed. Ignoring line");
         } else {
           parse_euracom_data(buf);
@@ -431,30 +482,91 @@ int select_loop()
   log_msg(ERR_ERROR, "Select failed: %s", strerror(errno));
   return(0);
 }
-        
 
+/*--------------------------------------------------------------------------
+ * void usage()
+ *
+ * Prints some more or less useful information on how to start the programme
+ *
+ * Inputs: Name of executable
+ *------------------------------------------------------------------------*/
+void usage(const char *prg)
+{
+  printf("Usage: %s [options] device\n", prg);
+  printf("\n  Database subsystem option:\n"\
+         "  -H, --db-host=host           \tSets database host\n" \
+         "  -D, --db-name=name           \tDatabase name to connect to\n" \
+         "  -P, --db-port=port           \tSets database port number\n" \
+         "  -R, --db-recovery-timeout=sec\tTime to stay in recovery mode\n" \
+         "  -S, --db-shutdown-timeout=sec\tDisconnect after sec idle seconds\n" \
+         "\n  Logging options:\n" \
+         "  -l, --log-file=file          \tFile where to write log and debug messages into\n" \
+         "  -p, --protocol-file=file     \tEnable logging all RS232 messages\n" \
+         "  -d, --debug[=level]          \tSets debugging level\n" \
+         "\n  Runtime options:\n" \
+         "  -f, --no-daemon              \tDon't detach from tty and run in background\n" \
+         "  -u, --run-as-user=#uid | name\tRun as user uid (or username, resp.)\n" \
+         "\n  Misc:\n" \
+         "  -h, --help                   \tYou currently look at it\n");
+
+  exit(0);
+}
+
+
+/*--------------------------------------------------------------------------
+ * int main()
+ *
+ * Main programme
+ *
+ * Inputs: argv, argc
+ * RetCode: 0: Successful termination;
+ *          1: Error in command line arguments
+ *          2: Error during initialization
+ *          3: Fatal errors
+ *------------------------------------------------------------------------*/
 int main(argc, argv)
   int argc;
   char **argv;
 {
   int opt;
   int option_index = 0;
+  BOOLEAN no_daemon = FALSE;
+
   struct option long_options[] = {
     {"db-host", 1, NULL, 'H'},
     {"db-port", 1, NULL, 'P'},
-    {"db-name", 1, NULL, 'N'},
+    {"db-name", 1, NULL, 'D'},
     {"db-recovery-timeout", 1, NULL, 'R'},
     {"db-shutdown-timeout", 1, NULL, 'S'},
+
+    {"log-file", 1, NULL, 'l'},
     {"protocol-file", 1, NULL, 'p'},
-    {"verbose", 2, NULL, 'v'},
+    {"debug", 2, NULL, 'd'},
+
+    {"foreground", 0, NULL, 'f'},
+    {"no-daemon", 0, NULL, 'f'},
+    {"help", 0, NULL, 'h'},
+    {"run-as-user", 1, NULL, 'u'},
+
+
     {NULL, 0, NULL, 0}
   };
 
-  /* Logging */
-  init_log("Euracom", ERR_JUNK, USE_STDERR | TIMESTAMP, NULL);
+  /* First time logging */
+  logger_set_options(USE_STDERR | TIMESTAMP);
+  logger_set_prefix("euracom");
+  logger_set_level(0);	/* Debug level */
+  logger_set_logfile(NULL);
+  logger_initialize();
+
+  /* Sanity check */
+  unless ((euracom_port=serial_allocate_file())) {
+    log_msg(ERR_FATAL, "Could not allocate serial file.  Almost impossible!");
+    exit(3);
+  }
 
   /* Parse command line options */
-  while ((opt = getopt_long_only(argc, argv, "hH:P:N:R:S:p:v::", long_options, &option_index)) != EOF) {
+  while ((opt=getopt_long_only(argc, argv, "fhH:P:D:R:S:l:p:u:d::", long_options, &option_index))!=EOF) {
     switch (opt) {
       /* Database subsystem */
       case 'H':
@@ -463,7 +575,7 @@ int main(argc, argv)
       case 'P':
         database_set_port(optarg);
         break;
-      case 'N':
+      case 'D':
         database_set_db(optarg);
         break;
       case 'R':
@@ -473,14 +585,54 @@ int main(argc, argv)
         database_set_shutdown_timeout(atoi(optarg));
         break;
 
-      /* Standard main options */
-      case 'v':
+      /* Logging subsystem */
+      case 'l':
+	logger_set_logfile(optarg);
         break;
+      case 'd':
+        if (optarg) {
+          logger_set_level(atoi(optarg));
+        } else {
+          logger_set_level(5);	/* Should be enough to confuse most users */
+        }
+        break;
+
+      /* Serial subsystem */
       case 'p':
-        serial_set_protocol_name(optarg);
+        serial_set_protocol_name(euracom_port, optarg);
+        break;
+
+      /* Main programme */
+      case 'f':
+        log_debug(2, "Program will not detach itself.");
+        no_daemon=TRUE;
+        break;
+      case 'u':
+        {
+          if (geteuid()!=0) { 
+            log_msg(ERR_WARNING, "Change of UID will not work unless the program is started by root");
+          } else {
+            struct passwd *pwd = NULL;
+
+	    /* If argument starts with # it's a numerical id */
+            if (optarg[0]=='#') {
+              pwd=getpwuid(atoi(&optarg[1]));
+            } else {
+              pwd=getpwnam(optarg);
+            }
+            unless (pwd) {
+              log_msg(ERR_ERROR, "UID or username %s not found.", optarg);
+              exit(1);
+            }
+            privilege_set_alternate_uid(pwd->pw_uid);
+            privilege_set_alternate_gid(pwd->pw_gid);
+            privilege_initialize();
+          }
+        }
         break;
 
       /* Fallback */
+      case 'h':
       default:
         usage(argv[0]);
         exit(0);
@@ -490,28 +642,15 @@ int main(argc, argv)
 
   /* Check command line arguments */
   if (optind==argc-1) {
-    serial_set_device(argv[optind]);
+    serial_set_device(euracom_port, argv[optind]);
   } else {
+    log_msg(ERR_ERROR, "You must specify a device where to read from");
     usage(argv[0]);
     exit(1);
   }
-
-  /* Now that variables should be set, initialize every subsystem */
-  unless(serial_initialize()) {
-    log_msg(ERR_FATAL, "Error initializing serial interface");
-    exit(1);
-  }
-
-  unless (database_initialize()) {
-    log_msg(ERR_FATAL, "Error initializing database subsystem");
-    exit(1);
-  }
-
-  /* Open syslog facility */
-  openlog("euracom", 0, DEF_LOGFAC);
-
+  
   /* Set up signal handlers */
-  signal(SIGHUP,(void *)hangup);
+  signal(SIGHUP, SIG_IGN);
   signal(SIGINT, (void *)terminate);
   signal(SIGQUIT, (void *)terminate);
   signal(SIGILL, (void *)fatal);
@@ -528,11 +667,51 @@ int main(argc, argv)
   signal(SIGSTKFLT, (void *)fatal);
   signal(SIGCHLD, SIG_IGN);
 
+  /* Don't use exit() from here on.  shutdown_program() will do */
+  unless (no_daemon) {
+    logger_set_options(TIMESTAMP | USE_SYSLOG);
+    unless (detach()) {
+      shutdown_program(2);
+    }
+  }
+
+  /* Re-initialze logger to open logfile */
+  logger_initialize();
+
+  /* Write pid file. */
+  unless (daemon_create_pid_file()) {
+    log_msg(ERR_FATAL, "Error writing PID file");
+    shutdown_program(2);
+  }
+
+  /* Open euracom port */
+  unless (serial_open_device(euracom_port)) {
+    log_msg(ERR_FATAL, "Error initializing serial interface");
+    shutdown_program(2);
+  }
+ 
+  /* Since all required files are open (or created), we can safely drop privileges */ 
+  if (privilege_active()) {
+    unless (privilege_leave_priv()) {
+      log_msg(ERR_FATAL, "Could not leave privileged section");
+      shutdown_program(2);
+    }
+  }
+
+  unless (database_initialize()) {
+    log_msg(ERR_FATAL, "Error initializing database subsystem");
+    shutdown_program(2);
+  }
+
+  /* Open syslog facility */
+  closelog();	/* Clear logger syslog settings */
+  openlog("euracom", 0, DEF_LOGFAC);
+
   /* Read data */
+  log_msg(ERR_INFO, "Euracom %s listening on %s", VERSION, euracom_port->fd_device);
   select_loop();
 
   /* Shutdown gracefully */
   shutdown_program(0);
   return(0);
 }
-
