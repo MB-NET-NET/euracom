@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.22 $
- * Last modified:       $Date: 1998/02/04 09:25:52 $
+ * Version:             $Revision: 1.23 $
+ * Last modified:       $Date: 1998/02/04 16:16:32 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.22 1998/02/04 09:25:52 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.23 1998/02/04 16:16:32 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -126,7 +126,6 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
 {
   char statement[4096]; /* SQL Statement */
   char date_fmt[21];	/* yyyy-mm-dd hh:mm:ss */
-  struct tm *tm;
 
   sprintf(statement, "INSERT INTO euracom (int_no, remote_no, einheiten, direction, factor, pay, currency, vst_date, sys_date) values ('%d','%s',",
     geb->teilnehmer, 
@@ -147,12 +146,10 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
   } 
 
   /* Convert time/date specs into ISO 8601 strings */
-  tm=gmtime(&geb->datum_vst);
-  strftime(date_fmt, 20, "%Y-%m-%d %H:%M:%S", tm);
+  strftime(date_fmt, sizeof(date_fmt), "%Y-%m-%d %H:%M:%S", gmtime(&geb->datum_vst));
   strcatf(statement, ",'%s +00'", date_fmt);
 
-  tm=gmtime(&geb->datum_sys);
-  strftime(date_fmt, 20, "%Y-%m-%d %H:%M:%S", tm);
+  strftime(date_fmt, sizeof(date_fmt), "%Y-%m-%d %H:%M:%S", gmtime(&geb->datum_sys));
   strcatf(statement, ",'%s +00')", date_fmt);
 
   return (database_log(statement));
