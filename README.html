@@ -2,25 +2,25 @@
 
 <HTML>
 <HEAD>
-<TITLE>Geb&uuml;hrenauswertung f&uuml;r Euracom</TITLE>
+<TITLE>Geb&uuml;hrenerfassung und -auswerung f&uuml;r Euracom PABX</TITLE>
 </HEAD>
 <BODY>
 
-<H1>Geb&uuml;hrenauswertung f&uuml;r Euracom 18x mittels PostgreSQL</H1>
+<H1>Geb&uuml;hrenerfassung f&uuml;r Euracom 18x mittels SQL Datenbank</H1>
 
 <H2>Einf&uuml;hrung</H2>
 <P>
 Das Programm liest die von der Tk-Anlage &uuml;ber die V24-Schnittstelle
 ausgegebenen Geb&uuml;hrendaten und schreibt die aufgearbeiteten Daten in eine
-PostgreSQL Datenbank.  Ebenso wird f&uuml;r jeden Datensatz auch eine Meldung via
-syslog() ausgegeben. Die Verbindung zur Datenbank, die sich auch auf einem
-anderen Rechner im Netz befinden kann, wird automatisch bei Bedarf aufgebaut
-und, falls eine gewisse Zeit keine Eintr&auml;ge mehr eingef&uuml;gt wurden, auch wieder
-abgebaut.  Sollte die Datenbank genau zu dem Zeitpunkt wenn Daten eingef&uuml;gt
-werden m&uuml;ssen, nicht erreichbar sein, schreibt das Programm die Daten in eine
-Datei.  In regelm&auml;&szlig;igen Abst&auml;nden wird versucht, die Verbindung zum DBMS
-herzustellen.  Sobald dies gelungen ist, werden die fehlenden Datens&auml;tze in
-die Tabelle geschrieben.
+PostgreSQL- oder miniSQL Datenbank.  Ebenso wird f&uuml;r jeden Datensatz auch
+eine Meldung via syslog() ausgegeben. Die Verbindung zur Datenbank, die sich auch
+auf einem anderen Rechner im Netz befinden kann, wird automatisch bei Bedarf
+aufgebaut und, falls eine gewisse Zeit keine Eintr&auml;ge mehr eingef&uuml;gt
+wurden, auch wieder abgebaut.  Sollte die Datenbank genau zu dem Zeitpunkt wenn
+Daten eingef&uuml;gt werden m&uuml;ssen, nicht erreichbar sein, schreibt das
+Programm die Daten in eine Datei.  In regelm&auml;&szlig;igen Abst&auml;nden
+wird versucht, die Verbindung zum DBMS herzustellen.  Sobald dies gelungen
+ist, werden die fehlenden Datens&auml;tze in die Tabelle geschrieben.
 </P>
 
 <H2>Systemvoraussetzungen</H2>
@@ -55,12 +55,22 @@ Zus&auml;tzlich zu diesem Programm ben&ouml;tigen Sie noch folgende Software (al
 Produkte sind frei im Netz verf&uuml;gbar):
 </P>
 <UL>
-  <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder h&ouml;her, es wird
+  <LI>Geb&uuml;hrenerfassung mittels PostgreSQL:
+    <UL>
+    <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder h&ouml;her, es wird
        wohl auch mit &auml;lteren Versionen funktionieren)  Beachten Sie bitte
        ebenfalls den Punkt <A HREF="#bugs">Bugs</A>.
-  <LI> <A HREF="http://www.perl.org/">Perl</A> (5.003 oder h&ouml;her)
-  <LI> <A HREF="mailto:e.mergl@bawue.de">Edmund Mergl's</A> <EM>pgsql_perl5</EM> (1.6)
+    <LI> <A HREF="mailto:e.mergl@bawue.de">Edmund Mergl's</A> <EM>pgsql_perl5</EM> (1.6)
        -- ist in den aktuellen PostgreSQL Distributionen enthalten.
+    </UL>
+  <LI>Geb&uuml;hrenerfassung mittels miniSQL:
+    <UL>
+    <LI> miniSQL (URL??)
+    </UL>
+  <LI>Geb&uuml;hrenauswertung (zur Zeit nur mit PostgreSQL):
+    <UL>
+    <LI> <A HREF="http://www.perl.org/">Perl</A> (5.003 oder h&ouml;her)
+    </UL>
 </UL>
 
 <H2>Konfiguration und Installation</H2>
@@ -74,10 +84,12 @@ Korrektheit in &uuml;berpr&uuml;fen.
 </P>
 <P>
 Ist das erledigt, k&ouml;nnen Sie sich <CODE>Makefile</CODE> vornehmen.  Als
-wichtigen Punkt hier w&auml;re <CODE>PGBASE</CODE> zu nennen.  <CODE>PGBASE</CODE>
-mu&szlig; auf das Basis-Directory ihrer PostgreSQL-Installation zeigen.  Die anderen
-Punkte k&ouml;nnen nach eigenem Ermessen bei Bedarf ge&auml;ndert werden, ich denke
-jedoch, da&szlig; die Default-Werte ganz brauchbar sind.
+wichtiger Punkt hier w&auml;re <CODE>DATABASE</CODE> zu nennen.  Dies kann entweder
+<CODE>postgres</CODE> oder <CODE>msql</CODE> sein.  Ferner sollten Sie die
+Werte f&uuml; <CODE>DATABASE_BASE, DATABASE_LINK, DATABASE_INCLUDE, DATABASE_LIB und
+DATABASE_OBJ</CODE> &uuml;berpr&uuml;fen und ggf. an ihre Situation anpassen.
+Die anderen Punkte k&ouml;nnen nach eigenem Ermessen bei Bedarf ge&auml;ndert
+werden, ich denke jedoch, da&szlig; die Default-Werte ganz brauchbar sind.
 </P>
 <P>
 Danach sollte ein <CODE>make</CODE> alle ben&ouml;tigten Programme erzeugen.  Auf
@@ -95,6 +107,8 @@ Meldete <CODE>make</CODE> keine Probleme bei der Kompilation, so k&ouml;nnen wir
 nun den n&auml;chsten Punkt angehen, der Erstellung der Datenbank, in der das
 Programm die Geb&uuml;hreninformationen schreiben wird.
 </P>
+
+<H4>PostgreSQL version</H4>
 <P>
 Zuerst ist mittels <CODE>createdb isdn</CODE> eine neue Datenbank Namens
 <I>isdn</I> anzulegen.  Theoretisch ist nat&uuml;rlich auch ein anderer Name
@@ -115,6 +129,11 @@ nicht identisch mit dem DBA ist).  Evtl. mu&szlig; dieser Benutzer vorher mit
 <PRE>
 GRANT INSERT ON euracom TO Benutzer;
 </PRE>
+
+<H4>miniSQL version</H4>
+<P>
+???
+</P>
 
 <H3>Installation</H3>
 <P>
@@ -229,7 +248,7 @@ esac
 exit 0
 </PRE>
 
-<H2>Geb&uuml;hrenauswertung</H2>
+<H2>Geb&uuml;hrenauswertung (z.Zt. nur f&uuml;r PostgreSQL)</H2>
 <P>
 Im Prinzip k&ouml;nnen wir jetzt aufh&ouml;ren.  Etwas Optimismus vorausgesetzt, l&auml;uft
 bei Ihnen jetzt ein Programm, da&szlig; die Verbindungsdaten aller ein- und
@@ -435,7 +454,7 @@ bus@fgan.de</A>.  Weitere Kontaktm&ouml;glichkeiten finden Sie
 
 <ADDRESS> ruf098 WWW, <A HREF="http://www.fgan.de/~bus/">Michael Bussmann</A>,
 <A HREF="mailto:bus@fgan.de">&lt;bus@fgan.de&gt;</A> ,
-Last change: $Date: 1998/02/04 09:27:07 $, $Revision: 1.10 $
+Last change: $Date: 1998/03/14 12:57:57 $, $Revision: 1.11 $
 </ADDRESS>
 
 </BODY>
