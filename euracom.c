@@ -3,12 +3,12 @@
  *
  * euracom.c -- Main programme
  *
- * Copyright (C) 1996-1998 by Michael Bussmann
+ * Copyright (C) 1996-2001 Michael Bussmann
  *
- * Authors:             Michael Bussmann <bus@fgan.de>
+ * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.40 $
- * Last modified:       $Date: 2000/12/17 17:14:23 $
+ * Version:             $Revision: 1.41 $
+ * Last modified:       $Date: 2001/06/16 17:06:23 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.40 2000/12/17 17:14:23 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.41 2001/06/16 17:06:23 bus Exp $";
 
 #include "config.h"
 
@@ -122,8 +122,107 @@ void conv_phone(char *dst, const char *src)
 struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 {
   #define MAX_ARGS 7
-
   char *buf=strdup(str);	/* Make a copy */
+
+#if ALEX_FLAG
+  if (strlen(buf)<83) {
+    printf("Input string too short\n");
+    free(buf);
+    return(NULL);
+  }
+
+  /* Clear unused elements */
+  geb->einheiten=0;
+
+  /* Datum/Zeit Verbindungsaufbau */
+  {
+    char work[12];
+    struct tm tm;
+    time_t now = time(NULL);
+
+    memcpy(&tm, localtime(&now), sizeof(struct tm));
+    my_strncpy(work, &buf[6], 11);
+    strptime(work, "%d-%m %HH%M", &tm);
+    tm.tm_sec=0;
+    if ((geb->datum_vst=mktime(&tm))==(time_t)-1) {
+      geb->datum_vst=now;
+    }
+  }
+
+  /* Remote */
+  my_strncpy(geb->nummer, &buf[36], 22); stripblank(geb->nummer);
+  if (str_isdigit(argv[cnt])) {
+    conv_phone(geb->nummer, argv[cnt]);
+  } else {
+    strcpy(geb->nummer, "");    /* Null string */
+  }
+
+  /* Length */
+  {
+    int m;
+    char work[3];
+
+    my_strncpy(work, &buf[58], 2);
+    m=atoi(work);
+    my_strncpy(work, &buf[61], 2);
+    geb->length=60*m+atoi(work);
+  }
+
+  /* Verbindungsart, Betrag, Nummer */
+  {
+    char work[9];
+    char *cp;
+
+    my_strncpy(work, &buf[30], 2);
+    switch (atoi(work)) {
+      case 0:
+        geb->art=GEHEND;
+
+        /* Betrag */
+        my_strncpy(work, &buf[68], 8); stripblank(work);
+        cp=strchr(work, ','); if (cp) { *cp='.'; }
+        geb->betrag=(float)atof(work);
+
+        /* Interne Nummer */
+        my_strncpy(work, &buf[21], 2);
+        geb->teilnehmer=atoi(work);
+
+        break;
+
+      case 1:
+        geb->art=KOMMEND;
+
+        /* Betrag */
+        geb->betrag=0;
+
+        /* Interne Nummer */
+        my_strncpy(work, &buf[79], 2);
+        geb->teilnehmer=atoi(work);
+
+        break;
+
+      case 2:
+        geb->art=GEHEND;
+
+        /* Betrag */
+        geb->betrag=0;
+
+        /* Interne Nummer */
+        my_strncpy(work, &buf[21], 2);
+        geb->teilnehmer=atoi(work);
+
+        break;
+
+        default:
+        log_msg(ERR_ERROR, "Invalid TOS [0,1,2]");
+        free(buf);
+        return(NULL);
+        break;
+    }
+  }
+
+#else
+
   char *argv[MAX_ARGS];		/* Arguments */
   int num, cnt;
 #if defined(KIT_DUMP_MODE)
@@ -225,6 +324,8 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
     if ((cp=strchr(argv[cnt], ' '))) { *cp='\0';}
     geb->betrag=(float)atof(argv[cnt]);
   }
+
+#endif
 
   safe_free(buf);
   return(geb);

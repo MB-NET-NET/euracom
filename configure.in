@@ -1,12 +1,12 @@
 dnl
 dnl Configuration input file for euracom
 dnl
-dnl Michael Bussmann <bus@fgan.de>
+dnl Michael Bussmann <bus@mb-net.net>
 dnl
-dnl $Id: configure.in,v 1.7 1999/06/03 12:30:41 bus Exp $
+dnl $Id: configure.in,v 1.8 2001/06/16 17:06:23 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.7 $)
+AC_REVISION($Revision: 1.8 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -154,6 +154,16 @@ AC_ARG_ENABLE(cts-check,
 [ myres=yes ])
 if test "$myres" = "no"; then
   AC_DEFINE(DONT_CHECK_CTS)
+fi
+AC_MSG_RESULT($myres)
+
+AC_MSG_CHECKING(for special alex flag)
+AC_ARG_WITH(alex,
+[  --with-alex                   testflag],
+[ myres=$withval ],
+[ myres=no ])
+if test "$myres" = "yes"; then
+        AC_DEFINE(ALEX_FLAG)
 fi
 AC_MSG_RESULT($myres)
 

@@ -3,12 +3,12 @@
  *
  * serial.c -- Low/Midlevel RS232 routines
  *
- * Copyright (C) 1996-1998 by Michael Bussmann
+ * Copyright (C) 1996-2001 Michael Bussmann
  *
- * Authors:             Michael Bussmann <bus@fgan.de>
+ * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.24 $
- * Last modified:       $Date: 1999/05/28 08:29:50 $
+ * Version:             $Revision: 1.25 $
+ * Last modified:       $Date: 2001/06/16 17:06:23 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.24 1999/05/28 08:29:50 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.25 2001/06/16 17:06:23 bus Exp $";
 
 #include "config.h"
 
@@ -364,12 +364,17 @@ char *readln_rs232(struct SerialFile *sf)
       read(sf->fd, &inbuf[0], 1);
       *cp=inbuf[0];
       debug(6, "readln_rs232: Read char %d", *cp);
+#if ALEX_FLAG
+      if (*(cp-1)==0x0d) {
+        *(cp-1)='\0';
+#else
 #if (FIRMWARE_MAJOR<2)
       if (*cp=='\0') {	/* 1.x: blah (0A) 0D 00 */
         *(cp-2)='\0';
 #else
       if (*cp==0x0d) {	/* 2.x: blah 0A 0D */
         *(cp-1)='\0';
+#endif
 #endif
         break;
       } else {
