@@ -12,7 +12,7 @@
 <P>
 Das Programm liest die von der Tk-Anlage &uuml;ber die V24-Schnittstelle
 ausgegebenen Geb&uuml;hrendaten und schreibt die aufgearbeiteten Daten in eine
-PostgreSQL- oder miniSQL Datenbank.  Ebenso wird f&uuml;r jeden Datensatz auch
+SQL-Datenbank.  Ebenso wird f&uuml;r jeden Datensatz auch
 eine Meldung via syslog() ausgegeben. Die Verbindung zur Datenbank, die sich auch
 auf einem anderen Rechner im Netz befinden kann, wird automatisch bei Bedarf
 aufgebaut und, falls eine gewisse Zeit keine Eintr&auml;ge mehr eingef&uuml;gt
@@ -21,6 +21,10 @@ Daten eingef&uuml;gt werden m&uuml;ssen, nicht erreichbar sein, schreibt das
 Programm die Daten in eine Datei.  In regelm&auml;&szlig;igen Abst&auml;nden
 wird versucht, die Verbindung zum DBMS herzustellen.  Sobald dies gelungen
 ist, werden die fehlenden Datens&auml;tze in die Tabelle geschrieben.
+</P>
+
+<P>
+Zur Zeit unterst&uuml;tzte DMBS sind: PostgreSQL, mSQL und MySQL
 </P>
 
 <H2>Systemvoraussetzungen</H2>
@@ -51,15 +55,15 @@ ist -- umso besser.  (Beachten Sie dazu bitte den Punkt
 
 <H3>Software</H3>
 <P>
-Zus&auml;tzlich zu diesem Programm ben&ouml;tigen Sie noch folgende Software (alle
-Produkte sind frei im Netz verf&uuml;gbar):
+Zus&auml;tzlich zu diesem Programm ben&ouml;tigen Sie noch folgende Software:
 </P>
 <UL>
-  <LI>Geb&uuml;hrenerfassung mittels PostgreSQL:
+  <LI>Geb&uuml;hrenerfassung/Auswertung mittels PostgreSQL:
     <UL>
     <LI> <A HREF="http://www.postgreSQL.org/">PostgreSQL</A> (6.1 oder h&ouml;her, es wird
        wohl auch mit &auml;lteren Versionen funktionieren)  Beachten Sie bitte
        ebenfalls den Punkt <A HREF="#bugs">Bugs</A>.
+    <LI> <A HREF="http://www.perl.org/">Perl</A> (5.003 oder h&ouml;her)
     <LI> <A HREF="mailto:e.mergl@bawue.de">Edmund Mergl's</A> <EM>pgsql_perl5</EM> (1.6)
        -- ist in den aktuellen PostgreSQL Distributionen enthalten.
     </UL>
@@ -67,9 +71,9 @@ Produkte sind frei im Netz verf&uuml;gbar):
     <UL>
     <LI> miniSQL (URL??)
     </UL>
-  <LI>Geb&uuml;hrenauswertung (zur Zeit nur mit PostgreSQL):
+  <LI>Geb&uuml;hrenerfassung mittels MySQL:
     <UL>
-    <LI> <A HREF="http://www.perl.org/">Perl</A> (5.003 oder h&ouml;her)
+    <LI> MySQL (URL??)
     </UL>
 </UL>
 
@@ -454,7 +458,7 @@ bus@fgan.de</A>.  Weitere Kontaktm&ouml;glichkeiten finden Sie
 
 <ADDRESS> ruf098 WWW, <A HREF="http://www.fgan.de/~bus/">Michael Bussmann</A>,
 <A HREF="mailto:bus@fgan.de">&lt;bus@fgan.de&gt;</A> ,
-Last change: $Date: 1998/03/14 12:57:57 $, $Revision: 1.11 $
+Last change: $Date: 1998/08/29 10:30:42 $, $Revision: 1.12 $
 </ADDRESS>
 
 </BODY>

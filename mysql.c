@@ -40,7 +40,6 @@ static char rcsid[] = "mysql.c,v 1.4 1998/05/22 07:10:10 bus Exp";
 
 #include "log.h"
 #include "utils.h"
-#include "fileio.h"
 
 #include "euracom.h"
 
