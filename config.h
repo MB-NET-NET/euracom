@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.5 $
- * Last modified:       $Date: 1998/01/23 12:39:54 $
+ * Version:             $Revision: 1.6 $
+ * Last modified:       $Date: 1998/02/04 09:22:57 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -131,13 +131,5 @@
  * determined
  */
 #define UNKNOWN_TEXT_EURA	"Rufnr.unbekannt"
-
-
-/* --------------------------------------------------------------------------
- * DO NOT CHANGE ANYTHING OF THESE OR TERRIBLE THINGS WILL HAPPEN!
- * --------------------------------------------------------------------------
- */
-#define elsif else if
-#define unless(s) if (!(s))
 
 #endif

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.9 $
- * Last modified:       $Date: 1998/01/17 13:29:56 $
+ * Version:             $Revision: 1.10 $
+ * Last modified:       $Date: 1998/02/04 09:22:56 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -27,6 +27,12 @@
 
 /* Use local configuration */
 #include "config.h"
+
+/*
+ * Use my weird macros
+ */
+#define elsif else if
+#define unless(s) if (!(s))
 
 /*
  * select which terminal handling to use (currently only SysV variants)
