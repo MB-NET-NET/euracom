@@ -1,24 +1,5 @@
-.\"   Database subsystem option:
-.\"   -H, --db-host=host            Sets database host
-.\"   -D, --db-name=name            Database name to connect to
-.\"   -P, --db-port=port            Sets database port number
-.\"   -R, --db-recovery-timeout=sec Time to stay in recovery mode
-.\"   -S, --db-shutdown-timeout=sec Disconnect after sec idle seconds
-.\" 
-.\"   Logging options:
-.\"   -l, --log-file=file           File where to write log and debug messages into
-.\"   -p, --protocol-file=file      Enable logging all RS232 messages
-.\"   -d, --debug[=level]           Sets debugging level
-.\" 
-.\"   Runtime options:
-.\"   -f, --no-daemon               Don't detach from tty and run in background
-.\"   -u, --run-as-user=#uid | name Run as user uid (or username, resp.)
-.\" 
-.\"   Misc:
-.\"   -h, --help                    You currently look at it
-.\" 
 .\" .TH EURACOM 8 "bus's Telephone Tools" "bus" \" -*- nroff -*-
-.TH EURACOM 8 1998-03-14 "bus's Telephone Tools" "GNU"
+.TH EURACOM 8 1998-08-29 "MB's Telephone Tools" "GNU"
 .SH NAME
 euracom \- handle incoming charging information
 .SH SYNOPSIS
@@ -80,46 +61,35 @@ except the RS232 messages.
 .I "\-S, --db-shutdown-timeout=sec"
 Disconnect after 
 .I sec
-idle seconds from the
-.I PostgreSQL
-database. The default timeout is 120 seconds; it's compile-time
+idle seconds from the database. The default timeout is 120 seconds; it's compile-time
 configurable in config.h.
 .TP
 .I "-R, --db-recovery-timeout=sec"
-Time to stay in recovery mode. Hold the Database connection to the
-.I PostgreSQL
+Time to stay in recovery mode. Hold the connection to the
 database for
 .I sec
 idle seconds in recovery mode. The default timeout is 900
 seconds; it's compile-time configurable in config.h.
 .TP
 .I "\-P, --db-port=port"
-Sets TCP/IP port number to the
-.I PostgreSQL
-database.
+Sets TCP/IP port number to the database.
 .TP
 .I "\-D, --db-name=name"
 Database name to connect to. By default
 .B euracom 
-connects to a 
-.I PostgreSQL
-database named "isdn". This can be changed by this option with
+connects to a database named "isdn". This can be changed by this option with
 argument
 .I name .
 .TP
 .I "\-H, --db-host=host"
-Database host name to connect to the 
-.I PostgreSQL
-database is given with
+Database host name to connect to the database is given with
 argument
 .I name .
 By default
 .B euracom
 connects to the host
 .I localhost
-for the
-.I PostgreSQL
-server.
+for the DBMS server.
 .SH FILES
 .I /usr/local/sbin/euracom
 .br
@@ -128,12 +98,16 @@ Surely plenty of 'em. This is piece of cake is in an early
 state.
 .SH AUTHOR
 Michael Bussmann <bus@fgan.de>, (source code, blurb & ideas)
-.br
+.PP
 Volker Schmidt <volker@Illuminatus.MZ.Rhein-Main.DE>, (this
 man-page, more annoying idea, bug-reports, general craziness)
 .br
 Michael Tepperis <michael.tepperis@fernuni-hagen.de>, (miniSQL support)
+.br
+Stefan Schorsch <sschorsch@mail.rmc.de>, (MySQL support)
 .SH "SEE ALSO"
+http://www.fgan.de/~bus/personal/euracom.html
+.br
 Linux Serial Port Programming mini-HOWTO
 .br
 iX issue 1995-1 p.152 ff.
