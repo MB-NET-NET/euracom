@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.32 $
- * Last modified:       $Date: 1998/05/22 07:12:32 $
+ * Version:             $Revision: 1.33 $
+ * Last modified:       $Date: 1998/05/23 07:56:48 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.32 1998/05/22 07:12:32 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.33 1998/05/23 07:56:48 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -143,15 +143,17 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 
   /* 0: Art und Teilnehmer*/
   cnt=0;
-  switch (*argv[cnt]++) {
+  switch (*argv[cnt]) {
     case 'G':
       geb->art=GEHEND;
       if (num==4) { log_debug(1, "Call seems to be free of charge."); }
+      argv[cnt]++;
       break;
     case 'V':
     case 'K':
       if (num!=3) { log_msg(ERR_WARNING, "Invalid # of elements (%d) in %s", num, str); }
       geb->art=KOMMEND;
+      argv[cnt]++;
       break;
     default:
 #if defined(KIT_DUMP_MODE)
@@ -170,7 +172,8 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 #endif
       break;
   }
-  geb->teilnehmer=atoi(argv[cnt]); cnt++;
+  geb->teilnehmer=atoi(argv[cnt]);
+  cnt++;
 
   /* 1: Datum/Zeit Verbindungsaufbau */
   {
