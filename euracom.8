@@ -24,7 +24,7 @@ euracom \- handle incoming charging information
 .SH SYNOPSIS
 .B euracom
 [\-fh] [\-l log-file] [\-p protocol-file] [\-d level]
-[\-u #uid] [\-H db-host-name] [\-D db-name] [\-P db-IP-Port-number]
+[\-u {#uid|name}] [\-H db-host-name] [\-D db-name] [\-P db-IP-Port-number]
 [\-R sec.] [\-S sec.]
 [\-\-help] [\-\-debug[=level]] [\-\-protocol-file=file] [\-\-log-file=file]
 [\-\-no-daemon] [\-\-run-as-user={#uid|name}]
@@ -44,10 +44,10 @@ Quante IS-{1,2,3}.
 takes the charge advises from the serial printer output of the
 PBX and enters them into a SQL-database.
 .PP
-At the moment only PostgreSQL databases were supported.
+At the moment only PostgreSQL databases are supported.
 .SS OPTIONS
 .TP
-.I "\-h"
+.I "\-h, \-\-help"
 Gives a verbose help message containing all valid program
 options.
 .TP
@@ -69,7 +69,7 @@ default.
 .TP
 .I "\-p file, \-\-protocol-file=file"
 Enable logging all RS232 messages. All incoming RS232 messages
-were put unchanged into the given file.
+are put unchanged into the given file.
 .TP
 .I "\-l file, \-\-log-file=file"
 File where to write log and debug messages into. This file
@@ -139,4 +139,4 @@ Linux Serial Port Programming mini-HOWTO
 .br
 iX issue 1995-1 p.152 ff.
 .br
-http://www.PostgreSQL.org
+http://www.PostgreSQL.org/
