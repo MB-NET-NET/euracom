@@ -3,7 +3,7 @@
  *
  * euracom.h -- Various function prototypes and externals
  *
- * Copyright (C) 1996-2002 Michael Bussmann
+ * Copyright (C) 1996-2004 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1997-10-27 09:30:04 GMT

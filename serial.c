@@ -3,7 +3,7 @@
  *
  * serial.c -- Low/Midlevel RS232 routines
  *
- * Copyright (C) 1996-2002 Michael Bussmann
+ * Copyright (C) 1996-2004 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-19 10:58:42 GMT

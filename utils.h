@@ -1,7 +1,7 @@
 /*********************************************************************/
 /* utils.h - Generic utilities                                       */
 /*                                                                   */
-/* Copyright (C) 1996-2001 MB Computrex           Released under GPL */
+/* Copyright (C) 1996-2004 MB Computrex           Released under GPL */
 /*********************************************************************/
 
 #if !defined(__UTILS_H)

@@ -3,7 +3,7 @@
  *
  * postgres.c -- PostgreSQL database subsystem
  *
- * Copyright (C) 1996-2002 Michael Bussmann
+ * Copyright (C) 1996-2004 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1997-08-28 09:30:44 GMT

@@ -5,7 +5,7 @@
 #
 # avon.pl -- TelNo -> FQTN converter
 #
-# Copyright (C) 1996-2002 Michael Bussmann
+# Copyright (C) 1996-2004 Michael Bussmann
 #
 # Authors:             Michael Bussmann <bus@mb-net.net>
 # Created:             1997-08-29 09:44:19 GMT

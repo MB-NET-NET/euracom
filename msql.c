@@ -3,7 +3,7 @@
  *
  * msql.c -- msql (miniSQL) database subsystem
  *
- * Copyright (C) 1996-2002 Michael Bussmann
+ * Copyright (C) 1996-2004 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>

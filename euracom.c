@@ -3,7 +3,7 @@
  *
  * euracom.c -- Main programme
  *
- * Copyright (C) 1996-2002 Michael Bussmann
+ * Copyright (C) 1996-2004 Michael Bussmann
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-09 17:31:56 GMT

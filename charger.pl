@@ -5,7 +5,7 @@
 #
 # charger.pl -- Gebührenauswertung via PostgreSQL
 #
-# Copyright (C) 1996-2002 Michael Bussmann
+# Copyright (C) 1996-2004 Michael Bussmann
 #
 # Authors:             Michael Bussmann <bus@mb-net.net>
 # Created:             1997-09-02 11:03:41 GMT
