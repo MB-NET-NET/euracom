@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@mb-net.net>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.43 $
- * Last modified:       $Date: 2002/05/10 07:04:29 $
+ * Version:             $LastChangedRevision$
+ * Last modified:       $LastChangedDate$
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.43 2002/05/10 07:04:29 bus Exp $";
+static char rcsid[] = "$Id$";
 
 #include "config.h"
 
