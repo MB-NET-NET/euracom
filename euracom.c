@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.30 $
- * Last modified:       $Date: 1998/03/14 12:36:43 $
+ * Version:             $Revision: 1.31 $
+ * Last modified:       $Date: 1998/03/21 13:55:59 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.30 1998/03/14 12:36:43 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.31 1998/03/21 13:55:59 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -286,7 +286,7 @@ int shutdown_program(int retcode)
 /*--------------------------------------------------------------------------
  * void hangup()
  *
- * Signal handler for non-fatal signal.  Will be used to re-open files an
+ * Signal handler for non-fatal signals.  Will be used to re-open files and
  * the like later
  *------------------------------------------------------------------------*/
 void hangup(int sig)
