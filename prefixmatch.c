@@ -1,11 +1,12 @@
 /*
  * prefixmatch.c -- Some stupid routines for PostgreSQL
  *
- * $Id: prefixmatch.c,v 1.2 1998/01/17 13:32:22 bus Exp $
+ * $Id: prefixmatch.c,v 1.3 2003/10/13 13:24:19 bus Exp $
  */
 #include <string.h>
-#include "postgres.h"
-#include "utils/palloc.h"
+#include "postgres_ext.h"
+#include "libpq-fe.h"
+#include "server/c.h"
 
 bool prefix_match(text *t1, text *t2)
 {
