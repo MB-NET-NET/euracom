@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.11 $
- * Last modified:       $Date: 1998/02/15 11:52:46 $
+ * Version:             $Revision: 1.12 $
+ * Last modified:       $Date: 1998/03/14 12:36:44 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -55,7 +55,31 @@
 #error MUST DEFINE ONE OF "HAVE_TERMIOS" or "HAVE_TERMIO"
 #endif
 
-/* Database subsystem: postgres.c */
+
+struct SerialFile {
+  int  fd;
+  char *protocol_filename;
+  char *fd_device;
+  struct termios term;
+};
+
+enum TVerbindung { GEHEND=1, KOMMEND};
+typedef char TelNo[33];
+
+/* Aufbau Gebühreninfo */
+struct GebuehrInfo {
+  int    teilnehmer;    /* Interner Teilnehmer */
+  TelNo  nummer;        /* Remote # */
+  time_t datum_vst;     /* Datum/Zeit Verbindungsaufbau (von OVSt bzw. Euracom) */
+  time_t datum_sys;     /* Datum/Zeit Eintrag (approx. Verbindungsende) */
+  int    einheiten;     /* Anzahl verbrauchter Einheiten */
+  enum TVerbindung art;
+  float  betrag_base;   /* Betrag für eine EH */
+  float  betrag;        /* Gesamtbetrag */
+  char   waehrung[4];   /* Währungsbezeichnung */
+};
+
+/* Database subsystem: postgres.c, msql.c */
 extern void database_set_host(const char *str);
 extern void database_set_port(const char *str);
 extern void database_set_db(const char *str);
@@ -67,15 +91,9 @@ extern BOOLEAN database_shutdown(void);
 
 extern void database_check_state();
 extern BOOLEAN database_log(const char *cp);
+extern BOOLEAN database_geb_log(const struct GebuehrInfo *geb);
 
-/* Serial subsystem: serial.c */
-struct SerialFile {
-  int  fd;
-  char *protocol_filename;
-  char *fd_device;
-  struct termios term;
-};
-
+/* Serial subsystem */
 extern struct SerialFile *serial_allocate_file(void);
 extern void serial_deallocate_file(struct SerialFile *sf);
 extern void serial_set_protocol_name(struct SerialFile *, const char *str);

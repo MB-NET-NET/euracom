@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.29 $
- * Last modified:       $Date: 1998/02/18 09:07:32 $
+ * Version:             $Revision: 1.30 $
+ * Last modified:       $Date: 1998/03/14 12:36:43 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.29 1998/02/18 09:07:32 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.30 1998/03/14 12:36:43 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -46,22 +46,6 @@ static char rcsid[] = "$Id: euracom.c,v 1.29 1998/02/18 09:07:32 bus Exp $";
 #include "privilege.h"
 
 #include "euracom.h"
-
-enum TVerbindung { GEHEND=1, KOMMEND};
-typedef char TelNo[33];
-
-/* Aufbau Gebühreninfo */
-struct GebuehrInfo {
-  int    teilnehmer;    /* Interner Teilnehmer */
-  TelNo  nummer;        /* Remote # */
-  time_t datum_vst;     /* Datum/Zeit Verbindungsaufbau (von OVSt bzw. Euracom) */
-  time_t datum_sys;     /* Datum/Zeit Eintrag (approx. Verbindungsende) */
-  int    einheiten;     /* Anzahl verbrauchter Einheiten */
-  enum TVerbindung art;
-  float  betrag_base;   /* Betrag für eine EH */
-  float  betrag;        /* Gesamtbetrag */
-  char   waehrung[4];   /* Währungsbezeichnung */
-};
 
 static const char pid_file[] = PIDFILE;
 static struct SerialFile *euracom_port;
@@ -113,48 +97,6 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
   return(TRUE);
 }
 
-
-/*------------------------------------------------------*/
-/* BOOLEAN gebuehr_db_log()                             */
-/* */
-/* Writes charge data into database                     */
-/* */
-/* RetCode: Ptr to static string, NULL: Error           */
-/*------------------------------------------------------*/
-BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
-{
-  char statement[2048]; /* SQL Statement */
-  char date_fmt[21];	/* yyyy-mm-dd hh:mm:ss */
-
-  sprintf(statement, "INSERT INTO euracom (int_no, remote_no, einheiten, direction, factor, pay, currency, vst_date, sys_date) values ('%d','%s',",
-    geb->teilnehmer, 
-    geb->nummer);
-
-  switch (geb->art) {
-    case GEHEND:
-      strcatf(statement, "'%d', 'O', '%.2f', '%.2f', '%s'",
-        geb->einheiten,
-        geb->betrag_base,
-        geb->betrag,
-        geb->waehrung);
-      break;
-
-    case KOMMEND:
-      strcatf(statement, "'', 'I', '', '', ''");
-      break;
-  } 
-
-  /* Convert time/date specs into ISO 8601 strings */
-  strftime(date_fmt, sizeof(date_fmt), "%Y-%m-%d %H:%M:%S", gmtime(&geb->datum_vst));
-  strcatf(statement, ",'%s +00'", date_fmt);
-
-  strftime(date_fmt, sizeof(date_fmt), "%Y-%m-%d %H:%M:%S", gmtime(&geb->datum_sys));
-  strcatf(statement, ",'%s +00')", date_fmt);
-
-  return(database_log(statement));
-}
-
-
 void conv_phone(char *dst, const char *src)
 {
   /* ^00: International call. Just strip 00 to get int'l phone number */
@@ -168,7 +110,6 @@ void conv_phone(char *dst, const char *src)
     sprintf(dst, "%s%s", AREACODE, src);
   }
 }
-
 
 /*--------------------------------------------------------------------------
  * struct GebuehrInfo *eura2geb()
@@ -402,7 +343,7 @@ BOOLEAN parse_euracom_data(const char *buf)
 
     /* Logging */
     gebuehr_sys_log(&gebuehr);
-    gebuehr_db_log(&gebuehr);
+    database_geb_log(&gebuehr);
   }    
   return(TRUE);
 }
@@ -508,6 +449,7 @@ int main(int argc, char **argv)
     {"no-daemon", 0, NULL, 'f'},
     {"help", 0, NULL, 'h'},
     {"run-as-user", 1, NULL, 'u'},
+    {"version", 0, NULL, 'V'},
 
     {NULL, 0, NULL, 0}
   };
@@ -522,7 +464,7 @@ int main(int argc, char **argv)
   euracom_port=serial_allocate_file();
 
   /* Parse command line options */
-  while ((opt=getopt_long_only(argc, argv, "fhH:P:D:R:S:l:p:u:d::", long_options, NULL))!=EOF) {
+  while ((opt=getopt_long_only(argc, argv, "fhH:P:D:R:S:Vl:p:u:d::", long_options, NULL))!=EOF) {
     switch (opt) {
       /* Database subsystem */
       case 'H':
@@ -601,8 +543,8 @@ int main(int argc, char **argv)
   signal(SIGINT, (void *)terminate);
   signal(SIGQUIT, (void *)terminate);
   signal(SIGILL, (void *)fatal);
-  signal(SIGTRAP, (void *)terminate);
-  signal(SIGABRT, (void *)terminate);
+  signal(SIGTRAP, (void *)fatal);
+  signal(SIGABRT, (void *)fatal);
   signal(SIGBUS, (void *)fatal);
   signal(SIGFPE, (void *)fatal);
   signal(SIGUSR1, SIG_IGN);

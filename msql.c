@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.1 $
- * Last modified:       $Date: 1998/03/14 10:59:37 $
+ * Version:             $Revision: 1.2 $
+ * Last modified:       $Date: 1998/03/14 12:36:46 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * adopted for changes needed for msql: Michael Tepperis
@@ -24,7 +24,7 @@
  * more details.
  **************************************************************************/
 
-/* static char rcsid[] = "$Id: msql.c,v 1.1 1998/03/14 10:59:37 bus Exp $"; */
+static char rcsid[] = "$Id: msql.c,v 1.2 1998/03/14 12:36:46 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -33,6 +33,7 @@
 #include <sys/errno.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "msql.h"
 
 #include "log.h"
@@ -44,9 +45,9 @@
 /*
   Private data
  */
-static char         *msql_host         = NULL;
-static char         *msql_port         = NULL;
-static char         *msql_db           = NULL;
+static char *msql_host = NULL;
+static char *msql_port = NULL;
+static char *msql_db = NULL;
 
 static unsigned int shutdown_timeout = SHUTDOWN_TIMEOUT;
 static unsigned int recovery_timeout = RECOVERY_TIMEOUT;
@@ -54,24 +55,12 @@ static unsigned int recovery_timeout = RECOVERY_TIMEOUT;
 static time_t last_db_write = 0;
 static time_t last_recovery = 0;
 
-int         socket;
-/* static   PGconn *db_handle = NULL; */
+int socket;
 static enum DB_State { DB_OPEN, DB_CLOSED, RECOVERY } db_state = DB_CLOSED;
 
 /*
   Function prototypes
  */
-void database_set_host( const char *str );
-void database_set_port( const char *str );
-void database_set_db( const char *str );
-void database_set_shutdown_timeout( int i );
-void database_set_recovery_timeout( int i );
-
-BOOLEAN database_initialize( void );
-BOOLEAN database_log( const char *cp );
-BOOLEAN database_shutdown( void );
-void database_check_state( );
-
 static BOOLEAN database_change_state( );
 static BOOLEAN database_perform_recovery( );
 static BOOLEAN database_msql_connect( );
@@ -113,13 +102,13 @@ void database_set_db( const char *str )
 
 void database_set_shutdown_timeout( int i )
  {
-  log_debug( 2, "database: Setting shutdown timeout to %s s", i );
+  log_debug( 2, "database: Setting shutdown timeout to %d s", i );
   shutdown_timeout = i;
  }
 
 void database_set_recovery_timeout( int i)
  {
-  log_debug( 2, "database: Setting recovery timeout to %s s", i );
+  log_debug( 2, "database: Setting recovery timeout to %d s", i );
   recovery_timeout = i;
  }
 
@@ -224,13 +213,11 @@ BOOLEAN database_change_state( enum DB_State new_state )
        {
         case DB_CLOSED:
           msqlClose( socket );
-/*          PQfinish( db_handle ); */
           ok = TRUE;
           break;
         case RECOVERY:
           log_msg( ERR_INFO, "Entering recovery mode" );
           msqlClose( socket );
-/*          PQfinish( db_handle ); */
           ok = TRUE;
           last_recovery = time( NULL );
           break;
@@ -315,8 +302,6 @@ BOOLEAN database_change_state( enum DB_State new_state )
  }
 
 
-/*
- */
 BOOLEAN database_perform_recovery( )
  {
   BOOLEAN reco_failed = FALSE;
@@ -382,24 +367,20 @@ BOOLEAN database_log( const char *cp )
 
 
 /* -----------------------------------------------------------------------
-   Mid-level: Postgres routines
+   Mid-level: mSQL routines
  */
 
 /* Establish connection to database
    Will NOT call any state change routines!
  */
-BOOLEAN database_msql_connect( )
+static BOOLEAN database_msql_connect( )
  {
   log_debug( 3, "Opening connection to database" );
-/*  db_handle = PQsetdb( pg_host, pg_port, NULL, NULL, pg_db ); */
   /* Datenbank-Server-Verbindung herstellen */
   socket = msqlConnect( NULL );
   if( socket < 0 )
-/*  if ( PQstatus( db_handle ) == CONNECTION_BAD ) */
    {
-/*    log_msg( ERR_ERROR, "PostgreSQL connect: %s", PQerrorMessage( db_handle ) ); */
     log_msg( ERR_ERROR, "mSQL connect: ERROR" );
-/*    PQfinish( db_handle ); */
     msqlClose( socket );
     return( FALSE );
    }
@@ -416,75 +397,92 @@ BOOLEAN database_msql_connect( )
    Executes SQL statement.
    RetCode: TRUE: Written into DB; FALSE: Recovery file
  */
-BOOLEAN database_msql_execute( const char *stc, BOOLEAN do_recovery )
- {
-/*  PGresult *pgres; */
-  m_result  *res;
+static BOOLEAN database_msql_execute( const char *stc, BOOLEAN do_recovery )
+{
+  m_result *res;
 
   switch ( db_state )
    {
     case DB_OPEN:
       log_debug( 4, "Executing SQL: %s", stc );
-/*      pgres = PQexec( db_handle, stc ); */
-      res =  msqlQuery( socket, stc );
-      unless ( res )
-       {
-/*        log_msg( ERR_ERROR, "PostgreSQL connection failure: %s", PQerrorMessage( db_handle ) ); */
-        log_msg( ERR_ERROR, "mSQL connection failure: " );
-        if ( do_recovery )
-	 {
-	  database_write_recovery( stc );
-	 }
+      res=msqlQuery(socket, stc);
+      unless (res) {
+        log_msg(ERR_ERROR, "mSQL connection failure:");
+        if (do_recovery) { database_write_recovery(stc); }
         return( FALSE );
-       }
-      /* Check whether command was accepted */
-/*      if ( PQresultStatus( pgres ) != PGRES_COMMAND_OK ) */
-      if( res ) /*???????????????*/
-       {
-/*        log_msg( ERR_ERROR, "PostgreSQL command error: %s", PQcmdStatus( pgres ) ); */
-        log_msg( ERR_ERROR, "mSQL command error: " );
-        log_msg( ERR_ERROR, "Offending command was %s", stc);
-        if ( do_recovery )
-	 {
-	  database_write_recovery( stc );
-	 }
-/*        PQclear( pgres ); */
-	msqlClose( socket );
-        return( FALSE );
-       }
+      }
       /* Write successful */
-      last_db_write = time( NULL );
-/*      PQclear( pgres ); */
-      msqlClose( socket );
-      return( TRUE );
+      last_db_write = time(NULL);
+      return(TRUE);
       break;
+
     case DB_CLOSED:
       log_msg( ERR_WARNING, "User wants insert in closed db" );
       break;
+
     case RECOVERY:
-      if ( do_recovery )
-       {
+      if ( do_recovery ) {
         database_write_recovery( stc );
-       }
+      }
       break;
    }
   return( FALSE );
- }
+}
   
-
-/*
- */
-BOOLEAN database_write_recovery( const char *stc )
+static BOOLEAN database_write_recovery(const char *stc)
  {
-  FILE *fp = fopen( RECOVERY_FILE, "at" );
+  FILE *fp = fopen(RECOVERY_FILE, "at");
 
-  unless ( fp )
-   {
+  unless (fp) {
     log_msg( ERR_FATAL, "Writing into recovery file failed!" );
     log_msg( ERR_FATAL, "%s", stc );
-    return( FALSE );
-   }
-  fputline( fp, stc );
-  fclose( fp );
-  return( TRUE );
- }
+    return(FALSE);
+  }
+  fputline(fp, stc);
+  fclose(fp);
+  return(TRUE);
+}
+
+/*--------------------------------------------------------------------------
+ * BOOLEAN database_geb_log()
+ *
+ * Writes charge data into database
+ *------------------------------------------------------------------------*/
+BOOLEAN database_geb_log(const struct GebuehrInfo *geb)
+ {
+  char statement[ 4096 ]; /* SQL Statement */
+  char date_fmt[ 15 ];    /* dd-mmm-yyyy; warum ich 15 statt 12 benoetige, ist mir unklar*/
+  char time_fmt[ 9 ];     /* hh:mm:ss */
+
+  sprintf(statement, "INSERT INTO euracom ( int_no, remote_no, einheiten, direction,
+factor, pay, currency, vst_date, vst_time, sys_date, sys_time ) values ( %d, '%s', ",
+           geb->teilnehmer,
+           geb->nummer );  
+
+  switch (geb->art) {
+    case GEHEND:
+      strcatf(statement, "%d, 'O', %f, %.2f, '%s'",
+               geb->einheiten,
+               geb->betrag_base,
+               geb->betrag,
+               geb->waehrung);
+      break;
+
+    case KOMMEND:
+      strcatf( statement, "0, 'I', 0, 0, ''" );
+      break;
+  }
+
+  strftime(date_fmt,  sizeof(date_fmt),  "%d-%b-%Y", gmtime( &geb->datum_vst ) );
+  strcatf(statement, ", '%s'", date_fmt );
+  strftime(time_fmt, sizeof(time_fmt), "%H:%M:%S", gmtime( &geb->datum_vst ) );
+  strcatf(statement, ", '%s'", time_fmt );
+
+  strftime(date_fmt,  sizeof( date_fmt ),  "%d-%b-%Y", gmtime( &geb->datum_sys ) );
+  strcatf(statement, ", '%s'", date_fmt );
+  strftime(time_fmt, sizeof( time_fmt ), "%H:%M:%S", gmtime( &geb->datum_sys ) );
+  strcatf(statement, ", '%s' )", time_fmt );
+
+  return(database_log(statement));
+}
+

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.14 $
- * Last modified:       $Date: 1998/02/15 11:52:46 $
+ * Version:             $Revision: 1.15 $
+ * Last modified:       $Date: 1998/03/14 12:36:45 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.14 1998/02/15 11:52:46 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.15 1998/03/14 12:36:45 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -31,7 +31,8 @@ static char rcsid[] = "$Id: postgres.c,v 1.14 1998/02/15 11:52:46 bus Exp $";
 #include <sys/errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <libpq-fe.h>
+
+#include "libpq-fe.h"
 
 #include "log.h"
 #include "utils.h"
@@ -53,26 +54,14 @@ static PGconn *db_handle = NULL;
 static enum DB_State { DB_OPEN, DB_CLOSED, RECOVERY} db_state = DB_CLOSED;
 
 /*
-  Function prototypes
+  Function prototypes of static subroutines
 */
-void database_set_host(const char *str);
-void database_set_port(const char *str);
-void database_set_db(const char *str);
-void database_set_shutdown_timeout(int i);
-void database_set_recovery_timeout(int i);
-
-BOOLEAN database_initialize(void);
-BOOLEAN database_log(const char *cp);
-BOOLEAN database_shutdown(void);
-void database_check_state();
-
 static BOOLEAN database_change_state();
 static BOOLEAN database_perform_recovery();
 static BOOLEAN database_pg_connect();
 static BOOLEAN database_pg_execute(const char *stc, BOOLEAN do_recovery);
 static BOOLEAN database_write_recovery(const char *stc);
 
-/* Code */
 
 /* Some initialization routines */
 void database_set_host(const char *str)
@@ -95,13 +84,13 @@ void database_set_db(const char *str)
 
 void database_set_shutdown_timeout(int i)
 {
-  log_debug(2, "database: Setting shutdown timeout to %s s", i);
+  log_debug(2, "database: Setting shutdown timeout to %d s", i);
   shutdown_timeout=i;
 }
 
 void database_set_recovery_timeout(int i)
 {
-  log_debug(2, "database: Setting recovery timeout to %s s", i);
+  log_debug(2, "database: Setting recovery timeout to %d s", i);
   recovery_timeout=i;
 }
 
@@ -115,9 +104,6 @@ BOOLEAN database_initialize()
   log_debug(1, "Initializing database subsystem...");
 
   unless (pg_db) { pg_db=strdup(DEF_DB); }
-
-  /* No reason to check internal variables */
-  /* ...*/
 
   /* Initial state of statemachine */
   db_state=DB_CLOSED;
@@ -407,4 +393,42 @@ BOOLEAN database_write_recovery(const char *stc)
 
   fclose(fp);
   return(TRUE);
+}
+
+/*--------------------------------------------------------------------------
+ * BOOLEAN database_geb_log()
+ *
+ * Writes charge data into database
+ *------------------------------------------------------------------------*/
+BOOLEAN database_geb_log(const struct GebuehrInfo *geb)
+{
+  char statement[2048]; /* SQL Statement */
+  char date_fmt[21];	/* yyyy-mm-dd hh:mm:ss */
+
+  sprintf(statement, "INSERT INTO euracom (int_no, remote_no, einheiten, direction, factor, pay, currency, vst_date, sys_date) values ('%d','%s',",
+    geb->teilnehmer, 
+    geb->nummer);
+
+  switch (geb->art) {
+    case GEHEND:
+      strcatf(statement, "'%d', 'O', '%.2f', '%.2f', '%s'",
+        geb->einheiten,
+        geb->betrag_base,
+        geb->betrag,
+        geb->waehrung);
+      break;
+
+    case KOMMEND:
+      strcatf(statement, "'', 'I', '', '', ''");
+      break;
+  } 
+
+  /* Convert time/date specs into ISO 8601 strings */
+  strftime(date_fmt, sizeof(date_fmt), "%Y-%m-%d %H:%M:%S", gmtime(&geb->datum_vst));
+  strcatf(statement, ",'%s +00'", date_fmt);
+
+  strftime(date_fmt, sizeof(date_fmt), "%Y-%m-%d %H:%M:%S", gmtime(&geb->datum_sys));
+  strcatf(statement, ",'%s +00')", date_fmt);
+
+  return(database_log(statement));
 }
