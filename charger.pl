@@ -3,11 +3,12 @@
 use Postgres;
 
 require 'getopts.pl';
+require 'tel-utils.pm';
 
 #
 # Telefon Gebuehrenauswertung
 #
-# $Id: charger.pl,v 1.2 1997/09/02 13:08:23 bus Exp $
+# $Id: charger.pl,v 1.3 1997/09/25 11:25:04 bus Exp $
 #
 
 #
@@ -53,8 +54,8 @@ $db = db_connect($db_db,$db_host,"") || die "Open DB failed: $Postgres::error";
 #
 &debug("Creating filter expression...");
 $filter_count=0;
-if ($von) { $filter_cmd[$filter_count++]="vst_date>='$von'"; }
-if ($bis) { $filter_cmd[$filter_count++]="vst_date<='$bis'"; }
+if ($von) { $filter_cmd[$filter_count++]="sys_date>='$von'"; }
+if ($bis) { $filter_cmd[$filter_count++]="sys_date<='$bis'"; }
 if ($tln) {
   $flag=0; $tmp="(";
   @tln = split(",", $tln);
@@ -81,7 +82,7 @@ map {
 &debug("Fetching data from db...");
 open(TMPFILE, ">$TMPNAME") || die "Cannot create temporary file";
 $db->execute("BEGIN") || die "BEGIN: $Postgres::error";
-$db->execute("DECLARE cx CURSOR FOR SELECT int_no,remote_no,vst_date,vst_time,sys_date,sys_time,einheiten,geb_art,factor,pay,currency FROM euracom $filter_cmd ORDER BY vst_date,vst_time") || die "DECLARE: $Postgres::error";
+$db->execute("DECLARE cx CURSOR FOR SELECT int_no,remote_no,vst_date,vst_time,sys_date,sys_time,einheiten,geb_art,factor,pay,currency FROM euracom $filter_cmd ORDER BY sys_date,sys_time") || die "DECLARE: $Postgres::error";
 do {
   $res=$db->execute("FETCH forward 1 IN cx") || die "FETCH: $Postgres::error";
   if (@data=$res->fetchrow()) {
@@ -145,8 +146,8 @@ sub htmlize_data()
   # Interne Nummer und Datum
   print "<TR><TD>";
   print "$arr[0]" if ($arr[0]);
-  $arr[2]=~tr/-/./;
-  print "</TD><TD>$arr[2] ".substr($arr[3], 0, 5)."</TD>";
+  $arr[4]=~tr/-/./;
+  print "</TD><TD>$arr[4] ".substr($arr[5], 0, 5)."</TD>";
 
   # Je nach Art
   SWITCH: {
@@ -155,7 +156,7 @@ sub htmlize_data()
       if ($arr[1] eq "") {
         print "Eingehender Anruf"
       } else {
-        print "Eingehender Anruf von ", &convert_fqtn($arr[1]);
+        print "Eingehender Anruf von ", &print_fqtn($arr[1]);
       }
       print "</TD><TD></TD><TD></TD>";
       last SWITCH;
@@ -166,7 +167,7 @@ sub htmlize_data()
       if ($arr[1] eq "") {
         print "???";
       } else {
-        print &convert_fqtn($arr[1]);
+        print &print_fqtn($arr[1]);
       }
       printf "</TD><TD>%d</TD><TD>%.2f %s</TD>", $arr[6], $arr[9], $arr[10];
       $counter++;
@@ -178,7 +179,7 @@ sub htmlize_data()
       if ($arr[1] eq "") {
         print "Vergeblicher Anruf";
       } else {
-        print "Vergeblicher Anruf von ", &convert_fqtn($arr[1]);
+        print "Vergeblicher Anruf von ", &print_fqtn($arr[1]);
       }
       print "</TD><TD></TD><TD></TD>";
       last SWITCH;
@@ -192,56 +193,37 @@ sub htmlize_data()
 
 
 #
-# sub convert_fqtn()
+# sub print_fqtn()
 #
 # Converts number "+492364108537" in a HTMLized string
 # -> <B>+49 2364 108537</B><BR>
 #    WKN name <I>OKZ name<I> 
 #
-sub convert_fqtn()
+sub print_fqtn()
 {
   my ($num) = @_;
   my ($avon, $avon_name, $telno, $wkn, $rest);
   my ($msg);
 
-  # Look up WKN info
-  ($telno, $wkn, $rest) = (&split_text("wkn", $num));
-
-  # Look up AVON info
-  ($avon, $avon_name, $telno) = (&split_text("avon", $telno));
+  ($avon, $telno, $rest, $avon_name, $wkn)=convert_fqtn($num);
 
   # Strip +49 from avon
   $avon=~s/^\+49/0/;
 
+  # Add int. exit code
+  $avon=~s/^\+/00/;
+
   # Construct HTML
-  $msg="<B>$avon $telno</B>";
+  $msg="<B>";
+  if ($avon) { $msg.="$avon "; }
+  if ($telno) { $msg.="$telno"; } else { $msg.="???"; }
+  if ($rest) { $msg.="-$rest"; }
+  $msg.="</B>";
+
   if (($avon_name) || ($wkn)) {
-    $msg.="<BR>$wkn <I>($avon_name)</I>";
+    $msg.="<BR>";
+    if ($wkn) { $msg.="$wkn "; }
+    if ($avon_name) { $msg.="<I>($avon_name)</I>"; }
   }
   return($msg);
-}
-
-sub split_text()
-{
-  my ($table, $input) = @_;
-  my (@data, $res);
-  my ($in) = $input;
-  my ($rest) = "";
-
-  while (length($in)>1) {
-    $res=$db->execute("SELECT name FROM $table WHERE nummer='$in'") || die "SELECT: $Postgres::error";
-    if (@data=$res->fetchrow()) {
-      return($in, $data[0],$rest);
-      last;
-    }
-    $rest=chop($in) . $rest;
-  }
-  return($input, "", "");
-}
-
-sub debug()
-{
-  if ($debugp) {
-    print @_;
-  }
 }

@@ -3,11 +3,12 @@
 use Postgres;
 
 require 'getopts.pl';
+require 'tel-utils.pm';
 
 #
 # Telno -> FQTN converter
 #
-# $Id: avon.pl,v 1.2 1997/09/02 11:03:41 bus Exp $
+# $Id: avon.pl,v 1.3 1997/09/25 11:25:04 bus Exp $
 #
 
 #
@@ -17,43 +18,41 @@ require 'getopts.pl';
 #	-D database
 #
 
+$| = 1;
+
 #
 # Parse CMD line params
 #
-$opt_H=$opt_D="";
+$opt_H=$opt_D=$opt_d="";
 
-&Getopts('H:D:');
+&Getopts('H:D:d');
 $db_host= $opt_H || "tardis";
 $db_db  = $opt_D || "isdn";
+$debugp = $opt_d || undef;
 
 #
 # Fire up connection
 #
+debug("Opening connection...");
 $db = db_connect($db_db,$db_host,"") || die "Open DB failed: $Postgres::error";
+debug("o.k.\n");
 
 while (<>) {
   chop;
 
-  printf "\t%s\n", convert_fqtn($_);
+  printf "\t%s\n", print_fqtn($_);
 }
 
 #
-# sub convert_fqtn()
+# sub print_fqtn()
 #
-sub convert_fqtn()
+sub print_fqtn()
 {
   my ($num) = @_;
-  my ($key, $value, $rest);
-  my ($avon, $avon_name, $telno, $tel, $wkn, $rest);
+  my ($avon, $avon_name, $telno, $wkn, $rest);
   my ($msg);
 
-  # First look up AVON info
-  ($avon, $avon_name, $telno) = (&split_text("avon", $num, 1));
-  if (!$avon_name) { $telno=$avon; $avon=""; }
-
-  # Look up WKN info
-  ($telno, $wkn, $rest) = (&split_text("wkn", $avon.$telno, length($avon)));
-  $telno=substr $telno, length($avon);
+  ($avon, $telno, $rest, $avon_name, $wkn)=convert_fqtn($num);
 
   # Strip +49 from avon
   $avon=~s/^\+49/0/;
@@ -70,23 +69,4 @@ sub convert_fqtn()
   if ($wkn) { $msg.=" $wkn"; }
   if ($avon_name) { $msg.=" ($avon_name)"; }
   return($msg);
-}
-
-sub split_text()
-{
-  my ($table, $input, $residual) = @_;
-  my (@data, $res);
-  my ($in) = $input;
-  my ($rest) = "";
-
-  while (length($in)>$residual) {
-    $cmd="SELECT name FROM $table WHERE nummer='$in'";
-    $res=$db->execute($cmd) || warn "$cmd: $Postgres::error";
-    if (@data=$res->fetchrow()) {
-      return($in, $data[0], $rest);
-      last;
-    }
-    $rest=chop($in) . $rest;
-  }
-  return($input, 0, 0);
 }
