@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.17 $
- * Last modified:       $Date: 1997/10/09 13:49:04 $
+ * Version:             $Revision: 1.18 $
+ * Last modified:       $Date: 1998/01/08 12:32:17 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.17 1997/10/09 13:49:04 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.18 1998/01/08 12:32:17 bus Exp $";
 
 #include "config.h"
 
@@ -76,11 +76,11 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
   switch (geb->art) {
     case GEHEND: {
       sprintf(res, "%d called %s. %d units = %.2f %s",
-	      geb->teilnehmer, 
-	      geb->nummer,
-	      geb->einheiten,
-	      geb->betrag,
-	      geb->waehrung);
+              geb->teilnehmer, 
+              geb->nummer,
+              geb->einheiten,
+              geb->betrag,
+              geb->waehrung);
     }
       break;
 
@@ -88,28 +88,28 @@ BOOLEAN gebuehr_sys_log(const struct GebuehrInfo *geb)
       if (geb->teilnehmer) {
         /* Mit Verbindung */
         if (geb->nummer[0]) {
-	  sprintf(res, "Incoming call from %s for %d",
-	          geb->nummer,
-		  geb->teilnehmer);
-	} else {
-	  sprintf(res, "Incoming call for %d", 
-	    geb->teilnehmer);
-        }	/* IF (unkown_no) */
+          sprintf(res, "Incoming call from %s for %d",
+                  geb->nummer,
+                  geb->teilnehmer);
+        } else {
+          sprintf(res, "Incoming call for %d", 
+            geb->teilnehmer);
+        }       /* IF (unkown_no) */
       } else {
-      	/* Ohne Verbindung */
+        /* Ohne Verbindung */
         if (geb->nummer[0]) { 
-       	  sprintf(res, "Unresponded incoming call from %s",
-	    geb->nummer);
-	  } else {
+          sprintf(res, "Unresponded incoming call from %s",
+            geb->nummer);
+          } else {
           sprintf(res, "Unresponded incoming call");
-	}	/* IF unkown_no (ELSE) */
-      }	/* IF (geb->teilnehmer) (ELSE) */
+        }       /* IF unkown_no (ELSE) */
+      } /* IF (geb->teilnehmer) (ELSE) */
       break;
 
     default:
       log_msg(ERR_WARNING, "CASE missing in geb->art");
       break;
-  }	/* SWITCH */
+  }     /* SWITCH */
 
   syslog(LOG_NOTICE, "%s", res);
   
@@ -141,10 +141,10 @@ BOOLEAN gebuehr_db_log(const struct GebuehrInfo *geb)
   switch (geb->art) {
     case GEHEND:
       sprintf(buf1, "'%d', 'O', '%.2f', '%.2f', '%s'",
-	geb->einheiten,
-	geb->betrag_base,
-	geb->betrag,
-	geb->waehrung);
+        geb->einheiten,
+        geb->betrag_base,
+        geb->betrag,
+        geb->waehrung);
       break;
 
     case KOMMEND:
@@ -238,7 +238,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   unless (tok=strtok(NULL, "|")) { log_msg(ERR_ERROR, "Field 3 invalid"); return(NULL); }
   stripblank(tok);
   if (strcasecmp(tok, UNKNOWN_TEXT_EURA)==0) {
-    strcpy(geb->nummer, "");	/* Null string */
+    strcpy(geb->nummer, "");    /* Null string */
   } else {
     conv_phone(geb->nummer, tok);
   }
@@ -338,12 +338,12 @@ void usage(const char *prg)
   printf("Usage: %s [options] device\n", prg);
   printf("\t-H, --db-host = host           \tSets database host\n" \
          "\t-P, --db-port = port           \tSets database port number\n" \
-	 "\t-N, --db-name = name           \tDatabase to connect\n" \
-	 "\t-R, --db-recovery-timeout = sec\tTime to stay in recovery mode\n" \
-	 "\t-S, --db-shutdown-timeout = sec\tDisconnect after sec idle seconds\n" \
-	 "\t-p, --protocol-file = file     \tEnable logging all rs232 messages\n" \
-	 "\t-v, --verbose [= level]        \tSets verbosity level\n" \
-	 "\t-h, --help                     \tYou currently look at it\n");
+         "\t-N, --db-name = name           \tDatabase to connect\n" \
+         "\t-R, --db-recovery-timeout = sec\tTime to stay in recovery mode\n" \
+         "\t-S, --db-shutdown-timeout = sec\tDisconnect after sec idle seconds\n" \
+         "\t-p, --protocol-file = file     \tEnable logging all rs232 messages\n" \
+         "\t-v, --verbose [= level]        \tSets verbosity level\n" \
+         "\t-h, --help                     \tYou currently look at it\n");
 
   exit(0);
 }
@@ -410,28 +410,28 @@ int select_loop()
     tv.tv_sec=10; tv.tv_usec=0;
     retval=select(FD_SETSIZE, &rfds, NULL, NULL, &tv);
 
-    if (retval==0) {	/* Timeout */
+    if (retval==0) {    /* Timeout */
       database_check_state();
     } elsif (retval>0) {
       if (FD_ISSET(euracom_fd, &rfds)) {
-	char *buf;
+        char *buf;
 
-	/* Data from Euracom Port */
-	unless (buf=readln_rs232(euracom_fd)) {
-	  log_msg(ERR_ERROR, "Euracom read failed. Ignoring line");
-	} else {
-	  parse_euracom_data(buf);
-	}
+        /* Data from Euracom Port */
+        unless (buf=readln_rs232(euracom_fd)) {
+          log_msg(ERR_ERROR, "Euracom read failed. Ignoring line");
+        } else {
+          parse_euracom_data(buf);
+        }
       } else {
-	log_msg(ERR_FATAL, "Data on non-used socket");
+        log_msg(ERR_FATAL, "Data on non-used socket");
       }
-    }	/* IF retval */
+    }   /* IF retval */
   } while (retval>=0);
 
   log_msg(ERR_ERROR, "Select failed: %s", strerror(errno));
   return(0);
 }
-	
+        
 
 int main(argc, argv)
   int argc;
@@ -459,25 +459,25 @@ int main(argc, argv)
       /* Database subsystem */
       case 'H':
         database_set_host(optarg);
-	break;
+        break;
       case 'P':
         database_set_port(optarg);
-	break;
+        break;
       case 'N':
         database_set_db(optarg);
-	break;
+        break;
       case 'R':
         database_set_recovery_timeout(atoi(optarg));
-	break;
+        break;
       case 'S':
         database_set_shutdown_timeout(atoi(optarg));
-	break;
+        break;
 
       /* Standard main options */
       case 'v':
         break;
       case 'p':
-	serial_set_protocol_name(optarg);
+        serial_set_protocol_name(optarg);
         break;
 
       /* Fallback */
@@ -486,7 +486,7 @@ int main(argc, argv)
         exit(0);
         break;
     }     /* SWITCH */
-  }	/* WHILE */
+  }     /* WHILE */
 
   /* Check command line arguments */
   if (optind==argc-1) {

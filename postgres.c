@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.6 $
- * Last modified:       $Date: 1997/10/05 09:16:43 $
+ * Version:             $Revision: 1.7 $
+ * Last modified:       $Date: 1998/01/08 12:32:18 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.6 1997/10/05 09:16:43 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.7 1998/01/08 12:32:18 bus Exp $";
 
 #include "config.h"
 
@@ -176,7 +176,7 @@ void database_check_state()
       /* When recovery timeout has exeeded, try to re-establish connection */
       if (now-last_recovery>recovery_timeout) {
         log_msg(ERR_INFO, "Trying to re-establish connection");
-	database_change_state(DB_OPEN);
+        database_change_state(DB_OPEN);
       }
       break;
 
@@ -222,7 +222,7 @@ BOOLEAN database_change_state(enum DB_State new_state)
           } else {
             log_msg(ERR_INFO, "Initial open failed.  Fall back to recover");
             ok=TRUE; new_state=RECOVERY;
-	    last_recovery=time(NULL);
+            last_recovery=time(NULL);
           }
           break;
         case DB_CLOSED:
@@ -237,24 +237,24 @@ BOOLEAN database_change_state(enum DB_State new_state)
     case RECOVERY:
       switch (new_state) {
         case DB_OPEN:
-	  if (database_pg_connect()) {
-	    log_msg(ERR_INFO, "Connection re-established.  Using recovery file");
-	    ok=TRUE; db_state=DB_OPEN; /* Temporarily switch to DB_OPEN */
+          if (database_pg_connect()) {
+            log_msg(ERR_INFO, "Connection re-established.  Using recovery file");
+            ok=TRUE; db_state=DB_OPEN; /* Temporarily switch to DB_OPEN */
             if (database_perform_recovery()) {
               log_msg(ERR_INFO, "Recovery completed successfully");
-	      ok=TRUE;
+              ok=TRUE;
             } else {
               log_msg(ERR_WARNING, "Recovery failed!  Will stay in recovery mode");
               last_recovery=time(NULL); ok=FALSE; db_state=RECOVERY;
-	    }
-	  } else {
-	    log_msg(ERR_INFO, "Database still inaccessible");
-	    last_recovery=time(NULL); ok=FALSE; db_state=RECOVERY;
-	  }
-	  break;
+            }
+          } else {
+            log_msg(ERR_INFO, "Database still inaccessible");
+            last_recovery=time(NULL); ok=FALSE; db_state=RECOVERY;
+          }
+          break;
         case DB_CLOSED:
-	  log_msg(ERR_WARNING, "DB shutdown while in recovery mode.  Check recovery file!");
-	  break;
+          log_msg(ERR_WARNING, "DB shutdown while in recovery mode.  Check recovery file!");
+          break;
         case RECOVERY:
         default:
           log_msg(ERR_CRIT, "State change %d -> %d not defined (CASE)", db_state, new_state);
@@ -305,7 +305,7 @@ BOOLEAN database_perform_recovery()
     while ((zeile=fgetline(fp, NULL))) {
       unless (database_pg_execute(zeile, TRUE)) {
         reco_failed=TRUE;
-	database_change_state(RECOVERY);
+        database_change_state(RECOVERY);
       }
     }
 
@@ -369,7 +369,7 @@ BOOLEAN database_pg_execute(const char *stc, BOOLEAN do_recovery)
         log_msg(ERR_ERROR, "PostgreSQL error: %s", PQcmdStatus(pgres));
         PQclear(pgres);
         if (do_recovery) { database_write_recovery(stc); }
-	return(FALSE);
+        return(FALSE);
       } else {
         /* Write successful */
         last_db_write=time(NULL);

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.5 $
- * Last modified:       $Date: 1997/10/04 16:51:01 $
+ * Version:             $Revision: 1.6 $
+ * Last modified:       $Date: 1998/01/08 12:32:19 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.5 1997/10/04 16:51:01 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.6 1998/01/08 12:32:19 bus Exp $";
 
 #include "config.h"
 
@@ -172,8 +172,8 @@ BOOLEAN serial_initialize()
   cfmakeraw(&term);
   /* Sets: iflag: !IGNBRK, !BRKINT, !PARMRK, !ISTRIP, !INLCR, !IGNCR, !ICRNL, !IXON
            oflag: !OPOST
-	   lflag: !ECHO, !ECHONL, !ICANON, !ISIG, !IEXTEN
-	   cflag: !CSIZE, !PARENB, CS8
+           lflag: !ECHO, !ECHONL, !ICANON, !ISIG, !IEXTEN
+           cflag: !CSIZE, !PARENB, CS8
   */
   term.c_iflag|=IGNCR; /* So this is utter nonsense?! */
 
@@ -267,10 +267,10 @@ char *readln_rs232()
     if (read(euracom_fd, &inbuf[0], 1)!=-1) {
       *cp=inbuf[0];
       if (*cp=='\0') {
-	*(cp-1)='\0';
-	break;
+        *(cp-1)='\0';
+        break;
       } else {
-	cp++;
+        cp++;
       }
     } else {
       log_msg(ERR_CRIT, "RS232 read I/O error: %s", strerror(errno));
