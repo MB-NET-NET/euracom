@@ -1,10 +1,11 @@
 #
 # tel-utils.pm - Euracom Gebührenauswertung, Perl utitilites
 #
-# $Id: tel-utils.pm,v 1.4 1998/01/08 12:31:02 bus Exp $
+# $Id: tel-utils.pm,v 1.5 1998/01/15 15:08:35 bus Exp $
 #
 
 use Pg;
+
 # I'll use "Pg" in "new-style mode"
 # Actually I'm _not_ a friend of C++
 
@@ -133,7 +134,6 @@ sub split_text()
 sub convert_fqtn()
 {
   my ($num) = @_;
-  my ($key, $value, $rest);
   my ($avon, $avon_name, $telno, $tel, $wkn, $rest);
   my ($msg);
 
