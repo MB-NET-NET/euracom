@@ -1,6 +1,6 @@
 TODO-Liste:
 ===========
-$Date: 1998/02/04 09:55:24 $ $Revision: 1.6 $
+$Date: 1998/02/14 09:02:16 $ $Revision: 1.7 $
 
 +----
 | *	To be done
@@ -16,16 +16,13 @@ Euracom:
 --------
 *	1998-01-18 RTS/CTS Problem (nur manche V24 treiber, z.B. cyclades)
 *	1998-01-15 KIT1000 support
-*	1998-01-15 Test Kompatibilitaet mit F/W 2.x
-D	1998-01-15 Erfassung der Gespraechsdauer
+*	1998-01-15 Test Kompatibilitaet mit F/W 2.x (ASCIIZ -> ASCII?)
+D	1998-01-15 Erfassung der Gespraechsdauer (ohne KIT: max. dt=59s +/- OVSt.)
 P	1998-02-01 Recovery mode ueberpruefen
-U	1998-02-03 ISO 8601 Datumsangaben an PostgreSQL
-U	1998-02-04 Handling von TZ
 
 
 Perl-Utilities:
 ---------------
-V	1998-02-03 Debugging-Ausgaben auf stderr
 
 
 PostgreSQL:
@@ -38,4 +35,4 @@ Dokumentation:
 *	1998-02-01 Möglichkeit mehrere Einträge gleichen Prefixes in WKN aufzunehmen
 
 -- 
-$Id: TODO,v 1.6 1998/02/04 09:55:24 bus Exp $
+$Id: TODO,v 1.7 1998/02/14 09:02:16 bus Exp $
