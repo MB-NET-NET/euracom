@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.10 $
- * Last modified:       $Date: 1998/08/29 08:44:58 $
+ * Version:             $Revision: 1.11 $
+ * Last modified:       $Date: 1999/01/08 11:40:27 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,6 +24,8 @@
 
 #if !defined(_CONFIG_H)
 #define _CONFIG_H
+
+#include "autoconf.h"
 
 /* 
    !! PLEASE _DO_ CHECK THE FOLLOWING LINES AND CHANGE THEM ACCORDING TO
@@ -133,5 +135,20 @@
  */
 #define SHUTDOWN_TIMEOUT	120    /* Drop connection after 2 minutes idle time */
 #define RECOVERY_TIMEOUT	900    /* Retry after 15 mins */
+
+/*
+ * Use my weird macros
+ */
+#define elsif                   else if
+#define unless(s)               if (!(s))
+#define strredup(ptr, str)      safe_free(ptr),ptr=strdup(str)
+
+#define get_strerror            strerror(errno)
+
+#if DEBUG
+#define debug(level,args...)    log_debug(level,##args)
+#else
+#define debug(level,args...)    do { } while(0)
+#endif
 
 #endif

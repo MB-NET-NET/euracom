@@ -5,11 +5,13 @@
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: privilege.c,v 1.1 1998/08/29 08:30:16 bus Exp $
+ * Version:	$Id: privilege.c,v 1.2 1999/01/08 11:40:28 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/privilege.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: privilege.c,v 1.1 1998/08/29 08:30:16 bus Exp $";
+static char rcsid[] = "$Id: privilege.c,v 1.2 1999/01/08 11:40:28 bus Exp $";
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -17,6 +19,7 @@ static char rcsid[] = "$Id: privilege.c,v 1.1 1998/08/29 08:30:16 bus Exp $";
 #include <strings.h>
 #include <unistd.h>
 #include <pwd.h>
+
 #include "log.h"
 #include "privilege.h"
 
@@ -35,7 +38,7 @@ static BOOLEAN active = FALSE;
  *------------------------------------------------------------------------*/
 int privilege_set_alternate_uid(uid_t uid)
 {
-  log_debug(2, "privilege: Setting alternate UID to %d", uid);
+  debug(2, "privilege: Setting alternate UID to %d", uid);
   alt_uid=uid;
   return(TRUE);
 }
@@ -50,7 +53,7 @@ int privilege_set_alternate_uid(uid_t uid)
  *------------------------------------------------------------------------*/
 int privilege_set_alternate_gid(gid_t gid)
 {
-  log_debug(2, "privilege: Setting alternate GID to %d", gid);
+  debug(2, "privilege: Setting alternate GID to %d", gid);
   alt_gid=gid;
   return(TRUE);
 }
@@ -92,7 +95,7 @@ BOOLEAN privilege_active()
  *------------------------------------------------------------------------*/
 int privilege_leave_priv()
 {
-  log_debug(2, "privilege: Dropping effective %d/%d -> %d/%d (Real %d/%d)",
+  debug(2, "privilege: Dropping effective %d/%d -> %d/%d (Real %d/%d)",
     geteuid(), getegid(), alt_uid, alt_gid, getuid(), getgid());
   if (setegid(alt_gid)!=0) {
     log_msg(ERR_WARNING, "Could not switch from %d to EGID %d", getegid(), alt_gid);
@@ -115,7 +118,7 @@ int privilege_leave_priv()
  *------------------------------------------------------------------------*/
 int privilege_enter_priv()
 {
-  log_debug(2, "privilege: Regaining effective %d/%d -> %d/%d",
+  debug(2, "privilege: Regaining effective %d/%d -> %d/%d",
     geteuid(), getegid(), getuid(), getgid());
   if (setegid(getgid())!=0) {
     log_msg(ERR_WARNING, "Could not switch from %d to EGID %d", getegid(), getgid());
@@ -138,7 +141,7 @@ int privilege_enter_priv()
  *------------------------------------------------------------------------*/
 int privilege_drop_priv()
 {
-  log_debug(1, "privilege: Dropping privileges FOREVER (%d/%d -> %d/%d) (effective %d/%d)",
+  debug(1, "privilege: Dropping privileges FOREVER (%d/%d -> %d/%d) (effective %d/%d)",
     getuid(), getgid(), alt_uid, alt_gid, geteuid(), getegid());
   if (setgid(alt_gid)!=0) {
     log_msg(ERR_WARNING, "Could not set GID from %d to %d", getgid(), alt_gid);

@@ -5,11 +5,13 @@
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: log.c,v 1.1 1998/08/29 08:30:15 bus Exp $
+ * Version:	$Id: log.c,v 1.2 1999/01/08 11:40:28 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/log.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: log.c,v 1.1 1998/08/29 08:30:15 bus Exp $";
+static char rcsid[] = "$Id: log.c,v 1.2 1999/01/08 11:40:28 bus Exp $";
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -123,13 +125,13 @@ void logger_set_prefix(const char *stc)
   strcpy(logger_prefix, stc);
 
   /* Print ridiculous debug message */
-  log_debug(2, "logger: Prefix has been set to %s", stc);
+  debug(2, "logger: Prefix has been set to %s", stc);
 }
 
 void logger_set_level(int level)
 {
   logger_debuglevel=level;
-  log_debug(2, "logger: Debuglevel has been set to %d", level);
+  debug(2, "logger: Debuglevel has been set to %d", level);
 }
 
 void logger_set_options(int flags)
@@ -144,7 +146,7 @@ void logger_set_logfile(const char *stc)
   }
   if (stc) {
     logger_logfile=strdup(stc);
-    log_debug(2, "logger: Logfile has been set to %s", stc);
+    debug(2, "logger: Logfile has been set to %s", stc);
   } else {
     logger_logfile=NULL;
   }
@@ -163,13 +165,13 @@ void logger_initialize()
 
     /* If a logfile is already open, close it */
     if (logger_file) {
-      log_debug(1, "Logfile already active. Closing %s...", logger_logfile);
+      debug(1, "Logfile already active. Closing %s...", logger_logfile);
       fclose(logger_file);
       logger_file=NULL;
     }
 
     if ((logger_file=fopen(logger_logfile, "a"))) {
-      log_debug(1, "Opened logfile %s", logger_logfile);
+      debug(1, "Opened logfile %s", logger_logfile);
     } else {
       log_msg(ERR_ERROR, "Error creating logfile %s: %s", logger_logfile, strerror(errno));
       logger_file=NULL;
@@ -179,7 +181,7 @@ void logger_initialize()
   /* Syslog mode? */
   if (logger_options & USE_SYSLOG) {
     openlog(logger_prefix, LOG_PID, LOG_USER);
-    log_debug(3, "Opened syslog facility");
+    debug(3, "Opened syslog facility");
   }
 }
 
@@ -190,7 +192,7 @@ void logger_initialize()
 /*----------------------------------------------------------------------*/
 void logger_shutdown()
 {
-  log_debug(2, "Closing logging services");
+  debug(2, "Closing logging services");
   if (logger_file) {
     fclose(logger_file);
     logger_file=NULL;

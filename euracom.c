@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.35 $
- * Last modified:       $Date: 1998/08/29 08:33:35 $
+ * Version:             $Revision: 1.36 $
+ * Last modified:       $Date: 1999/01/08 11:40:27 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,9 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.35 1998/08/29 08:33:35 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.36 1999/01/08 11:40:27 bus Exp $";
+
+#include "config.h"
 
 #include <unistd.h>
 #include <getopt.h>
@@ -145,7 +147,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   switch (*argv[cnt]) {
     case 'G':
       geb->art=GEHEND;
-      if (num==4) { log_debug(1, "Call seems to be free of charge."); }
+      if (num==4) { debug(1, "Call seems to be free of charge."); }
       argv[cnt]++;
       break;
     case 'V':
@@ -156,7 +158,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
       break;
     default:
 #if defined(KIT_DUMP_MODE)
-      log_debug(3, "Assuming KIT dump entry");
+      debug(3, "Assuming KIT dump entry");
       if (num!=6) {
         log_msg(ERR_ERROR, "KIT dump entry must have 6 fields");
         safe_free(buf);
@@ -239,7 +241,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
  *------------------------------------------------------------------------*/
 BOOLEAN daemon_remove_pid_file()
 {
-  log_debug(1, "Removing PID file %s", pid_file);
+  debug(1, "Removing PID file %s", pid_file);
   return(delete_file(pid_file));
 }
 
@@ -256,7 +258,7 @@ BOOLEAN daemon_create_pid_file()
   BOOLEAN may_create = TRUE;
   FILE *fp;
 
-  log_debug(1, "Checking PID file status (%s)", pid_file);
+  debug(1, "Checking PID file status (%s)", pid_file);
 
   /* Is there already a PID file? */
   if ((fp=fopen(pid_file, "r"))) {
@@ -279,7 +281,7 @@ BOOLEAN daemon_create_pid_file()
     if ((fp=fopen(pid_file, "w"))) {
       pid_t pid = getpid();
 
-      log_debug(1, "Creating PID file %s (%d)", pid_file, pid);
+      debug(1, "Creating PID file %s (%d)", pid_file, pid);
       fprintf(fp, "%d\n", pid);
       fclose(fp);
       return(TRUE);
@@ -531,7 +533,7 @@ int main(int argc, char **argv)
 
       /* Main programme */
       case 'f':
-        log_debug(2, "Program will not detach itself.");
+        debug(2, "Program will not detach itself.");
         no_daemon=TRUE;
         break;
       case 'u':

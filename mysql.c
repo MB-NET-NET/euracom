@@ -28,6 +28,8 @@
 
 static char rcsid[] = "mysql.c,v 1.4 1998/05/22 07:10:10 bus Exp";
 
+#include "config.h"
+
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -73,7 +75,7 @@ static BOOLEAN database_write_recovery( const char *stc );
  */
 void database_set_host( const char *str )
  {
-  log_debug( 2, "database: Setting host to %s", str );
+  debug( 2, "database: Setting host to %s", str );
   if ( mysql_host )
    {
     free( mysql_host );
@@ -83,7 +85,7 @@ void database_set_host( const char *str )
 
 void database_set_port( const char *str )
  {
-  log_debug( 2, "database: Setting port to %s", str );
+  debug( 2, "database: Setting port to %s", str );
   if ( mysql_port_str )
    {
     free( mysql_port_str );
@@ -93,7 +95,7 @@ void database_set_port( const char *str )
 
 void database_set_db( const char *str )
  {
-  log_debug( 2, "database: Setting database to %s", str );
+  debug( 2, "database: Setting database to %s", str );
   if ( mysql_db )
    {
     free( mysql_db );
@@ -103,13 +105,13 @@ void database_set_db( const char *str )
 
 void database_set_shutdown_timeout( int i )
  {
-  log_debug( 2, "database: Setting shutdown timeout to %d s", i );
+  debug( 2, "database: Setting shutdown timeout to %d s", i );
   shutdown_timeout = i;
  }
 
 void database_set_recovery_timeout( int i)
  {
-  log_debug( 2, "database: Setting recovery timeout to %d s", i );
+  debug( 2, "database: Setting recovery timeout to %d s", i );
   recovery_timeout = i;
  }
 
@@ -119,7 +121,7 @@ void database_set_recovery_timeout( int i)
  */
 BOOLEAN database_initialize( )
  {
-  log_debug( 1, "Initializing database subsystem..." );
+  debug( 1, "Initializing database subsystem..." );
 
   unless ( mysql_db )
    {
@@ -131,8 +133,8 @@ BOOLEAN database_initialize( )
 
   /* Initial state of statemachine */
   db_state = DB_CLOSED;
-  log_debug( 1, "Will disconnect from DB after %ds idle time", shutdown_timeout) ;
-  log_debug( 1, "Will retry to establish connection after %ds", recovery_timeout );
+  debug( 1, "Will disconnect from DB after %ds idle time", shutdown_timeout) ;
+  debug( 1, "Will retry to establish connection after %ds", recovery_timeout );
   return( TRUE );
  }
 
@@ -141,7 +143,7 @@ BOOLEAN database_initialize( )
  */
 BOOLEAN database_shutdown( )
  {
-  log_debug( 1, "Shutting down database subsystem" );
+  debug( 1, "Shutting down database subsystem" );
   
   /* Release backend */
   database_change_state( DB_CLOSED );
@@ -378,7 +380,7 @@ static BOOLEAN database_mysql_connect( )
  {
   static MYSQL global_st;
 
-  log_debug( 3, "Opening connection to database (mysql)" );
+  debug( 3, "Opening connection to database (mysql)" );
   /* Datenbank-Server-Verbindung herstellen */
   st = mysql_connect( &global_st, NULL, NULL, NULL );
   if( st == 0 )
@@ -407,7 +409,7 @@ static BOOLEAN database_mysql_execute( const char *stc, BOOLEAN do_recovery )
   switch ( db_state )
    {
     case DB_OPEN:
-      log_debug( 4, "Executing SQL: %s", stc );
+      debug( 4, "Executing SQL: %s", stc );
       res=mysql_query(st, stc);
       if (res) {
         log_msg(ERR_ERROR, "mysql connection failure: %d", (int)res);

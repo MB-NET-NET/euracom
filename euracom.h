@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.14 $
- * Last modified:       $Date: 1998/05/29 07:26:52 $
+ * Version:             $Revision: 1.15 $
+ * Last modified:       $Date: 1999/01/08 11:40:28 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,16 +24,6 @@
 
 #if !defined(_EURACOM_H)
 #define _EURACOM_H
-
-/* Use local configuration */
-#include "config.h"
-
-/*
- * Use my weird macros
- */
-#define elsif			else if
-#define unless(s)		if (!(s))
-#define strredup(ptr, str)	safe_free(ptr),ptr=strdup(str)
 
 /*
  * select which terminal handling to use (currently only SysV variants)

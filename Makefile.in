@@ -5,7 +5,7 @@
 #
 # Released unter the terms of the GPL.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.1 1999/01/08 11:22:18 bus Exp $
+# $Id: Makefile.in,v 1.2 1999/01/08 11:40:27 bus Exp $
 #
 
 # !! PLEASE CHECK config.h AS WELL !!
@@ -134,8 +134,17 @@ ifeq ($(DATABASE), mysql)
 	mysql isdn < generate_mysql_tables.sql
 endif
 
+#
+# Re-create ./configure if needed. Hmm, it's a chicken and egg problem...
+#
+configure: configure.in
+	autoconf
+
 clean:
 	-rm -f *.o euracom prefixmatch.so euracom-man.txt ChangeLog gmon.out
+
+distclean: clean
+	-rm -f Makefile autoconf.h config.log config.cache config.status
 
 euracom-man.txt: euracom.8
 	nroff -Tascii -man $^ | col -b >$@

@@ -5,11 +5,13 @@
 /*********************************************************************/
 
 /*---------------------------------------------------------------------
- * Version:	$Id: utils.c,v 1.1 1998/08/29 08:30:16 bus Exp $
+ * Version:	$Id: utils.c,v 1.2 1999/01/08 11:40:28 bus Exp $
  * File:	$Source: /home/bus/Y/CVS/euracom/utils.c,v $
  *-------------------------------------------------------------------*/
 
-static char rcsid[] = "$Id: utils.c,v 1.1 1998/08/29 08:30:16 bus Exp $";
+static char rcsid[] = "$Id: utils.c,v 1.2 1999/01/08 11:40:28 bus Exp $";
+
+#include "config.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -25,6 +27,7 @@ static char rcsid[] = "$Id: utils.c,v 1.1 1998/08/29 08:30:16 bus Exp $";
 #include <ctype.h>
 #include <pwd.h>
 #include <errno.h>
+
 #include "log.h"
 #include "utils.h"
 
@@ -148,10 +151,10 @@ BOOLEAN delete_file(filename)
   const char *filename;
 {
   if (!unlink(filename)) {
-    log_debug(4, "delete_file: Removing %s", filename);
+    debug(4, "delete_file: Removing %s", filename);
     return (TRUE);
   } else {
-    log_debug(1, "delete_file: %s could not be deleted", filename);
+    debug(1, "delete_file: %s could not be deleted", filename);
     return (FALSE);
   }
 }
@@ -168,7 +171,7 @@ BOOLEAN copy_file(src, dst)
 {
   char    befehl[1024];
 
-  log_debug(2, "copy_file: Copying \"%s\" +==> \"%s\"", src, dst);
+  debug(2, "copy_file: Copying \"%s\" +==> \"%s\"", src, dst);
   sprintf(befehl, "/bin/cp %s %s\n", src, dst);
   system(befehl);		/* Blocking */
   return (TRUE);
@@ -186,7 +189,7 @@ int detach()
 {
   pid_t child;
 
-  log_debug(2, "Entering daemon mode...");
+  debug(2, "Entering daemon mode...");
 
   switch (child=fork()) {
     case -1: 
@@ -199,7 +202,7 @@ int detach()
         int fd_max = sysconf(_SC_OPEN_MAX);
         int fd;
 
-        log_debug(3, "fork() successful");
+        debug(3, "fork() successful");
 
         /* Ignore standard stop signals */
         signal(SIGTTOU, SIG_IGN);
@@ -318,7 +321,7 @@ void safe_free(void *ptr)
   if (ptr) {
     free(ptr); ptr=NULL;
   } else {
-    log_debug(1, "Freeing NULL pointer");
+    debug(1, "Freeing NULL pointer");
   }
 }
 
@@ -337,7 +340,7 @@ void *safe_malloc(size_t len)
     log_msg(ERR_FATAL, "Virtual memory exhausted. (%ld bytes requested)", len);
     exit(3);
   } else {
-    log_debug(5, "Allocated %ld bytes", len);
+    debug(5, "Allocated %ld bytes", len);
   }
   return(ptr);
 }

@@ -1,6 +1,6 @@
 TODO-Liste:
 ===========
-$Date: 1998/08/29 10:30:44 $ $Revision: 1.11 $
+$Date: 1999/01/08 11:40:27 $ $Revision: 1.12 $
 
 +----
 | *	To be done
@@ -14,11 +14,8 @@ $Date: 1998/08/29 10:30:44 $ $Revision: 1.11 $
 
 Euracom:
 --------
-*	1998-08-29 !! Umstieg auf autoconf
-*	1998-08-29 !! Portabilität des Codes wiederherstellen
-U	1998-08-29 MySQL support [Stefan Schorsch <sschorsch@mail.rmc.de>]
-D	1998-01-15 Erfassung der Gespraechsdauer (ohne KIT: max. dt=59s +/- OVSt.)
-	           (Im KITDUMP-Mode bereits implementiert)
+P	1998-08-29 Umstieg auf autoconf
+P	1998-08-29  Portabilität des Codes wiederherstellen
 P	1998-04-12 Aufsplittung der Rufnummer von euracom (-> neue Tabellenstruktur)
 *	1998-04-12 Gabi-Support
 D	1998-03-21 Adabas D support [Michael Tepperis <101355.1561@compuserve.com>]
@@ -29,7 +26,7 @@ D	1998-02-01 Recovery mode überpruefen
 
 DBMS:
 -----
-P	1998-04-12 Neue Datenstruktur
+D	1998-04-12 Neue Datenstruktur
 
 
 Auswertung:
@@ -43,8 +40,7 @@ D	1998-01-15 [PostgreSQL] prefix_match noch noetig? (substr geht nun)
 Dokumentation:
 --------------
 D	1998-03-21 Announce: Adabas D support
-V	1998-08-29 MySQL support
 *	1998-02-01 Möglichkeit mehrere Einträge gleichen Prefixes in WKN aufzunehmen
 
 -- 
-$Id: TODO,v 1.11 1998/08/29 10:30:44 bus Exp $
+$Id: TODO,v 1.12 1999/01/08 11:40:27 bus Exp $

@@ -8,8 +8,8 @@
  * Authors:             Michael Bussmann <bus@fgan.de>
  *                      Michael Tepperis <michael.tepperis@fernuni-hagen.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.5 $
- * Last modified:       $Date: 1998/08/29 08:33:37 $
+ * Version:             $Revision: 1.6 $
+ * Last modified:       $Date: 1999/01/08 11:40:28 $
  * Keywords:            ISDN, Euracom, Ackermann, mSQL
  *
  * based on 'postgres.c' applied with changes needed by msql
@@ -25,7 +25,9 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: msql.c,v 1.5 1998/08/29 08:33:37 bus Exp $";
+static char rcsid[] = "$Id: msql.c,v 1.6 1999/01/08 11:40:28 bus Exp $";
+
+#include "config.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -72,7 +74,7 @@ static BOOLEAN database_write_recovery( const char *stc );
  */
 void database_set_host( const char *str )
  {
-  log_debug( 2, "database: Setting host to %s", str );
+  debug( 2, "database: Setting host to %s", str );
   if ( msql_host )
    {
     free( msql_host );
@@ -82,7 +84,7 @@ void database_set_host( const char *str )
 
 void database_set_port( const char *str )
  {
-  log_debug( 2, "database: Setting port to %s", str );
+  debug( 2, "database: Setting port to %s", str );
   if ( msql_port )
    {
     free( msql_port );
@@ -92,7 +94,7 @@ void database_set_port( const char *str )
 
 void database_set_db( const char *str )
  {
-  log_debug( 2, "database: Setting database to %s", str );
+  debug( 2, "database: Setting database to %s", str );
   if ( msql_db )
    {
     free( msql_db );
@@ -102,13 +104,13 @@ void database_set_db( const char *str )
 
 void database_set_shutdown_timeout( int i )
  {
-  log_debug( 2, "database: Setting shutdown timeout to %d s", i );
+  debug( 2, "database: Setting shutdown timeout to %d s", i );
   shutdown_timeout = i;
  }
 
 void database_set_recovery_timeout( int i)
  {
-  log_debug( 2, "database: Setting recovery timeout to %d s", i );
+  debug( 2, "database: Setting recovery timeout to %d s", i );
   recovery_timeout = i;
  }
 
@@ -118,7 +120,7 @@ void database_set_recovery_timeout( int i)
  */
 BOOLEAN database_initialize( )
  {
-  log_debug( 1, "Initializing database subsystem..." );
+  debug( 1, "Initializing database subsystem..." );
 
   unless ( msql_db )
    {
@@ -130,8 +132,8 @@ BOOLEAN database_initialize( )
 
   /* Initial state of statemachine */
   db_state = DB_CLOSED;
-  log_debug( 1, "Will disconnect from DB after %ds idle time", shutdown_timeout) ;
-  log_debug( 1, "Will retry to establish connection after %ds", recovery_timeout );
+  debug( 1, "Will disconnect from DB after %ds idle time", shutdown_timeout) ;
+  debug( 1, "Will retry to establish connection after %ds", recovery_timeout );
   return( TRUE );
  }
 
@@ -140,7 +142,7 @@ BOOLEAN database_initialize( )
  */
 BOOLEAN database_shutdown( )
  {
-  log_debug( 1, "Shutting down database subsystem" );
+  debug( 1, "Shutting down database subsystem" );
   
   /* Release backend */
   database_change_state( DB_CLOSED );
@@ -375,7 +377,7 @@ BOOLEAN database_log( const char *cp )
  */
 static BOOLEAN database_msql_connect( )
  {
-  log_debug( 3, "Opening connection to database" );
+  debug( 3, "Opening connection to database" );
   /* Datenbank-Server-Verbindung herstellen */
   st = msqlConnect( NULL );
   if( st < 0 )
@@ -404,7 +406,7 @@ static BOOLEAN database_msql_execute( const char *stc, BOOLEAN do_recovery )
   switch ( db_state )
    {
     case DB_OPEN:
-      log_debug( 4, "Executing SQL: %s", stc );
+      debug( 4, "Executing SQL: %s", stc );
       res=msqlQuery(st, stc);
       unless (res) {
         log_msg(ERR_ERROR, "mSQL connection failure:");

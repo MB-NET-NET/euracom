@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.19 $
- * Last modified:       $Date: 1998/08/29 08:33:39 $
+ * Version:             $Revision: 1.20 $
+ * Last modified:       $Date: 1999/01/08 11:40:28 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,9 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.19 1998/08/29 08:33:39 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.20 1999/01/08 11:40:28 bus Exp $";
+
+#include "config.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -79,7 +81,7 @@ struct SerialFile *serial_allocate_file()
   sf->protocol_filename=sf->fd_device=NULL;
   sf->buffer=(char *)malloc(1024);
 
-  log_debug(3, "serial: Allocation request");
+  debug(3, "serial: Allocation request");
   return(sf);
 }
 
@@ -112,7 +114,7 @@ void serial_deallocate_file(struct SerialFile *sf)
 void serial_set_protocol_name(struct SerialFile *sf, const char *str)
 {
   strredup(sf->protocol_filename, str);
-  log_debug(2, "serial: Setting protocol name to %s", str);
+  debug(2, "serial: Setting protocol name to %s", str);
 }
 
 /*--------------------------------------------------------------------------
@@ -126,7 +128,7 @@ void serial_set_protocol_name(struct SerialFile *sf, const char *str)
 void serial_set_device(struct SerialFile *sf, const char *str)
 {
   strredup(sf->fd_device, str);
-  log_debug(2, "serial: Euracom device is %s", str);
+  debug(2, "serial: Euracom device is %s", str);
 }
 
 /*--------------------------------------------------------------------------
@@ -150,7 +152,7 @@ static char *device2lockfile(const struct SerialFile *sf, char *lock_file)
 
   s++;
   sprintf(lock_file, "%s/LCK..%s", LOCKPATH, s);
-  log_debug(3, "device2lockfile: %s -> %s", sf->fd_device, lock_file);
+  debug(3, "device2lockfile: %s -> %s", sf->fd_device, lock_file);
   return(lock_file);
 }
 
@@ -182,11 +184,11 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
   struct termios term;
   char lock_file[128];
 
-  log_debug(1, "Initializing RS232 port %s...", sf->fd_device);
+  debug(1, "Initializing RS232 port %s...", sf->fd_device);
   device2lockfile(sf, lock_file);
 
   /* Part 1a - Check for old lockfile */
-  log_debug(2, "Checking status of lockfile %s", lock_file);
+  debug(2, "Checking status of lockfile %s", lock_file);
   if ((fp=fopen(lock_file, "r"))) {
     pid_t pid;
 
@@ -204,7 +206,7 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
   if ((fp=fopen(lock_file, "w"))) {
     pid_t pid = getpid();
     
-    log_debug(2, "Locking device using %s (pid %d)", lock_file, pid);
+    debug(2, "Locking device using %s (pid %d)", lock_file, pid);
     fprintf(fp, "%11d", pid);
     fclose(fp);
   } else {
@@ -276,7 +278,7 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
   }
 #endif
 
-  log_debug(3, "serial_open_device: Device %s opened, fd is %d", sf->fd_device, sf->fd);
+  debug(3, "serial_open_device: Device %s opened, fd is %d", sf->fd_device, sf->fd);
   return(TRUE);
 }
 
@@ -292,13 +294,13 @@ BOOLEAN serial_close_device(struct SerialFile *sf)
 {
   char lock_file[128];
 
-  log_debug(1, "Shutting down RS232 port %s...", sf->fd_device);
+  debug(1, "Shutting down RS232 port %s...", sf->fd_device);
 
   /* In case we got called from the signal handler during init of v24 */
   if (sf->fd) {
     int flags = 0;
     
-    log_debug(2, "Resetting V24 line");
+    debug(2, "Resetting V24 line");
 
     /* Reset line to original state */
     if (TTY_SETATTR(sf->fd, &(sf->term))==-1) {
@@ -391,13 +393,13 @@ char *readln_rs232(struct SerialFile *sf)
     }
   } while (1);  /* Argh! */
 
-  log_debug(5, "Full line read from serial port");
+  debug(5, "Full line read from serial port");
   /* Make a copy of line if requested */
   if (sf->protocol_filename) {
     FILE *fp = fopen(sf->protocol_filename, "a");
 
     if (fp) {
-      log_debug(5, "Appending to protocol file");
+      debug(5, "Appending to protocol file");
       fputline(fp, sf->buffer);
       fclose(fp);
     }
