@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.7 $
-# Last modified:       $Date: 1997/10/04 16:51:00 $
+# Version:             $Revision: 1.8 $
+# Last modified:       $Date: 1997/10/05 09:16:59 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -42,9 +42,17 @@ require 'getopts.pl';
 require 'tel-utils.pm';
 
 #
+# This could be: sys_date (using timestamp when data was inserted into DB)
+#              : vst_date (using time as reported by Euracom)
+#
+$usedate="sys_date";
+
+$| = 1;
+
+#
 # Parse CMD line params
 #
-$opt_H=$opt_D=$opt_v=$opt_b=$opt_X=$opt_t=$opt_b=$opt_d="";
+$opt_H=$opt_D=$opt_v=$opt_b=$opt_X=$opt_t=$opt_b=$opt_d=$debugp="";
 
 &Getopts('dH:D:v:b:t:X:b:');
 
@@ -64,7 +72,7 @@ $TMPNAME="/tmp/charger.$$";
 # Fire up connection
 #
 debug("Opening connection...");
-$db = Pg::connectdb("dbname=$db_db");
+$db = Pg::connectdb("host=$db_host dbname=$db_db");
 if ($db->status!=PGRES_CONNECTION_OK) {
   $msg=$db->errorMessage;
   die "Open DB failed: $msg";
@@ -77,8 +85,8 @@ debug("connected to table $my_db on $my_user\@$my_host:$my_port\n");
 #
 &debug("Creating filter expression...");
 $filter_count=0;
-if ($von) { $filter_cmd[$filter_count++]="sys_date>='$von'"; }
-if ($bis) { $filter_cmd[$filter_count++]="sys_date<='$bis'"; }
+if ($von) { $filter_cmd[$filter_count++]="$usedate>='$von'"; }
+if ($bis) { $filter_cmd[$filter_count++]="$usedate<='$bis'"; }
 if ($tln) {
   $flag=0; $tmp="(";
   @tln = split(",", $tln);
@@ -105,7 +113,7 @@ map {
 &debug("Fetching data from db...");
 open(TMPFILE, ">$TMPNAME") || die "Cannot create temporary file";
 $db->exec("BEGIN") || die "BEGIN: $db->errorMessage";
-$db->exec("DECLARE cx CURSOR FOR SELECT int_no,remote_no,vst_date,vst_time,sys_date,sys_time,einheiten,geb_art,factor,pay,currency FROM euracom $filter_cmd ORDER BY sys_date,sys_time") || die "DECLARE: $db->errorMessage";
+$db->exec("DECLARE cx CURSOR FOR SELECT int_no,remote_no,date_part('epoch', $usedate),einheiten,direction,pay,currency,$usedate FROM euracom $filter_cmd ORDER BY $usedate") || die "DECLARE: $db->errorMessage";
 
 do {
   $res=$db->exec("FETCH forward 1 IN cx") || die "FETCH: $db->errorMessage";
@@ -170,55 +178,45 @@ unlink($TMPNAME);
 #
 sub htmlize_data()
 {
+  # int_no, remote_no, *_date, EH, dir, pay, cur, *_date (human readable)
+  # 0       1          2       3   4    5    6    7
   my (@arr) = @_;
-  # int_no, remote_no, vst_date, vst_time, sys_date, sys_time, EH, geb, fac, pay, cur
-  # 0       1          2         3         4         5         6   7    8    9    10
+  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($arr[2]);
 
   # Interne Nummer und Datum
   print "<TR><TD>";
   print "$arr[0]" if ($arr[0]);
-  $arr[4]=~tr/-/./;
-  print "</TD><TD>$arr[4] ".substr($arr[5], 0, 5)."</TD>";
+  printf "</TD><TD>%02d.%02d.19%2d %02d:%02d</TD>", $mday, $mon+1, $year, $hour, $min, $sec;
 
   # Je nach Art
-  SWITCH: {
-    if ($arr[7] eq "V") {
-      print "<TD>";
-      if ($arr[1] eq "") {
-        print "Eingehender Anruf"
-      } else {
-        print "Eingehender Anruf von ", &print_fqtn($arr[1]);
-      }
-      print "</TD><TD></TD><TD></TD>";
-      last SWITCH;
-    }
+  if ($arr[4] eq "I") {		# Incoming call
+    print "<TD>";
 
-    if ($arr[7] eq "G") {
-     print "<TD>";
-      if ($arr[1] eq "") {
-        print "???";
-      } else {
-        print &print_fqtn($arr[1]);
+    if ($arr[0]) {		# connection
+      print "Eingehender Anruf";
+      if ($arr[1]) {		# CLIP
+        print " von ". &print_fqtn($arr[1]);
       }
-      printf "</TD><TD>%d</TD><TD>%.2f %s</TD>", $arr[6], $arr[9], $arr[10];
-      $counter++;
-      last SWITCH;
-    }
-     
-    if ($arr[7] eq "K") {
-      print "<TD>";
-      if ($arr[1] eq "") {
-        print "Vergeblicher Anruf";
-      } else {
-        print "Vergeblicher Anruf von ", &print_fqtn($arr[1]);
+    } else {			# no connection
+      print "Vergeblicher Anruf";
+      if ($arr[1]) {		# CLIP
+        print " von ". &print_fqtn($arr[1]);
       }
-      print "</TD><TD></TD><TD></TD>";
-      last SWITCH;
     }
+    print "</TD><TD></TD><TD></TD>";
 
-    print "Falscher Typ $arr[7] fuer $arr[1]";
+  } elsif ($arr[4] eq "O") {	# Outgoing call
+    print "<TD>";
+    if ($arr[1] eq "") {
+      print "???";
+    } else {
+      print &print_fqtn($arr[1]);
+    }
+    printf "</TD><TD>%d</TD><TD>%.2f %s</TD>", $arr[3], $arr[5], $arr[6];
+    $counter++;
+  } else {
+    print "Falscher Typ $arr[4] für $arr[1]";
   }
-
   print "</TR>\n";
 }
 

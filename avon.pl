@@ -8,7 +8,7 @@ require 'tel-utils.pm';
 #
 # Telno -> FQTN converter
 #
-# $Id: avon.pl,v 1.5 1997/09/30 10:40:32 bus Exp $
+# $Id: avon.pl,v 1.6 1997/10/05 09:16:59 bus Exp $
 #
 
 #
@@ -33,7 +33,7 @@ $main::debugp = $opt_d || "";
 # Fire up connection
 #
 debug("Opening connection...");
-$db = Pg::connectdb("dbname=$main::db_db");
+$db = Pg::connectdb("host=$main::db_host dbname=$main::db_db");
 if ($db->status!=PGRES_CONNECTION_OK) { 
   $msg=$db->errorMessage;
   die "Open DB failed: $msg";
