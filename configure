@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# From configure.in Revision: 1.7 
+# From configure.in Revision: 1.8 
 # Guess values for system-dependent variables and create Makefiles.
 # Generated automatically using autoconf version 2.13 
 # Copyright (C) 1992, 93, 94, 95, 96 Free Software Foundation, Inc.
@@ -44,7 +44,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --with-area-code=xxx		Your area code (no leading 0) (no default)"
 ac_help="$ac_help
-  --with-currency-name=xxx	Name of your local currency (DEM)"
+  --with-currency-name=xxx	Name of your local currency (EUR)"
 ac_help="$ac_help
   --with-database-name=xxx	Name of the database to connect to (isdn)"
 
@@ -568,7 +568,7 @@ recoverytimeout=900
 recoveryfile="/tmp/euracom.recovery"
 countrycode="49"
 areacode=""
-localcurrency="DEM"
+localcurrency="EUR"
 databasename="isdn"
 
 dbdir="/opt/postgreSQL"

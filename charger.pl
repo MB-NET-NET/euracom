@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@mb-net.net>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.18 $
-# Last modified:       $Date: 2001/06/16 17:07:21 $
+# Version:             $Revision: 1.19 $
+# Last modified:       $Date: 2001/12/02 14:06:49 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #**************************************************************************
 
 #
-# $Id: charger.pl,v 1.18 2001/06/16 17:07:21 bus Exp $
+# $Id: charger.pl,v 1.19 2001/12/02 14:06:49 bus Exp $
 #
 
 use DBI;
@@ -62,7 +62,7 @@ $von    = $opt_v || "";
 $bis    = $opt_b || "";
 $MSN    = $opt_X || "";
 $tln    = $opt_t || "";
-$charge = $opt_B || 18.0;
+$charge = $opt_B || 10.3;
 
 $debugp = $opt_d || "";
 
@@ -148,9 +148,9 @@ SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),direction,pay,cu
 # Print footer
 #
 ($pay) = $dbh->selectrow_array("SELECT sum(pay) from euracom $filter_cmd") || die "SELECT sum: $DBI::errstr";
-printf "<tr><td></td><td></td><td>%d Gespr&auml;che</td><td>%.3f DEM</td></tr>\n", $counter, $pay;
-printf "<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td>%.3f DEM</td></tr>\n", $charge;
-printf "<tr><td></td><td></td><td>GESAMT:</td><td><B>%.2f DEM</B></td></tr>\n", $pay+$charge;
+printf "<tr><td></td><td></td><td>%d Gespr&auml;che</td><td>%.3f EUR</td></tr>\n", $counter, $pay;
+printf "<tr><td></td><td></td><td>Grundgeb&uuml;hr</td><td>%.3f EUR</td></tr>\n", $charge;
+printf "<tr><td></td><td></td><td>GESAMT:</td><td><B>%.2f EUR</B></td></tr>\n", $pay+$charge;
 print "</table></center><br><hr><address>";
 print "Michael Bussmann, Im Brook 8, 45721 Haltern</address></body></html>\n";
 

@@ -3,10 +3,10 @@ dnl Configuration input file for euracom
 dnl
 dnl Michael Bussmann <bus@mb-net.net>
 dnl
-dnl $Id: configure.in,v 1.8 2001/06/16 17:06:23 bus Exp $
+dnl $Id: configure.in,v 1.9 2001/12/02 14:06:49 bus Exp $
 dnl
 
-AC_REVISION($Revision: 1.8 $)
+AC_REVISION($Revision: 1.9 $)
 AC_INIT(euracom.c)
 AC_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local)
@@ -22,7 +22,7 @@ recoverytimeout=900
 recoveryfile="/tmp/euracom.recovery"
 countrycode="49"
 areacode=""
-localcurrency="DEM"
+localcurrency="EUR"
 databasename="isdn"
 
 dbdir="/opt/postgreSQL"
@@ -268,7 +268,7 @@ fi
 
 AC_MSG_CHECKING(for name of local currency)
 AC_ARG_WITH(currency-name,
-[  --with-currency-name=xxx	Name of your local currency (DEM)],
+[  --with-currency-name=xxx	Name of your local currency (EUR)],
 [  localcurrency=$withval
 ]
 )
