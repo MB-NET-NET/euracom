@@ -5,7 +5,7 @@
 #
 # Released unter the terms of the GPL version 2.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.8 1999/03/19 10:30:03 bus Exp $
+# $Id: Makefile.in,v 1.9 1999/06/03 12:30:40 bus Exp $
 #
 
 #
@@ -123,14 +123,14 @@ endif
 # Re-create ./configure if needed. Hmm, it's a chicken and egg problem...
 #
 configure: configure.in
-	-rm autoconf.h config.log config.cache config.status
+	-rm config.h config.log config.cache config.status
 	autoconf
 
 clean:
 	-rm -f *.o euracom prefixmatch.so euracom-man.txt ChangeLog gmon.out
 
 distclean: clean
-	-rm -f Makefile autoconf.h config.log config.cache config.status
+	-rm -f Makefile config.h config.log config.cache config.status
 
 euracom-man.txt: euracom.8
 	nroff -Tascii -man $^ | col -b >$@
