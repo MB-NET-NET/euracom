@@ -7,7 +7,7 @@
 
    Michael Bussmann <bus@fgan.de>
 
-   $Id: postgres.c,v 1.2 1997/09/02 11:03:42 bus Exp $
+   $Id: postgres.c,v 1.3 1997/09/25 11:27:50 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/postgres.c,v $
  */
 
@@ -24,12 +24,12 @@
 #include "fileio.h"
 
 #define DEF_DB          "isdn"
-#define DEF_TABLE       "euracom"
 
 #define RECOVERY_FILE   "/tmp/euracom.recovery"
 
-#define SHUTDOWN_TIMEOUT 30
-#define RECOVERY_TIMEOUT 60
+/* Timeouts in s */
+#define SHUTDOWN_TIMEOUT 120	/* Drop connection after 2 minutes idle time */
+#define RECOVERY_TIMEOUT 900	/* Retry after 15 mins */
 
 static char *pg_host = NULL;
 static char *pg_port = NULL;
@@ -40,6 +40,9 @@ static time_t last_recovery = 0;
 
 static PGconn *db_handle = NULL;
 static enum DB_State { DB_OPEN, DB_CLOSED, RECOVERY} db_state = DB_CLOSED;
+
+static unsigned int shutdown_timeout = SHUTDOWN_TIMEOUT;
+static unsigned int recovery_timeout = RECOVERY_TIMEOUT;
 
 
 BOOLEAN database_change_state(enum DB_State);
@@ -62,7 +65,9 @@ BOOLEAN database_initialize(const char *host, const char *port, const char *db)
   pg_db=strdup(db?db:DEF_DB);
 
   db_state=DB_CLOSED;
-  
+
+  log_msg(ERR_JUNK, "Drop connection to DB after %ds idle time", shutdown_timeout);
+  log_msg(ERR_JUNK, "Retry to establish connection after %ds", recovery_timeout);
   return(TRUE);
 }
 
@@ -97,7 +102,7 @@ void database_check_state()
   switch (db_state) {
     case DB_OPEN:
       /* If no write for SHUTDOWN_TIMEOUT secs, shut it down */
-      if (now-last_db_write>SHUTDOWN_TIMEOUT) {
+      if (now-last_db_write>shutdown_timeout) {
         database_change_state(DB_CLOSED);
       }
       break;
@@ -108,7 +113,7 @@ void database_check_state()
 
     case RECOVERY:
       /* When recovery timeout has exeeded, try to re-establish connection */
-      if (now-last_recovery>RECOVERY_TIMEOUT) {
+      if (now-last_recovery>recovery_timeout) {
         log_msg(ERR_INFO, "Trying to re-establish connection");
 	database_change_state(DB_OPEN);
       }
