@@ -1,0 +1,18 @@
+Die Umstellung auf GNU autoconf ist noch im vollen Gange.  Aus diesem Grunde
+stimmen die Anweisungen in README.html nicht mehr so ganz.  Was zur
+Installation gemacht werden muß:
+
+  a) ./configure --help
+
+  b) ./configure <options>
+
+     Die Firmware release muß in jedem Fall mit angegeben werden!
+
+  c) Configure erzeugt 'Makefile' und 'autoconf.h'.
+     * Ändern Sie 'Makefile', um das Programm für die richtige Datenbank
+       zu übersezten.
+
+     * Ändern Sie 'config.h' für weitere Programmeinstellungen
+
+1999-02-07 -- MB
+

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-04 16:51:00 GMT
- * Version:             $Revision: 1.12 $
- * Last modified:       $Date: 1999/01/09 13:05:08 $
+ * Version:             $Revision: 1.13 $
+ * Last modified:       $Date: 1999/02/07 10:32:20 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -71,12 +71,6 @@
 /* #define	USE_DATE_FROM	system */
 
 /* --------------------------------------------------------------------------
- * Euracom settings
- * --------------------------------------------------------------------------
- */
-#define FIRMWARE_MAJOR	1
-
-/* --------------------------------------------------------------------------
  * V24/interface options
  * --------------------------------------------------------------------------
  */
@@ -91,12 +85,6 @@
  * Where to write the lockfile
  */
 #define LOCKPATH		"/var/lock"
-
-/*
- * Define this if euracom has problems detecting CTS
- */
-#undef	DONT_CHECK_CTS
-
 
 /* --------------------------------------------------------------------------
  * Daemon options
