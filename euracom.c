@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-09 17:31:56 GMT
- * Version:             $Revision: 1.26 $
- * Last modified:       $Date: 1998/02/15 09:58:44 $
+ * Version:             $Revision: 1.27 $
+ * Last modified:       $Date: 1998/02/15 11:10:11 $
  * Keywords:            ISDN, Euracom, Ackermann
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: euracom.c,v 1.26 1998/02/15 09:58:44 bus Exp $";
+static char rcsid[] = "$Id: euracom.c,v 1.27 1998/02/15 11:10:11 bus Exp $";
 
 #include <unistd.h>
 #include <getopt.h>
@@ -178,16 +178,17 @@ void conv_phone(char *dst, const char *src)
  *------------------------------------------------------------------------*/
 struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
 {
+  #define MAX_ARGS 6
   char *buf=strdup(str);	/* Make a copy */
-  char *argv[6];		/* Arguments */
+  char *argv[MAX_ARGS];		/* Arguments */
   struct tm tm;
-  int num=0;
+  int num;
 
-  /* Split string into argv array, set num */
-  if ((argv[0]=strtok(buf, "|"))) {
-    while ((argv[++num]=strtok(NULL, "|")) && (stripblank(argv[num])) && (num<6));
-  }
-    
+  /* Split up input line, I hope short-circuit evaluation is what it's used to be  */
+  for (num=0; ((num<MAX_ARGS) && 
+               (argv[num]=strtok(num?NULL:buf, "|")) && 
+               (stripblank(argv[num]))); num++);
+
   if ((num<3) || (num>5)) {
     log_msg(ERR_ERROR, "Got %d fields in input line", num);
     safe_free(buf);
@@ -247,8 +248,7 @@ struct GebuehrInfo *eura2geb(struct GebuehrInfo *geb, const char *str)
   strcpy(geb->waehrung, LOCAL_CURRENCY);
   geb->betrag_base=PRICE_PER_UNIT;
 
-  /* geb->datum_sys wird *nicht* gesetzt! */
-
+  /* Don't touch geb->datum_sys */
   safe_free(buf);
   return(geb);
 }
@@ -429,8 +429,7 @@ int select_loop()
   do {
     struct timeval tv;
  
-    FD_ZERO(&rfds);
-    FD_SET(euracom_fd, &rfds);
+    FD_ZERO(&rfds); FD_SET(euracom_fd, &rfds);
     tv.tv_sec=10; tv.tv_usec=0;
     retval=select(euracom_fd+1, &rfds, NULL, NULL, &tv);
 
