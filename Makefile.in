@@ -5,7 +5,7 @@
 #
 # Released unter the terms of the GPL version 2.  See LICENCE for details
 #
-# $Id: Makefile.in,v 1.9 1999/06/03 12:30:40 bus Exp $
+# $Id: Makefile.in,v 1.10 1999/10/29 09:46:25 bus Exp $
 #
 
 #
@@ -14,7 +14,7 @@
 CC              = @CC@
 INSTALL_BIN     = @INSTALL@
 LN_S            = @LN_S@
-AC_CFLAGS       = @CFLAGS@
+CFLAGS          = @CFLAGS@
 LDFLAGS         = @LDFLAGS@
 LIBS            = @LIBS@
 LIBOBJS         = @LIBOBJS@
