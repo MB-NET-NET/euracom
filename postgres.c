@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.9 $
- * Last modified:       $Date: 1998/01/18 09:34:30 $
+ * Version:             $Revision: 1.10 $
+ * Last modified:       $Date: 1998/02/01 11:15:34 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.9 1998/01/18 09:34:30 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.10 1998/02/01 11:15:34 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -365,15 +365,22 @@ BOOLEAN database_pg_execute(const char *stc, BOOLEAN do_recovery)
     case DB_OPEN:
       log_debug(4, "Executing SQL: %s", stc);
       pgres=PQexec(db_handle, stc);
-      if (PQresultStatus(pgres)!=PGRES_COMMAND_OK) {
-        log_msg(ERR_ERROR, "PostgreSQL error: %s", PQcmdStatus(pgres));
-        PQclear(pgres);
+      /* Error issuing request */
+      unless (pgres) {
+        log_msg(ERR_ERROR, "PostgreSQL connection failure: %s", PQerrorMessage(db_handle));
         if (do_recovery) { database_write_recovery(stc); }
         return(FALSE);
-      } else {
-        /* Write successful */
-        last_db_write=time(NULL);
       }
+      /* Check whether command was accepted */
+      if (PQresultStatus(pgres)!=PGRES_COMMAND_OK) {
+        log_msg(ERR_ERROR, "PostgreSQL command error: %s", PQcmdStatus(pgres));
+        log_msg(ERR_ERROR, "Offending command was %s", stc);
+        if (do_recovery) { database_write_recovery(stc); }
+        PQclear(pgres);
+        return(FALSE);
+      }
+      /* Write successful */
+      last_db_write=time(NULL);
       PQclear(pgres);
       return(TRUE);
       break;
