@@ -9,8 +9,8 @@
 #
 # Authors:             Michael Bussmann <bus@fgan.de>
 # Created:             1997-09-02 11:03:41 GMT
-# Version:             $Revision: 1.8 $
-# Last modified:       $Date: 1997/10/05 09:16:59 $
+# Version:             $Revision: 1.9 $
+# Last modified:       $Date: 1998/01/08 12:31:19 $
 # Keywords:            ISDN, Euracom, Ackermann
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -66,8 +66,6 @@ $tln    = $opt_t || "";
 $charge = $opt_b || 18.0;
 $debugp = $opt_d || "";
 
-$TMPNAME="/tmp/charger.$$";
-
 #
 # Fire up connection
 #
@@ -108,32 +106,6 @@ map {
 &debug("o.k.: $filter_cmd\n");
 
 #
-# Copy data to temporary file
-#
-&debug("Fetching data from db...");
-open(TMPFILE, ">$TMPNAME") || die "Cannot create temporary file";
-$db->exec("BEGIN") || die "BEGIN: $db->errorMessage";
-$db->exec("DECLARE cx CURSOR FOR SELECT int_no,remote_no,date_part('epoch', $usedate),einheiten,direction,pay,currency,$usedate FROM euracom $filter_cmd ORDER BY $usedate") || die "DECLARE: $db->errorMessage";
-
-do {
-  $res=$db->exec("FETCH forward 1 IN cx") || die "FETCH: $db->errorMessage";
-
-  if ($num=$res->ntuples) {
-    for ($i=0; $i<$res->nfields; $i++) {
-      $val=$res->getvalue(0,$i);
-      print TMPFILE "$val;";
-    }
-    print TMPFILE "\n";
-  };
-
-} while ($num);
-
-$db->exec("CLOSE cx") || die "CLOSE: $db->errorMessage\n";
-$db->exec("END") || die "END: $db->errorMessage\n";
-close(TMPFILE);
-&debug("o.k.\n");
-
-#
 # Print bloody HTML header
 #
 print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n";
@@ -143,14 +115,14 @@ print "<center><table border=\"5\" cellspacing=\"2\" cellpadding=\"2\">\n";
 print "<tr><th>Anschlu&szlig;</th><th>Datum</th> <th>Rufnummer</th><th>Einheiten</th><th>Betrag</th></tr>\n";
 
 #
-# Do evaluation
+# Perform evaluation
 #
-$counter=0;
-open(TMPFILE, "$TMPNAME") || die "Cannot open temporary file";
-while (<TMPFILE>) {
-  if (@data=split(";", $_)) { &htmlize_data(@data); }
-}
-close(TMPFILE);
+SQLselect("SELECT int_no,remote_no,date_part('epoch', $usedate),einheiten,direction,pay,currency,$usedate FROM euracom $filter_cmd ORDER BY $usedate", "eval_result");
+
+#
+# That's it
+#
+&debug("o.k.\n");
 
 #
 # Print footer
@@ -163,24 +135,18 @@ printf "<tr><td></td><td></td><td>GESAMT:</td><td></td><td><B>%.2f DEM</B></td><
 print "</table></center><br><hr><address>";
 print "Michael Bussmann, Im Brook 8, 45721 Haltern</address></body></html>\n";
 
-#
-# That's it
-#
+debug("Closing connection\n");
 undef $db;
-unlink($TMPNAME);
-
 
 #
-# sub htmlize_data()
+# eval_result()
 #
-# Input : fetchrow() array
-# Output: Table items
-#
-sub htmlize_data()
+sub eval_result()
 {
   # int_no, remote_no, *_date, EH, dir, pay, cur, *_date (human readable)
   # 0       1          2       3   4    5    6    7
   my (@arr) = @_;
+  my ($num, $i);
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($arr[2]);
 
   # Interne Nummer und Datum
