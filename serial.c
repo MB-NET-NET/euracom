@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.12 $
- * Last modified:       $Date: 1998/02/15 09:58:45 $
+ * Version:             $Revision: 1.13 $
+ * Last modified:       $Date: 1998/02/15 11:52:47 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.12 1998/02/15 09:58:45 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.13 1998/02/15 11:52:47 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -110,8 +110,8 @@ void serial_deallocate_file(struct SerialFile *sf)
  *------------------------------------------------------------------------*/
 void serial_set_protocol_name(struct SerialFile *sf, const char *str)
 {
+  strredup(sf->protocol_filename, str);
   log_debug(2, "serial: Setting protocol name to %s", str);
-  str_redup(sf->protocol_filename, str);
 }
 
 /*--------------------------------------------------------------------------
@@ -124,8 +124,8 @@ void serial_set_protocol_name(struct SerialFile *sf, const char *str)
  *------------------------------------------------------------------------*/
 void serial_set_device(struct SerialFile *sf, const char *str)
 {
-  log_debug(2, "serial: Euracom device is %s", sf->fd_device);
-  str_redup(sf->fd_device, str);
+  strredup(sf->fd_device, str);
+  log_debug(2, "serial: Euracom device is %s", str);
 }
 
 /*--------------------------------------------------------------------------
@@ -225,12 +225,12 @@ BOOLEAN serial_open_device(struct SerialFile *sf)
 
   /* Make a copy of original line settings */
   if (TTY_GETATTR(sf->fd, &(sf->term))==-1) {
-    log_msg(ERR_CRIT, "serial_open_device: Could not backup line settings: %s", strerror(errno));
+    log_msg(ERR_CRIT, "Could not backup line settings: %s", strerror(errno));
     serial_close_device(sf);
     return(FALSE);
   }
   if (TTY_GETATTR(sf->fd, &term)==-1) {
-    log_msg(ERR_CRIT, "serial_open_device: Could get working set of line settings: %s", strerror(errno));
+    log_msg(ERR_CRIT, "Could get working set of line settings: %s", strerror(errno));
     serial_close_device(sf);
     return(FALSE);
   }

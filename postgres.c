@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.13 $
- * Last modified:       $Date: 1998/02/15 09:58:44 $
+ * Version:             $Revision: 1.14 $
+ * Last modified:       $Date: 1998/02/15 11:52:46 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.13 1998/02/15 09:58:44 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.14 1998/02/15 11:52:46 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -78,19 +78,19 @@ static BOOLEAN database_write_recovery(const char *stc);
 void database_set_host(const char *str)
 {
   log_debug(2, "database: Setting host to %s", str);
-  str_redup(pg_host, str);
+  strredup(pg_host, str);
 }
 
 void database_set_port(const char *str)
 {
   log_debug(2, "database: Setting port to %s", str);
-  str_redup(pg_port, str);
+  strredup(pg_port, str);
 }
 
 void database_set_db(const char *str)
 {
   log_debug(2, "database: Setting database to %s", str);
-  str_redup(pg_db, str);
+  strredup(pg_db, str);
 }
 
 void database_set_shutdown_timeout(int i)

@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-10-27 09:30:04 GMT
- * Version:             $Revision: 1.10 $
- * Last modified:       $Date: 1998/02/04 09:22:56 $
+ * Version:             $Revision: 1.11 $
+ * Last modified:       $Date: 1998/02/15 11:52:46 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -31,8 +31,9 @@
 /*
  * Use my weird macros
  */
-#define elsif else if
-#define unless(s) if (!(s))
+#define elsif			else if
+#define unless(s)		if (!(s))
+#define strredup(ptr, str)	safe_free(ptr),ptr=strdup(str)
 
 /*
  * select which terminal handling to use (currently only SysV variants)
