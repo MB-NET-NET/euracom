@@ -18,6 +18,9 @@ int main()
     lookup_number(cp, &fqtn);
     convert_telno(telno, &fqtn);
     printf("->%s\n", telno);
+    printf("--> (%s) %s - %s; %s (%s)\n",
+    	fqtn.avon, fqtn.telno, fqtn.rest,
+    	fqtn.wkn, fqtn.avon_name);
   }
   closeDB();
   close_log();
