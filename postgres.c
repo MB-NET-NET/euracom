@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1997-08-28 09:30:44 GMT
- * Version:             $Revision: 1.8 $
- * Last modified:       $Date: 1998/01/17 13:33:02 $
+ * Version:             $Revision: 1.9 $
+ * Last modified:       $Date: 1998/01/18 09:34:30 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: postgres.c,v 1.8 1998/01/17 13:33:02 bus Exp $";
+static char rcsid[] = "$Id: postgres.c,v 1.9 1998/01/18 09:34:30 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -105,7 +105,7 @@ void database_set_shutdown_timeout(int i)
 void database_set_recovery_timeout(int i)
 {
   log_debug(2, "database: Setting recovery timeout to %s s", i);
-  shutdown_timeout=i;
+  recovery_timeout=i;
 }
 
 /*
