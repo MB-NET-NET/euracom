@@ -7,8 +7,8 @@
  *
  * Authors:             Michael Bussmann <bus@fgan.de>
  * Created:             1996-10-19 10:58:42 GMT
- * Version:             $Revision: 1.15 $
- * Last modified:       $Date: 1998/05/22 07:13:36 $
+ * Version:             $Revision: 1.16 $
+ * Last modified:       $Date: 1998/05/23 07:56:16 $
  * Keywords:            ISDN, Euracom, Ackermann, PostgreSQL
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,7 +22,7 @@
  * more details.
  **************************************************************************/
 
-static char rcsid[] = "$Id: serial.c,v 1.15 1998/05/22 07:13:36 bus Exp $";
+static char rcsid[] = "$Id: serial.c,v 1.16 1998/05/23 07:56:16 bus Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
@@ -365,12 +365,12 @@ char *readln_rs232(struct SerialFile *sf)
       read(sf->fd, &inbuf[0], 1);
       *cp=inbuf[0];
 #if (FIRMWARE_MAJOR<2)
-      if (*cp=='\0')	/* 1.x: blah 0D 0A 00 */
-#else
-      if (*cp==0x0a)	/* 2.x: blah 0D 0A */
-#endif
-      {
+      if (*cp=='\0') {	/* 1.x: blah (0D) 0A 00 */
         *(cp-1)='\0';
+#else
+      if (*cp==0x0a) {	/* 2.x: blah (0D) 0A */
+        *cp='\0';
+#endif
         break;
       } else {
 	cp++;
