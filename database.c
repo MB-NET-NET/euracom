@@ -1,42 +1,89 @@
 /* Database.c - Routines for phone-number lookups
-   $Id: database.c,v 1.1 1996/11/02 13:11:55 bus Exp $
+   $Id: database.c,v 1.2 1996/11/02 15:19:57 bus Exp $
    $Source: /home/bus/Y/CVS/euracom/Attic/database.c,v $
 */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <gdbm.h>
+#include <time.h>
 #include "euracom.h"
 #include "log.h"
 #include "utils.h"
 #include "fileio.h"
 
 #define DB_BLOCK_SIZE	1024
+#define DB_MODE		0644
 
-struct FQTN {
-  char avon[15];
-  char telno[40];
-  char rest[15];
-  char avon_name[40];
-  char wkn[40];
-};
+static GDBM_FILE db_avon, db_wkn;
+static BOOLEAN db_open = FALSE;
 
-int createDB(char *txt, char *db)
+
+BOOLEAN openDB(char *db1, char *db2)
+{
+  if (db_open) {
+    log_msg(ERR_WARNING, "Databases already opened. Ignoring request");
+    return(TRUE);
+  }
+
+  db_avon = gdbm_open(db1, DB_BLOCK_SIZE, GDBM_READER, 0644, NULL);
+  db_wkn  = gdbm_open(db2, DB_BLOCK_SIZE, GDBM_READER, 0644, NULL);
+
+  if (!db_avon) {
+    log_msg(ERR_ERROR, "Error opening %s", db1);
+    return(FALSE);
+  }
+  
+  if (!db_wkn) {
+    log_msg(ERR_ERROR, "Error opeing %s", db2);
+    return(FALSE);
+  }
+
+  db_open=TRUE;
+  return(TRUE);
+}
+
+BOOLEAN closeDB()
+{
+  if (db_open) {
+    gdbm_close(db_avon);
+    gdbm_close(db_wkn);
+    log_msg(ERR_DEBUG, "Database files closed");
+    db_open=FALSE;
+    return(TRUE);
+  } else {
+    log_msg(ERR_WARNING, "Database files already closed");
+    return(FALSE);
+  }
+}
+
+
+/*------------------------------------------------------*/
+/* BOOLEAN createDB()                                   */
+/* */
+/* Creates database file                                */
+/* */
+/* RetCode: TRUE: O.k; FALSE: Error occured             */
+/*------------------------------------------------------*/
+static BOOLEAN createDB(char *txt, char *db)
 {
   GDBM_FILE dbf;
   FILE *fp;
   char *cp;
   int num=0;
 
-  printf("Creating database files...\n");
-  if ((dbf=gdbm_open(db, DB_BLOCK_SIZE, GDBM_NEWDB | GDBM_FAST, 0644, NULL))==NULL) {
-    fprintf(stderr, "Error creating database files\n");
-    return(0);
+  log_msg(ERR_INFO, "Creating database %s from plain file %s",
+	  db, txt);
+  if ((dbf=gdbm_open(db, DB_BLOCK_SIZE, GDBM_NEWDB | GDBM_FAST, DB_MODE, NULL))==NULL) {
+    log_msg(ERR_CRIT, "Error creating GDBM file");
+    return(FALSE);
   }
 
   if ((fp=fopen(txt, "rt"))==NULL) {
-    fprintf(stderr, "Error reading source file\n");
-    return(0);
+    log_msg(ERR_CRIT, "Error reading %s: %s",
+	    txt, strerror(errno));
+    return(FALSE);
   }
 
   while (cp=fgetline(fp, NULL)) {
@@ -49,22 +96,47 @@ int createDB(char *txt, char *db)
       key.dptr=cp; key.dsize=strlen(cp);
       content.dptr=cp2; content.dsize=strlen(cp2);
       if ((ret=gdbm_store(dbf, key, content, GDBM_REPLACE))!=0) {
-        fprintf(stderr, "Inserting %s: Return code is %d\n", cp, ret);
+	log_msg(ERR_WARNING, "Could not insert %s in database. Return code is %d",
+		cp, ret);
       } else {
         num++;
       }
     }
   }
-  printf("%d lines added to database\n", num);
+  log_msg(ERR_DEBUG, "%d lines added to the database file", num);
 
   fclose(fp);
   gdbm_close(dbf);
 
-  return(num);
+  return(TRUE);
 }
 
 
-int split_text(GDBM_FILE dbf, 
+/*------------------------------------------------------*/
+/* BOOLEAN check_createDB()                             */
+/* */
+/* Creates database file if neccessary                  */
+/* */
+/* RetCode: TRUE: O.k; FALSE: Error occured             */
+/*------------------------------------------------------*/
+BOOLEAN check_createDB(char *txt, char *db)
+{
+  if (last_modified(txt)>last_modified(db)) {
+    log_msg(ERR_NOTICE, "%s is newer that %s. Re-creating database", txt, db);
+    return(createDB(txt, db));
+  }
+  return(TRUE);
+}
+
+
+/*------------------------------------------------------*/
+/* BOOLEAN split_text()                                 */
+/* */
+/* Splits up all_txt and writes key, value, rest        */
+/* */
+/* RetCode: TRUE: O.k; FALSE: Item not found            */
+/*------------------------------------------------------*/
+static BOOLEAN split_text(GDBM_FILE dbf, 
 	       char *all_txt, 
 	       char *key, char *value, char *rest)
 {
@@ -86,78 +158,61 @@ int split_text(GDBM_FILE dbf,
 	value[content.dsize]='\0';
 	strcpy(rest, &all_txt[db_key.dsize]);
 	free(content.dptr);
-	return(1);
+	return(TRUE);
       } else {
-	fprintf(stderr, "Yikes! Key exists but cannot be fetched\n");
+	log_msg(ERR_CRIT, "Key exists but cannot be fetched");
       }
     }	/* IF gdbm_exists */
   }	/* FOR i */
-  return(0);
+  return(FALSE);
 }
 
 
-int print_fqtn(struct FQTN *fqtn)
+/*------------------------------------------------------*/
+/* void lookup_number()                                 */
+/* */
+/* Converts plain telephone-number in FQTN struct       */
+/*------------------------------------------------------*/
+void lookup_number(TelNo num, struct FQTN *fqtn)
 {
-  printf("Telefonnummer:\tAVON %s TELNO %s REST %s\n\tWKN %s (AVONN %s)\n",
-	 fqtn->avon, fqtn->telno, fqtn->rest,
-	 fqtn->wkn, fqtn->avon_name);
-  return(0);
-}
+  char t1[128], t2[128], t3[128];
 
-int read_loop()
-{
-  GDBM_FILE dbf1 = gdbm_open("./avondb", DB_BLOCK_SIZE, GDBM_READER, 0644, NULL);
-  GDBM_FILE dbf2 = gdbm_open("./wkndb", DB_BLOCK_SIZE, GDBM_READER, 0644, NULL);
-  char *cp;
-
-  if (!dbf1) {
-    fprintf(stderr, "Error opening dbf\n");
-    return(0);
+  /* Teil 1: WKN */
+  if (split_text(db_wkn, num, t1, t2, t3)) {
+    strcpy(fqtn->telno, t1);
+    strcpy(fqtn->wkn, t2);
+    strcpy(fqtn->rest, t3);
+  } else {
+    strcpy(fqtn->telno, num);
+    strcpy(fqtn->wkn, "");
+    strcpy(fqtn->rest, "");
   }
-  if (!dbf2) {
-    fprintf(stderr, "Error opening dbf\n");
-    return(0);
-  }
-  while (cp=fgetline(stdin, NULL)) {
-    struct FQTN fqtn;
-    char t1[128], t2[128], t3[128];
-
-    /* Teil 1: WKN */
-    if (split_text(dbf2, cp, t1, t2, t3)) {
-      strcpy(fqtn.telno, t1);
-      strcpy(fqtn.wkn, t2);
-      strcpy(fqtn.rest, t3);
-    } else {
-      strcpy(fqtn.telno, cp);
-      strcpy(fqtn.wkn, "WKN");
-      strcpy(fqtn.rest, "REST");
-    }
       
-    /* Teil 2. AVON */
-    if (split_text(dbf1, fqtn.telno, t1, t2, t3)) {
-      strcpy(fqtn.avon, t1); 
-      strcpy(fqtn.avon_name, t2);
-      strcpy(fqtn.telno, t3); 
-    } else {
-      strcpy(fqtn.avon, "AVON");
-      strcpy(fqtn.avon_name, "AVON NAME");
-    }
+  /* Teil 2. AVON */
+  if (split_text(db_avon, fqtn->telno, t1, t2, t3)) {
+    strcpy(fqtn->avon, t1); 
+    strcpy(fqtn->avon_name, t2);
+    strcpy(fqtn->telno, t3); 
+  } else {
+    strcpy(fqtn->avon, "");
+    strcpy(fqtn->avon_name, "");
+  }
+}
 
-    print_fqtn(&fqtn);
+void convert_telno(TelNo telno, struct FQTN *fqtn)
+{
+  strcpy(telno, "");
+  if (strlen(fqtn->avon)) {
+    strcat(telno, fqtn->avon);
+    strcat(telno, " ");
+  }
+ 
+  if (strlen(fqtn->telno)) {
+    strcat(telno, fqtn->telno);
   }
 
-
-  gdbm_close(dbf1);
-  gdbm_close(dbf2);
+  if (strlen(fqtn->rest)) {
+    strcat(telno, "-");
+    strcat(telno, fqtn->rest);
+  }
 }
-
-
-int main()
-{
-  /* createDB("./avon.dat", "./avondb");
-  createDB("./wkn.dat", "./wkndb"); */
-
-  read_loop();
-  return(0);
-}
-
