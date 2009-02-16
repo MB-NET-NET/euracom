@@ -28,6 +28,7 @@ static char rcsid[] = "$Id$";
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <time.h>
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <string.h>

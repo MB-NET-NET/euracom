@@ -3,17 +3,19 @@
  *
  * $Id$
  */
+
+#include "postgres.h"
 #include <string.h>
-#include "postgres_ext.h"
-#include "libpq-fe.h"
-#include "server/c.h"
+#include "8.3/server/fmgr.h"
+
+PG_MODULE_MAGIC;
 
 bool prefix_match(text *t1, text *t2)
 {
-  return (strncasecmp(t1->vl_dat, t2->vl_dat, t2->vl_len-4)==0);
+  return (strncasecmp(VARDATA(t1), VARDATA(t2), VARSIZE(t2)-VARHDRSZ)==0);
 }
 
 int2 length(text *t1)
 {
-  return (t1->vl_len-4);
+  return (VARSIZE(t1)-VARHDRSZ);
 }
