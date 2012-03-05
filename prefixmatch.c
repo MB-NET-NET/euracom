@@ -6,7 +6,7 @@
 
 #include "postgres.h"
 #include <string.h>
-#include "8.3/server/fmgr.h"
+#include "8.4/server/fmgr.h"
 
 PG_MODULE_MAGIC;
 
