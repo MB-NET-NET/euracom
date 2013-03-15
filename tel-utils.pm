@@ -21,10 +21,6 @@
 # more details.
 #**************************************************************************
 
-#
-# $Id$
-#
-
 use DBI;
 
 #
@@ -33,7 +29,7 @@ use DBI;
 # Executes cmd (SELECT) statement, calls 'callback' for
 # each row passing $res as a parameter
 #
-sub SQLselect()
+sub SQLselect(@)
 {
   my ($cmd, $callback) = @_;
   my ($res);
@@ -62,7 +58,7 @@ sub SQLselect()
 # Performs a prefix search on table 'table' for 'input'
 # Returns 'key', 'value' and 'residual'
 #
-sub split_text()
+sub split_text(@)
 {
   my ($table, $input) = @_;
   my (@data, @row);
@@ -107,7 +103,7 @@ sub split_text()
 #
 # Converts a int. telephone number into a FQTN structure
 #
-sub convert_fqtn()
+sub convert_fqtn($)
 {
   my ($num) = @_;
   my ($avon, $avon_name, $telno, $tel, $wkn, $rest);
@@ -161,7 +157,7 @@ sub convert_fqtn()
 #
 # Prepares and executes SQL statement
 #
-sub prepexec()
+sub prepexec($)
 {
   my ($statement) = @_;
   my ($rc);
@@ -176,7 +172,7 @@ sub prepexec()
 #
 sub debug()
 {
-  print STDERR @_ if ($main::debugp);
+  print STDERR @_ if ($debugp);
 }
 
 #
