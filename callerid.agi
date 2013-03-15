@@ -1,0 +1,138 @@
+#!/usr/bin/perl -w
+
+#***************************************************************************
+# euracom -- Euracom 18x Gebührenerfassung
+#
+# callerid.agi -- TelNo -> FQTN converter
+#
+# Copyright (C) 1996-2013 Michael Bussmann
+#
+# Authors:             Michael Bussmann <bus@mb-net.net>
+# Created:             1997-08-29 09:44:19 GMT
+# Version:             $LastChangedRevision$
+# Last modified:       $Date$
+# Keywords:            ISDN, Euracom, Ackermann
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public Licence version 2 as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of merchanability
+# or fitness for a particular purpose.  See the GNU Public Licence for
+# more details.
+#**************************************************************************
+
+use DBI;
+use Getopt::Long qw(:config posix_default);
+
+my $AREACODE	= '2364';
+my $COUNTRYCODE	= '49';
+
+# Add directory this script resides in to include path
+if ($i=rindex($0, "/")) {
+  push(@INC,substr($0,0,$i));
+}
+
+require 'tel-utils.pm';
+
+#
+# sub print_fqtn()
+#
+sub print_fqtn($)
+{
+  my ($num) = @_;
+  my ($msg);
+  my (%tel);
+
+  %tel=convert_fqtn($num);
+
+  # Strip +49 from avon
+  $tel{'avon'}=~s/^\+$COUNTRYCODE/0/;
+
+  # Add int. exit code
+  $tel{'avon'}=~s/^\+/00/;
+
+  # Construct HTML
+  $msg="";
+#  $msg.="($tel{'avon'}) " if ($tel{'avon'});
+#  $msg.=($tel{'telno'}?$tel{'telno'}:"(No number)");
+#  $msg.=" - $tel{'rest'}" if ($tel{'rest'});
+#  $msg.=";";
+  $msg.="$tel{'wkn'}" if ($tel{'wkn'});
+  $msg.=" ($tel{'avon_name'})" if ($tel{'avon_name'});
+  return($msg);
+}
+
+
+#
+# Parse CMD line params
+#
+my $opt_h ="";
+my $debugp = 0;
+my $db_host = "tardis";
+my $db_db = "isdn";
+Getopt::Long::Configure('bundling');
+GetOptions(
+	'h'	=> \$opt_h,	'help'	=> \$opt_h,
+	'd'	=> \$debugp,	'debug'	=> \$debugp,
+	'H'	=> \$db_host,	'host'	=> \$db_host,
+	'D'	=> \$db_db,	'db'	=> \$db_db,
+);
+
+#
+# Print help
+#
+if (((scalar @ARGV) eq 0) || ($opt_h)) {
+  print <<"EOF";
+Usage: $0 [options] <telno>
+
+  -H host       Sets database host
+  -D name       Sets database name to connect to
+
+  -d            Enable debug mode
+  -h            You're reading it
+EOF
+  exit(0);
+}
+
+if ($debugp) { $main::debugp=1; print "Debugging set to $main::debugp\n"; }
+
+#
+# Get telno
+#
+my $telno=$ARGV[0];
+
+# Convert to intl. format
+debug("Tel = $telno\n");
+unless ($telno=~/^\+/) {
+	debug("Converting telno to international form\n");
+
+	if ($telno=~/^00(.+)/) {
+		$telno="+$1";
+	} elsif ($telno=~/^0(.+)/)  {
+		$telno="+${COUNTRYCODE}$1";
+	} else {
+		$telno="+${COUNTRYCODE}${AREACODE}$telno";
+	}
+}
+debug("Tel (cnvt.) = $telno\n");
+
+#
+# Fire up connection
+#
+
+debug("Opening connection...");
+$dbh=DBI->connect("dbi:Pg:dbname=$db_db;host=$db_host", "", "",
+	{RaiseError=>1, AutoCommit=>0}) || die "Connect failed: $DBI::errstr";
+debug("ok\n");
+
+printf "%s\n", print_fqtn($telno);
+
+#
+# Disconnect gracefully
+#
+debug("Closing connection...");
+$dbh->disconnect() || warn $DBI::errstr;
+debug("ok\n");
+
