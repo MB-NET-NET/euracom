@@ -168,7 +168,7 @@ $main::dbh=DBI->connect("dbi:Pg:dbname=$db_db;host=$db_host", "", "",
 	{RaiseError=>1, AutoCommit=>0}) || die "Connect failed: $DBI::errstr";
 debug("ok\n");
 
-print STDERR "Lookup result for $telno: %s\n", print_fqtn($telno);
+print STDERR "Lookup result for $telno:" . print_fqtn($telno) . "\n";
 print "SET VARIABLE lookupname \"" . print_fqtn($telno) . "\"";
 my $result = <STDIN>;
 &checkresult($result);
