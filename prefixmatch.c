@@ -6,9 +6,11 @@
 
 #include "postgres.h"
 #include <string.h>
-#include "8.4/server/fmgr.h"
+#include "9.1/server/fmgr.h"
 
+#ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
+#endif
 
 bool prefix_match(text *t1, text *t2)
 {

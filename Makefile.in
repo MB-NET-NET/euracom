@@ -45,9 +45,9 @@ DATABASE=@database@
 ifeq ($(DATABASE), postgres)
   DATABASE_BASE    = /opt/postgreSQL
 
-  DATABASE_INCLUDE = $(DATABASE_BASE)/include
-  DATABASE_LIB     = $(DATABASE_BASE)/lib
-  DATABASE_OBJ     = $(DATABASE_BASE)/obj
+  DATABASE_INCLUDE = /usr/include/postgresql
+  DATABASE_LIB     = /usr/lib
+  DATABASE_OBJ     = /usr/local/lib
 
   DATABASE_LINK   = -lpq $(LIBS)
 endif
@@ -90,9 +90,9 @@ database.o: $(DATABASE_SUBSYS)
 
 prefixmatch.so: prefixmatch.c
 ifeq ($(DATABASE), postgres)
-	$(CC) -o prefix.o -I$(DATABASE_INCLUDE) -O -fPIC -c $^
-	$(LD) -s -Bshareable -o $@ prefix.o
-	@$(RM) prefix.o
+	$(CC) -o prefixmatch.o -I$(DATABASE_INCLUDE) -O -fPIC -c $^
+	$(CC) -shared -o $@ prefixmatch.o
+	@$(RM) prefixmatch.o
 else
 	@echo "prefixmatch.so will only work with postgreSQL DBMS"
 endif
