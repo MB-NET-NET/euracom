@@ -110,7 +110,7 @@ sub do_lookup($)
 	my $msg="";
 	my %tel;
 
-	$main::dbh=DBI->connect("dbi:Pg:dbname=isdn", "phone", "Iphei5jeev",
+	$main::dbh=DBI->connect("dbi:Pg:dbname=isdn", "phone", "**pwd**",
 		{RaiseError=>1, AutoCommit=>0}) || die "Connect failed: $DBI::errstr";
 
 	%tel=convert_fqtn($callerid);
