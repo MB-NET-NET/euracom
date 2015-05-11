@@ -45,7 +45,7 @@ DATABASE=@database@
 ifeq ($(DATABASE), postgres)
   DATABASE_BASE    = /opt/postgreSQL
 
-  DATABASE_INCLUDE = /usr/include/postgresql
+  DATABASE_INCLUDE = /usr/include/postgresql/9.4/server
   DATABASE_LIB     = /usr/lib
   DATABASE_OBJ     = /usr/local/lib
 
