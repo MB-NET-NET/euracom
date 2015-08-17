@@ -1,13 +1,9 @@
 #!/usr/bin/perl -w
 
 #***************************************************************************
-# cidlookup.pl -- TelNo -> FQTN converter
+# cidlookup.pl -- TelNo -> FQTN converter (Asterisk AGI version)
 #
-# Copyright (C) 2014 Michael Bussmann
-#
-# Authors:             Michael Bussmann <bus@mb-net.net>
-# Created:             2014-04-16 12:20:19 GMT
-# Keywords:            ISDN, Euracom, Ackermann
+# Copyright (C) 2014-2015 Michael Bussmann
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public Licence version 2 as published
@@ -32,8 +28,17 @@
 
 use strict;
 use Asterisk::AGI;
+use Getopt::Std;
 use DBI;
 use DBD::Pg;
+
+#
+# Constants
+#
+my $LOCAL_OKZ='+492364';
+my $DB_DSN='dbi:Pg:dbname=isdn';
+my $DB_USER='*USER*';
+my $DB_PASS='*PASS*';
 
 #
 # Use unbuffered I/O
@@ -44,6 +49,13 @@ my %fqtn_cache;
 
 $main::debugp=0;
 $main::dbh="";
+
+#
+# Parse command line args
+#
+our($opt_d);
+getopts('d');
+if ($opt_d) { $main::debugp=1; }
 
 #
 # Prototypes
@@ -83,7 +95,7 @@ if ($cidnum =~ /^00/) {
 	# internal call: 2 digits
 	if (length($cidnum)>2) {
         	# if it's a local call, add our own country and local codes
-        	$cidnum = '+492364' . $cidnum;
+        	$cidnum = $LOCAL_OKZ . $cidnum;
 	}
 }
  
@@ -110,7 +122,7 @@ sub do_lookup($)
 	my $msg="";
 	my %tel;
 
-	$main::dbh=DBI->connect("dbi:Pg:dbname=isdn", "phone", "**pwd**",
+	$main::dbh=DBI->connect($DB_DSN, $DB_USER, $DB_PASS,
 		{RaiseError=>1, AutoCommit=>0}) || die "Connect failed: $DBI::errstr";
 
 	%tel=convert_fqtn($callerid);
@@ -125,6 +137,12 @@ sub do_lookup($)
 
 	# Construct HTML
 	$msg="";
+	#$msg.="($tel{'avon'}) " if ($tel{'avon'});
+	#$msg.=($tel{'telno'}?$tel{'telno'}:"(No number)");
+	#$msg.=" - $tel{'rest'}" if ($tel{'rest'});
+	#$msg.=";";
+	#$msg.=" $tel{'wkn'}" if ($tel{'wkn'});
+	#$msg.=" ($tel{'avon_name'})" if ($tel{'avon_name'});
 
 	if ($tel{'wkn'}) {
 		$msg.="$tel{'wkn'}";
